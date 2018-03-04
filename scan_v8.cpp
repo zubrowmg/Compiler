@@ -10,8 +10,13 @@
 #include "ParseTree.h"
 #include "List.h"
 #include "Symbol.h"
+#include "Error.h"
+
 
 using namespace std;
+
+Error error_handler;
+Symbol sym;
 
 /*---------------------------------------------  
 	Recieve an input token and clear all values 
@@ -85,7 +90,7 @@ int is_letter(char c){
 }
 
 /*--------------------------------  
-	Checks if the char is a number  
+	Checks if the char is a number  8
 --------------------------------*/
 int is_num(char c){
 	if (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9'){
@@ -93,28 +98,6 @@ int is_num(char c){
 	} else {
 		return 0;
 	}
-}
-
-/*------------------------------------------------------------------------------------  
-	Error system, recieves a number which corresponds to a more specific error message  
-------------------------------------------------------------------------------------*/
-int error(int line, int type){
-	if (type == 1){
-		cout << "Illegal character on line: " << line << endl;
-	} else if (type == 2){
-		cout << "Char should only be 1 character in length: "  << line << endl;
-	} else if (type == 3){
-		cout << "Char close \' is missing or string close \" is missing: " << line << endl;
-	} else if (type == 4){
-		cout << "Illegal char used for CHAR type or STRING type: " << line << endl;
-	} else if (type == 5){
-		cout << "Illegal char used for IDENTIFIER type: " << line << endl;
-	} else if (type == 6){
-		cout << "Missing IDENTIFIER or PERIOD after PROGRAM: " << line << endl;
-	}  else if (type == 7){
-		cout << "Missing IDENTIFIER or SEMICOLON after PROCEDURE: " << line << endl;
-	}
-	return 0;
 }
 
 int symbol_gen(list scan_list){
@@ -141,7 +124,7 @@ int symbol_gen(list scan_list){
 			} else if (temp.type == "T_PERIOD"){
 
 			} else {
-				error(temp.line, 6);
+				error_handler.error(temp.line, 6);
 			}
 
 
@@ -153,7 +136,7 @@ int symbol_gen(list scan_list){
 			} else if (temp.type == "T_SEMICOLON"){
 
 			} else {
-				error(temp.line, 7);
+				error_handler.error(temp.line, 7);
 			}
 		} 
 
@@ -289,7 +272,7 @@ list scan(char *argv[]){
 					if (c == '\n' || c == '\t' || c == ' ' || c == '['|| c == ']' || c == '(' || c == ')' || c == ';' || c == '.'){
 						
 					} else {
-						error(line_counter, 5);
+						error_handler.error(line_counter, 5);
 						//cout << c << endl;
 					}
 				}
@@ -354,14 +337,14 @@ list scan(char *argv[]){
 				else if (c == ';' || c == '_' || c == ':' || c == '.' || c == '\"' || is_letter(c) || is_num(c)){} 		//Do nothing for these accepted chars
 				
 				else if (peeker == EOF){		//Error for forgeting the ending '
-					error(line_counter, 3);
+					error_handler.error(line_counter, 3);
 					break;
 				} else {
-					error(line_counter, 4);		//Error for illegal chars
+					error_handler.error(line_counter, 4);		//Error for illegal chars
 				}
 
 				if (char_length > 1 && !(skip)){	//Error for char that is longer than 1
-					error(line_counter, 2);
+					error_handler.error(line_counter, 2);
 					skip = true;
 				} 
 			}
@@ -394,11 +377,11 @@ list scan(char *argv[]){
 				}
 				else if (c == ';' || c == '_' || c == ':' || c == '.' || c == '\'' || is_letter(c) || is_num(c) || c == ' '){}
 				else if (peeker == EOF){
-					error(line_counter, 3);
+					error_handler.error(line_counter, 3);
 					break;
 				} else {
 					//out << c << endl;
-					error(line_counter, 4);
+					error_handler.error(line_counter, 4);
 				}
 
 				
@@ -530,7 +513,7 @@ list scan(char *argv[]){
 			else if (c == ']'){ temp.type = "T_RBRACKET"; current_token.line = line_counter; token_list.createnode(temp);}
 			
 
-			else {temp.type = "T_UNKOWN"; current_token.line = line_counter; token_list.createnode(temp); error(line_counter, 1);}
+			else {temp.type = "T_UNKOWN"; current_token.line = line_counter; token_list.createnode(temp); error_handler.error(line_counter, 1);}
 				
 			temp = clear_token(temp);
 		} 
@@ -563,30 +546,32 @@ bool parameter_check(int argc, char *argv[]){
 }
 
 void parser(list scan_list){
-	//scan_list.display(); 
+	ParseTree tree; tokens temp; int error_count = 0; symbolNode symbol_temp;
 
-	Symbol sym;
-	ParseTree tree;
-  	scan_list.reset_pos(); tokens temp;
-
-  	int error_count = 0;
-
-  	
-
-  	
-  	
-
-
-  	//cout << scan_list.get_size() << endl;
-  	
+/*--------------------------------  
+	Symbol Table Setup
+--------------------------------*/
+	scan_list.reset_pos();
 	for (int i = 0; i < scan_list.get_size(); i++){
 		temp = scan_list.get_one();
 
-		//if (temp.type != "T_ENDFILE"){
-			tree.setNewNode(temp.type);
-			tree.createnode_2(temp.type);
-			tree.clearNewNode();
-		//}
+		sym.init(temp.type,temp.stringValue);
+	}	
+
+	cout << endl;
+	sym.printAll();
+
+/*--------------------------------  
+	Parser
+--------------------------------*/
+  	scan_list.reset_pos();
+	for (int i = 0; i < scan_list.get_size(); i++){
+		temp = scan_list.get_one();
+
+		tree.setNewNode(temp.type);
+		tree.createnode_2(temp.type);
+		tree.clearNewNode();
+	
 		if (!(tree.getLegit()) && error_count < 2){
 			
 			cout << "Error on line: " << temp.line << endl
@@ -597,9 +582,9 @@ void parser(list scan_list){
 		
 	}
 
-
-
-	//tree.travel(tree.getTreeRoot());
+/*----------------------------------------------------  
+	Checks to see if the Parser passed or failed
+----------------------------------------------------*/
 	cout << "----------------" << endl;
 	if (tree.getLegit()){
 		cout << "Is Legit" << endl;
@@ -609,15 +594,7 @@ void parser(list scan_list){
 	cout << endl;
 	cout << "========= PARSE END =========" << endl << endl;
 
-	scan_list.reset_pos();
 
-	for (int i = 0; i < scan_list.get_size(); i++){
-		temp = scan_list.get_one();
-		sym.init(temp.type,temp.stringValue);
-	}	
-
-	cout << endl;
-	sym.printAll();
 }	
 
 
@@ -631,23 +608,5 @@ int main(int argc, char *argv[]){
 		parser(scan_list);
 	}
 
-/*
-	Symbol Sym;
-	Sym.insertGlobal("tester");
-	Sym.insertGlobal("crap");
-	Sym.printGlobal();
-
-
-	Sym.newProc("Math");
-	Sym.insertValue("type2");
-	Sym.insertValue( "crap2");
-	Sym.endProc();
-
-	Sym.newProc("BOOKS");
-	Sym.insertValue( "pop");
-	Sym.insertValue( "pop");
-	Sym.endProc();
-	Sym.printTable();
-*/
 	return 0;
 }

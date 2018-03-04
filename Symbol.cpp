@@ -7,6 +7,7 @@
 #include "ParseTree.h"
 #include "List.h"
 #include "Symbol.h"
+#include "Error.h"
 
 /*------------------------------------------------------
 	Symbol Class
@@ -28,9 +29,8 @@ void Symbol::init(std::string token, std::string value)
 {	
 	if (token == "T_IDENTIFIER"){
 		
-		//If tok was glabol, 2 toks ago && value doesn't exist in global && prev tok is a type mark
+		//If tok was glabol 2 toks ago && value doesn't exist in global && prev tok is a type mark
 		if ((prev2_TT_glob && newCheckGlobal(value)) && (prev_TT_int || prev_TT_flt || prev_TT_str || prev_TT_bool || prev_TT_char)){
-
 			insertGlobal(value);
 		} else if (prev_TT_proc){
 			newProc(value);
@@ -93,7 +93,7 @@ void Symbol::nextPos()
 
 void Symbol::newProc(std::string input)
 {
-	SymbolNode *temp = new SymbolNode;
+	ProcedureNode *temp = new ProcedureNode;
 	temp->setName(input); current_proc = input;
 	
 	if(head == NULL) {
@@ -243,18 +243,18 @@ void Symbol::error(std::string input, int i){
 /*------------------------------------------------------
 	Symbol Node Class
 ------------------------------------------------------*/
-SymbolNode::SymbolNode()
+ProcedureNode::ProcedureNode()
 {
 	next = NULL;
 }
 
-void SymbolNode::insertValue(std::string key){ table[key] = key; }
-void SymbolNode::setName(std::string input){ name = input; }
-void SymbolNode::setNext(SymbolNode *input){ next = input; }
-std::string SymbolNode::getName(){ return name; }
-SymbolNode *SymbolNode::getNext(){ return next; }
+void ProcedureNode::insertValue(std::string key){ table[key] = key; }
+void ProcedureNode::setName(std::string input){ name = input; }
+void ProcedureNode::setNext(ProcedureNode *input){ next = input; }
+std::string ProcedureNode::getName(){ return name; }
+ProcedureNode *ProcedureNode::getNext(){ return next; }
 
-void SymbolNode::printTable()
+void ProcedureNode::printTable()
 { 
 	std::map <std::string, std::string> :: iterator itr;
 
@@ -265,7 +265,7 @@ void SymbolNode::printTable()
     }
 }
 
-bool SymbolNode::newCheck(std::string input){
+bool ProcedureNode::newCheck(std::string input){
 	bool checker = true;
 	std::map <std::string, std::string> :: iterator itr;
 	for (itr = table.begin(); itr != table.end(); ++itr){
@@ -277,7 +277,7 @@ bool SymbolNode::newCheck(std::string input){
 	return checker;
 }
 
-bool SymbolNode::check(std::string input){
+bool ProcedureNode::check(std::string input){
 	bool declared = false;
 	std::map <std::string, std::string> :: iterator itr;
 	for (itr = table.begin(); itr != table.end(); ++itr){
@@ -288,7 +288,7 @@ bool SymbolNode::check(std::string input){
 	return declared;
 }
 
-void SymbolNode::error(std::string input){
+void ProcedureNode::error(std::string input){
 	std::cout << "Error Redeclared Variable: " << input << '\n';
 }
 
