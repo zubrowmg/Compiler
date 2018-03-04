@@ -5,6 +5,7 @@
 #include "List.h"
 #include "Symbol.h"
 
+
 using namespace std;
 
 /*------------------------------------------------------
@@ -21,6 +22,7 @@ ParseNode::ParseNode(void)
 	leaf = true;
 	token = "";
 	prime = false;
+	
 }
 
 ParseNode *ParseNode::getLeft(){return left;}

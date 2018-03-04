@@ -1,26 +1,32 @@
-#ifndef SYMBOLNODE_H
-#define SYMBOLNODE_H
+#ifndef PROCEDURENODE_H
+#define PROCEDURENODE_H
 
 #include <map>
 
-class SymbolNode
+struct symbolNode{
+    int line_num; std::string value; std::string type;
+};
+
+
+class ProcedureNode
 {
     private:
         std::map <std::string, std::string> table;
-        SymbolNode *next;
+        ProcedureNode *next;
         std::string name;
 
     public:
-        SymbolNode();
+        ProcedureNode();
         void insertValue(std::string key);
         void setName(std::string input);
         std::string getName();
-        void setNext(SymbolNode *input);
+        void setNext(ProcedureNode *input);
         void printTable();
-        SymbolNode *getNext();
+        ProcedureNode *getNext();
         bool newCheck(std::string input);
         bool check(std::string input);
         void error(std::string input);
+
 
 };
 
@@ -36,9 +42,9 @@ class Symbol
 {
     private:
         std::map <std::string, std::string> global;
-        SymbolNode *pos;
-        SymbolNode *tail;
-        SymbolNode *head;
+        ProcedureNode *pos;
+        ProcedureNode *tail;
+        ProcedureNode *head;
         int size;
         std::vector<std::string> order;
         int order_size; std::string current_proc;
@@ -68,6 +74,7 @@ class Symbol
 
         void init(std::string token, std::string value);
         
+        bool find();
 };
 
 #endif
