@@ -9,6 +9,7 @@
 #include "Symbol.h"
 #include "Error.h"
 
+
 /*------------------------------------------------------
 	Symbol Class
 ------------------------------------------------------*/
@@ -25,17 +26,17 @@ Symbol::Symbol()
 
 void Symbol::resetPos(){ pos = head; }
 
-void Symbol::init(std::string token, std::string value)
+void Symbol::init(std::string token, std::string value, symbolNode sym)
 {	
 	if (token == "T_IDENTIFIER"){
 		
 		//If tok was glabol 2 toks ago && value doesn't exist in global && prev tok is a type mark
 		if ((prev2_TT_glob && newCheckGlobal(value)) && (prev_TT_int || prev_TT_flt || prev_TT_str || prev_TT_bool || prev_TT_char)){
-			insertGlobal(value);
+			insertGlobal(value, sym);
 		} else if (prev_TT_proc){
 			newProc(value);
 		} else if (prev_TT_int || prev_TT_flt || prev_TT_str || prev_TT_bool || prev_TT_char){
-			insertValue(value);
+			insertValue(value, sym);
 		} else if (prev_TT_prog){
 
 		} else {
@@ -62,13 +63,13 @@ void Symbol::init(std::string token, std::string value)
 	if (token == "T_END"){prev_TT_end = true;} else {prev_TT_end = false;}	
 }
 
-void Symbol::insertValue(std::string key)
+void Symbol::insertValue(std::string key, symbolNode sym)
 { 
 	if (newCheck(key)){
 		resetPos();
 		for (int i = 0; i < size; i++){
 			if (current_proc == pos->getName()){
-				pos->insertValue(key);
+				pos->insertValue(key, sym);
 				break;
 			} else {
 				pos = pos->getNext();
@@ -76,10 +77,23 @@ void Symbol::insertValue(std::string key)
 		}
 	}	  
 }
-void Symbol::insertGlobal(std::string key){ 
+void Symbol::insertGlobal(std::string key, symbolNode sym){ 
 	if (newCheckGlobal(key)){
-		global[key] = key;
+		global[key] = sym;
 	}
+}
+
+bool Symbol::newCheckGlobal(std::string input)
+{
+	bool checker = true;
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = global.begin(); itr != global.end(); ++itr){
+        if (itr->first == input){
+        	error(input, 0);
+        	checker = false;
+        }
+    }
+	return checker;
 }
 
 void Symbol::nextPos()
@@ -124,15 +138,17 @@ void Symbol::endProc()
 		current_proc = order[order_size];
 	}
 }
-void Symbol::printAll(){printGlobal(); printTable();}
+void Symbol::printAll(){
+	printGlobal(); printTable();
+}
 
 void Symbol::printGlobal()
 {
-	std::map <std::string, std::string> :: iterator itr;
+	std::map <std::string, symbolNode> :: iterator itr;
 	std::cout << "Global: "<< '\n';
 	for (itr = global.begin(); itr != global.end(); ++itr){
         std::cout  <<  '\t' << itr->first 
-              <<  '\t' << itr->second << '\n';
+              <<  '\t' << (itr->second).type << '\n';
     }
 }
 void Symbol::printTable()
@@ -142,19 +158,6 @@ void Symbol::printTable()
 		pos->printTable();
 		pos = pos->getNext();
 	}
-}
-
-bool Symbol::newCheckGlobal(std::string input)
-{
-	bool checker = true;
-	std::map <std::string, std::string> :: iterator itr;
-	for (itr = global.begin(); itr != global.end(); ++itr){
-        if (itr->second == input){
-        	error(input, 0);
-        	checker = false;
-        }
-    }
-	return checker;
 }
 
 bool Symbol::procCheck(std::string input)
@@ -175,9 +178,9 @@ bool Symbol::procCheck(std::string input)
 bool Symbol::newCheck(std::string input)
 {
 	bool checker = true;
-	std::map <std::string, std::string> :: iterator itr;
+	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = global.begin(); itr != global.end(); ++itr){
-        if (itr->second == input){
+        if (itr->first == input){
         	error(input, 0);
         	checker = false;
         }
@@ -201,9 +204,9 @@ bool Symbol::newCheck(std::string input)
 bool Symbol::check(std::string input)
 {
 	bool declared = false;
-	std::map <std::string, std::string> :: iterator itr;
+	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = global.begin(); itr != global.end(); ++itr){  	//Global
-        if (itr->second == input){
+        if (itr->first == input){
         	declared = true;
         }
     }
@@ -248,7 +251,7 @@ ProcedureNode::ProcedureNode()
 	next = NULL;
 }
 
-void ProcedureNode::insertValue(std::string key){ table[key] = key; }
+void ProcedureNode::insertValue(std::string key, symbolNode sym){ table[key] = sym; }
 void ProcedureNode::setName(std::string input){ name = input; }
 void ProcedureNode::setNext(ProcedureNode *input){ next = input; }
 std::string ProcedureNode::getName(){ return name; }
@@ -256,20 +259,20 @@ ProcedureNode *ProcedureNode::getNext(){ return next; }
 
 void ProcedureNode::printTable()
 { 
-	std::map <std::string, std::string> :: iterator itr;
+	std::map <std::string, symbolNode> :: iterator itr;
 
 	std::cout << "Name: " << name << '\n'<< '\n';
 	for (itr = table.begin(); itr != table.end(); ++itr){
         std::cout  <<  '\t' << itr->first 
-              <<  '\t' << itr->second << '\n';
+              <<  '\t' << (itr->second).type << '\n';
     }
 }
 
 bool ProcedureNode::newCheck(std::string input){
 	bool checker = true;
-	std::map <std::string, std::string> :: iterator itr;
+	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = table.begin(); itr != table.end(); ++itr){
-        if (itr->second == input){
+        if (itr->first == input){
         	error(input);
         	checker = false;
         }
@@ -279,9 +282,9 @@ bool ProcedureNode::newCheck(std::string input){
 
 bool ProcedureNode::check(std::string input){
 	bool declared = false;
-	std::map <std::string, std::string> :: iterator itr;
+	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = table.begin(); itr != table.end(); ++itr){
-        if (itr->second == input){
+        if (itr->first == input){
         	declared = true;
         }
     }
