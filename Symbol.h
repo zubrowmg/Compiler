@@ -4,20 +4,24 @@
 #include <map>
 
 struct symbolNode{
-    int line_num; std::string value; std::string type;
+    int line_num; std::string type;
+    
+    std::string str_val; 
+    int int_val;
+    
 };
 
 
 class ProcedureNode
 {
     private:
-        std::map <std::string, std::string> table;
+        std::map <std::string, symbolNode> table;
         ProcedureNode *next;
         std::string name;
 
     public:
         ProcedureNode();
-        void insertValue(std::string key);
+        void insertValue(std::string key, symbolNode sym);
         void setName(std::string input);
         std::string getName();
         void setNext(ProcedureNode *input);
@@ -41,7 +45,7 @@ class ProcedureNode
 class Symbol
 {
     private:
-        std::map <std::string, std::string> global;
+        std::map <std::string, symbolNode> global; 
         ProcedureNode *pos;
         ProcedureNode *tail;
         ProcedureNode *head;
@@ -52,13 +56,13 @@ class Symbol
         bool prev_TT_prog, prev_TT_flt, prev_TT_str, prev_TT_bool, prev_TT_char;  
     public:
         Symbol();
-        void insertGlobal(std::string key);
-        void insertValue(std::string key);
+        void insertGlobal(std::string key, symbolNode sym); 
+        void insertValue(std::string key, symbolNode sym);
 
         void newProc(std::string input);
         void endProc();
 
-        void printGlobal();
+        void printGlobal(); 
         void printTable();
         void printAll();
 
@@ -67,12 +71,12 @@ class Symbol
 
         bool procCheck(std::string input);
         bool newCheck(std::string input);
-        bool newCheckGlobal(std::string input);
+        bool newCheckGlobal(std::string input); 
         bool check(std::string input);
         
         void error(std::string input, int i);
 
-        void init(std::string token, std::string value);
+        void init(std::string token, std::string value, symbolNode sym); 
         
         bool find();
 };

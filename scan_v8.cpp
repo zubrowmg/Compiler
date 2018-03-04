@@ -46,16 +46,6 @@ int str_length(char str[256]){
 }
 
 
-
-
-/*-----------------------------------------  
-	Linked list class, will hold the tokens  
------------------------------------------*/
-
-
-
-
-
 /*------------------------------------------------------------------------------------------------------------------------  
 	Recieves a token and a str (str is a reserved word), compares the two to determine if the token is reserved word token  
 ------------------------------------------------------------------------------------------------------------------------*/
@@ -547,26 +537,16 @@ bool parameter_check(int argc, char *argv[]){
 
 void parser(list scan_list){
 	ParseTree tree; tokens temp; int error_count = 0; symbolNode symbol_temp;
-
+	
 /*--------------------------------  
-	Symbol Table Setup
---------------------------------*/
-	scan_list.reset_pos();
-	for (int i = 0; i < scan_list.get_size(); i++){
-		temp = scan_list.get_one();
-
-		sym.init(temp.type,temp.stringValue);
-	}	
-
-	cout << endl;
-	sym.printAll();
-
-/*--------------------------------  
-	Parser
+	Symbol Table and Parser
 --------------------------------*/
   	scan_list.reset_pos();
 	for (int i = 0; i < scan_list.get_size(); i++){
 		temp = scan_list.get_one();
+
+		symbol_temp.type = temp.type; symbol_temp.line_num = temp.line;
+		sym.init(temp.type,temp.stringValue, symbol_temp);
 
 		tree.setNewNode(temp.type);
 		tree.createnode_2(temp.type);
@@ -582,6 +562,7 @@ void parser(list scan_list){
 		
 	}
 
+ 	sym.printAll();
 /*----------------------------------------------------  
 	Checks to see if the Parser passed or failed
 ----------------------------------------------------*/
