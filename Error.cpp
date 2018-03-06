@@ -28,7 +28,12 @@ void Error::error(int line, int type){
 	} else if (type == 7){
 		cout << "Missing IDENTIFIER or SEMICOLON after PROCEDURE" << endl;
 	} 
-
+/*------------------------------------------------------
+	Type Check Errors
+------------------------------------------------------*/
+	else if (type == 8){
+		cout << "Type Mismatch" << endl;
+	} 
 
 }
 
@@ -44,5 +49,10 @@ void Error::error(int line, int type, std::string var){
 	} else if (type == 1){
 		cout << "Variable Not Declared -  " << var << endl;
 	}
-
+/*------------------------------------------------------
+	Parser Errors
+------------------------------------------------------*/
+	else if (type == 2){
+		cout << "Incorrect Symantix -  " << var << endl;
+	} 
 }

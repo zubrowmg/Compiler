@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <cstdlib>
 #include <map>
 #include <iterator>
 #include <vector>
@@ -9,7 +10,7 @@
 #include "Symbol.h"
 #include "Error.h"
 
-
+using namespace std;
 /*------------------------------------------------------
 	Symbol Class
 ------------------------------------------------------*/
@@ -23,17 +24,48 @@ Symbol::Symbol()
 	prev2_TT_glob = false;
 }
 
+void Symbol::clearTC(){ type_check.clear();}
+
+bool Symbol::insertTC(std::string ident, std::string TT){
+	bool type_match = true;
+	std::string type;
+	type = returnValType(ident);
+	
+	//if (type != "T_ADD" || type != "T_MINUS" || type != "T_AND" || type != "T_OR" || type != "T_NOT" || type != "T_LESSTHAN" || type != "T_LESSTHANEQUAL" || type != "T_GREATERTHAN" || type != "T_GREATERTHANEQUAL" || type != "T_EQUALTO" || type != "T_NOTEQUALTO" || type != "T_ASSIGN" || type != "T_MULT" || type != "T_DIVIDE" ){
+	if (TT == "T_NUMBERVAL"){  type = "V_INTEGER"; }
+	else if (TT == "T_STRINGVAL"){  type = "V_STRING"; }
+	else if (TT == "T_CHARVAL"){  type = "V_CHAR"; }
+
+	if (type_check.size() == 0){
+		type_check.push_back(type);
+		
+	} else { 
+		for (int i = 0; i < type_check.size(); i++){
+			if ((type_check[i] == "V_INTEGER" && ident == "V_FLOAT") || (type_check[i] == "V_FLOAT" && ident == "V_INTEGER")){
+				// Floats and Integers should be able to be compared
+			} else if (type_check[i] != type){
+				type_match = false; 
+			}
+		}
+		if (type_match){ 
+			type_check.push_back(type);
+		}
+	}
+	//}
+	return type_match;
+}
+
 
 void Symbol::resetPos(){ pos = head; }
 
 // Finds the type of the input identifier
-std::string Symbol::returnType(std::string ident){
+std::string Symbol::returnValType(std::string ident){
 	std::string type; bool type_found = false;
 
 	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = global.begin(); itr != global.end(); ++itr){
         if (itr->first == ident){
-        	type = (itr->second).type;
+        	type = (itr->second).str_val;
         	type_found = true;
         }
     }
@@ -41,7 +73,7 @@ std::string Symbol::returnType(std::string ident){
     if (!type_found){
     	for (int i = 0; i < size; i++){
 			if (current_proc == pos->getName()){
-				type = pos->returnType(ident);
+				type = pos->returnValType(ident);
 				if (type != "NULL"){
 					type_found = true;
 				}
@@ -62,9 +94,22 @@ std::string Symbol::returnType(std::string ident){
 void Symbol::init(std::string token, std::string value, symbolNode sym)
 {	
 	if (token == "T_IDENTIFIER"){
-		
+		if (prev_TT_int){
+			sym.str_val = "V_INTEGER";
+		} else if (prev_TT_flt){
+			sym.str_val = "V_FLOAT";
+		} else if (prev_TT_str){
+			sym.str_val = "V_STRING";
+		} else if (prev_TT_bool){
+			sym.str_val = "V_BOOL";
+		} else if (prev_TT_char){
+			sym.str_val = "V_CHAR";
+		}
+
 		//If tok was glabol 2 toks ago && value doesn't exist in global && prev tok is a type mark
 		if ((prev2_TT_glob && newCheckGlobal(value)) && (prev_TT_int || prev_TT_flt || prev_TT_str || prev_TT_bool || prev_TT_char)){
+			
+
 			insertGlobal(value, sym);
 		} else if (prev_TT_proc){
 			newProc(value);
@@ -172,7 +217,9 @@ void Symbol::endProc()
 	}
 }
 void Symbol::printAll(){
+	cout << endl << "========= Symbol Table =========" << endl;
 	printGlobal(); printTable();
+	cout << "================================" << endl << endl;
 }
 
 void Symbol::printGlobal()
@@ -181,7 +228,7 @@ void Symbol::printGlobal()
 	std::cout << "Global: "<< '\n';
 	for (itr = global.begin(); itr != global.end(); ++itr){
         std::cout  <<  '\t' << itr->first 
-              <<  '\t' << (itr->second).type << '\n';
+              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << '\n';
     }
 }
 void Symbol::printTable()
@@ -290,13 +337,13 @@ void ProcedureNode::setNext(ProcedureNode *input){ next = input; }
 std::string ProcedureNode::getName(){ return name; }
 ProcedureNode *ProcedureNode::getNext(){ return next; }
 
-std::string ProcedureNode::returnType(std::string ident){
+std::string ProcedureNode::returnValType(std::string ident){
 	std::string type = "NULL";
 
 	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = table.begin(); itr != table.end(); ++itr){
         if (itr->first == ident){
-        	type = (itr->second).type;
+        	type = (itr->second).str_val;
         }
     }
 
@@ -310,7 +357,7 @@ void ProcedureNode::printTable()
 	std::cout << "Name: " << name << '\n'<< '\n';
 	for (itr = table.begin(); itr != table.end(); ++itr){
         std::cout  <<  '\t' << itr->first 
-              <<  '\t' << (itr->second).type << '\n';
+              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << '\n';
     }
 }
 

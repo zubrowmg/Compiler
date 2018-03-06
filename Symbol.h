@@ -31,7 +31,7 @@ class ProcedureNode
         bool check(std::string input);
         void error(std::string input);
 
-        std::string returnType(std::string ident);
+        std::string returnValType(std::string ident);
 };
 
 #endif
@@ -54,6 +54,7 @@ class Symbol
         int order_size; std::string current_proc;
         bool prev2_TT_glob, prev_TT_glob, prev_TT_proc, prev_TT_end, prev_TT_int;
         bool prev_TT_prog, prev_TT_flt, prev_TT_str, prev_TT_bool, prev_TT_char;  
+        std::vector<std::string> type_check;
     public:
         Symbol();
         void insertGlobal(std::string key, symbolNode sym); 
@@ -79,8 +80,10 @@ class Symbol
         void init(std::string token, std::string value, symbolNode sym); 
         
         bool find();
-        std::string returnType(std::string ident);
-        
+        std::string returnValType(std::string ident);
+        void clearTC();
+        bool insertTC(std::string ident, std::string TT);
+
 };
 
 #endif
