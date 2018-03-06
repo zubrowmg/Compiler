@@ -536,27 +536,36 @@ bool parameter_check(int argc, char *argv[]){
 }
 
 void parser(list scan_list){
-	ParseTree tree; tokens temp; int error_count = 0; symbolNode symbol_temp;
-	
+	ParseTree tree; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true;
+
 /*--------------------------------  
-	Symbol Table and Parser
+	Symbol Table and Parser 			reorder ST and Par
 --------------------------------*/
   	scan_list.reset_pos();
 	for (int i = 0; i < scan_list.get_size(); i++){
 		temp = scan_list.get_one();
 
-		symbol_temp.type = temp.type; symbol_temp.line_num = temp.line;
-		sym.init(temp.type,temp.stringValue, symbol_temp);
-
 		tree.setNewNode(temp.type);
 		tree.createnode_2(temp.type);
 		tree.clearNewNode();
+
+		symbol_temp.type = temp.type; 
+		symbol_temp.line_num = temp.line;
+		symbol_temp.str_val = temp.stringValue;
+		sym.init(temp.type,temp.stringValue, symbol_temp);
+
+		if (tree.getExpressFlag() && (temp.type == "T_IDENTIFIER" || temp.type == "T_NUMBERVAL" || temp.type == "T_STRINGVAL" || temp.type == "T_CHARVAL" || temp.type == "T_FALSE" || temp.type == "T_TRUE")){
+			type_match = sym.insertTC(temp.stringValue, temp.type);
+
+		}  if (!tree.getExpressFlag()){
+		
+			sym.clearTC();
+		}
+
+		if (!type_match){error_handler.error(temp.line, 8); type_match = true; }
 	
 		if (!(tree.getLegit()) && error_count < 2){
-			
-			cout << "Error on line: " << temp.line << endl
-			<< "With: " << temp.type << "  " << temp.stringValue << endl;
-			cout << "*------------*" << endl;
+			error_handler.error(temp.line, 2, temp.stringValue);			
 			error_count++;
 		} 
 		
@@ -566,14 +575,14 @@ void parser(list scan_list){
 /*----------------------------------------------------  
 	Checks to see if the Parser passed or failed
 ----------------------------------------------------*/
-	cout << "----------------" << endl;
+	cout << endl << "========== PARSE ==========" << endl;
 	if (tree.getLegit()){
 		cout << "Is Legit" << endl;
 	} else {
 		cout << "Is Not Legit" << endl;
 	}
 	cout << endl;
-	cout << "========= PARSE END =========" << endl << endl;
+	cout << "===========================" << endl << endl;
 
 
 }	

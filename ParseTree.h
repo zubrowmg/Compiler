@@ -17,6 +17,7 @@ class ParseNode
     private:
         ParseNode *left, *right, *middle, *root;
         std::string token; int option; bool done, leaf, prime;
+        
     public:
         ParseNode(void);
         
@@ -39,6 +40,8 @@ class ParseNode
         void setOption(int input);
         void setNodeStatus(bool input);
         void setLeaf(bool input);
+
+        
 };
 
 #endif
@@ -46,6 +49,8 @@ class ParseNode
 
 #ifndef ParseTree_H
 #define ParseTree_H
+
+#include <vector>
 
 class ParseTree 
 {
@@ -58,6 +63,10 @@ class ParseTree
         ParseNode *treeroot;
         bool is_legit;
         bool get_new_pos;
+
+        bool expression_flag;
+        bool expression_done;
+        int expression_count;
 
     public:
     	ParseTree(void);
@@ -89,13 +98,9 @@ class ParseTree
         
 
         ParseNode *travel(ParseNode *input);
-        /*void display();
-            void newNullNode();
-            void clearNullNode();
-            
-            void factorbackUp();
-            void specialBackUp(std::string input);
-        */
+
+        bool getExpressFlag();
+        ParseNode *setExpressFlag(ParseNode *start);
 };
 
 #endif

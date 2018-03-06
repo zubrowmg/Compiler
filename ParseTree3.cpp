@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 #include "ParseTree.h"
 #include "List.h"
@@ -22,7 +23,7 @@ ParseNode::ParseNode(void)
 	leaf = true;
 	token = "";
 	prime = false;
-	
+
 }
 
 ParseNode *ParseNode::getLeft(){return left;}
@@ -63,6 +64,9 @@ ParseTree::ParseTree(void)
 	is_legit = true;
 	get_new_pos = true;
 
+	expression_flag = false;
+	expression_done = false;
+	expression_count = 0;
 }
 
 bool ParseTree::getLegit(){return is_legit;}
@@ -72,11 +76,29 @@ void ParseTree::setNewNode(std::string input){ ParseNode *temp = new ParseNode; 
 void ParseTree::clearPos(){ParseNode *temp = new ParseNode; pos = temp; get_new_pos = true;}
 void ParseTree::clearNewNode(){ParseNode *temp = new ParseNode; new_node = temp;}
 void ParseTree::clearTempNode(){ParseNode *temp = new ParseNode; temp_node = temp;}
+void ParseTree::printTree(){ printTree(treeroot);}
+bool ParseTree::getExpressFlag(){ return expression_flag;}
 
+ParseNode *ParseTree::setExpressFlag(ParseNode *start)
+{	
+	if (start->getToken() == "<expression>" && get_new_pos){
+ 		expression_flag = false; expression_count++;
+ 	}
 
-void ParseTree::printTree()
-{
-	printTree(treeroot);
+	if (!(start->getLeft() == NULL)){setExpressFlag(start->getLeft());}
+	if (!(start->getMiddle() == NULL)){setExpressFlag(start->getMiddle());}
+	if (!(start->getRight() == NULL)){setExpressFlag(start->getRight());}	
+	if (start->getNodeStatus() == false){
+		if (get_new_pos){
+			pos = start;
+			get_new_pos = false;	
+		}
+	}
+	
+
+ 	
+
+	return start->getRoot();			
 }
 
 ParseNode *ParseTree::printTree(ParseNode *node)
@@ -90,7 +112,11 @@ ParseNode *ParseTree::printTree(ParseNode *node)
 }
 
 ParseNode *ParseTree::findStart(ParseNode *start)
-{
+{	
+	if (start->getToken() == "<expression>" ){
+ 		expression_flag = true; expression_count++;
+ 	}
+
 	if (!(start->getLeft() == NULL)){findStart(start->getLeft());}
 	if (!(start->getMiddle() == NULL)){findStart(start->getMiddle());}
 	if (!(start->getRight() == NULL)){findStart(start->getRight());}	
@@ -100,7 +126,11 @@ ParseNode *ParseTree::findStart(ParseNode *start)
 			get_new_pos = false;	
 		}
 	}
- 
+	
+ 	if (start->getToken() == "<expression>" && get_new_pos && expression_count > 0){
+ 		expression_flag = false;
+ 	}
+
 	return start->getRoot();			
 }
 
@@ -1001,6 +1031,8 @@ void ParseTree::createnode_3(){
 --------------------------------------------------*/
 	else if (pos->getToken() == "<expression>"){ pos->setOption((pos->getOption()) + 1);			
 
+		expression_flag = true;
+
 		if (pos->getOption() == 1){	
 			temp_node->setToken("<T_NOT>");	newTempNode();
 			temp_node->setToken("<arithOp>");newTempNode();
@@ -1049,7 +1081,8 @@ void ParseTree::createnode_3(){
 
 			pos = pos->getLeft();
 			createnode_3();
-		} else {			
+		} else {	
+			expression_flag = false;		
 			backUp();
 		}
 	} 
