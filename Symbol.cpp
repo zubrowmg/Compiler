@@ -26,6 +26,39 @@ Symbol::Symbol()
 
 void Symbol::resetPos(){ pos = head; }
 
+// Finds the type of the input identifier
+std::string Symbol::returnType(std::string ident){
+	std::string type; bool type_found = false;
+
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = global.begin(); itr != global.end(); ++itr){
+        if (itr->first == ident){
+        	type = (itr->second).type;
+        	type_found = true;
+        }
+    }
+
+    if (!type_found){
+    	for (int i = 0; i < size; i++){
+			if (current_proc == pos->getName()){
+				type = pos->returnType(ident);
+				if (type != "NULL"){
+					type_found = true;
+				}
+				break;
+			} else {
+				pos = pos->getNext();
+			}
+		}
+    }
+
+    if (!type_found){
+    	cout << "returnType function failed" << endl;
+    }
+
+	return type;
+}
+
 void Symbol::init(std::string token, std::string value, symbolNode sym)
 {	
 	if (token == "T_IDENTIFIER"){
@@ -256,6 +289,19 @@ void ProcedureNode::setName(std::string input){ name = input; }
 void ProcedureNode::setNext(ProcedureNode *input){ next = input; }
 std::string ProcedureNode::getName(){ return name; }
 ProcedureNode *ProcedureNode::getNext(){ return next; }
+
+std::string ProcedureNode::returnType(std::string ident){
+	std::string type = "NULL";
+
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = table.begin(); itr != table.end(); ++itr){
+        if (itr->first == ident){
+        	type = (itr->second).type;
+        }
+    }
+
+	return type;
+}
 
 void ProcedureNode::printTable()
 { 

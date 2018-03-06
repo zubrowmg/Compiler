@@ -31,7 +31,7 @@ class ProcedureNode
         bool check(std::string input);
         void error(std::string input);
 
-
+        std::string returnType(std::string ident);
 };
 
 #endif
@@ -79,6 +79,8 @@ class Symbol
         void init(std::string token, std::string value, symbolNode sym); 
         
         bool find();
+        std::string returnType(std::string ident);
+        
 };
 
 #endif
