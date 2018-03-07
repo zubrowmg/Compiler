@@ -4,6 +4,7 @@
 #include <map>
 #include <iterator>
 #include <vector>
+#include <string>
 
 #include "ParseTree.h"
 #include "List.h"
@@ -21,51 +22,109 @@ Symbol::Symbol()
 	prev_TT_glob = false; prev_TT_proc = false; prev_TT_end = false;
 	prev_TT_int = false; prev_TT_flt = false; prev_TT_str = false;
 	prev_TT_bool = false; prev_TT_char = false; prev_TT_prog = false;
-	prev2_TT_glob = false;
+	prev2_TT_glob = false; prev_TT_IDENT = false; prev_TT_IDENT = false; prev_TT_LB = false;
+	prev_TT_SEMICOLON = false; prev2_TT_LB = false;
+	last_ident = "NULL";
 }
 
 void Symbol::clearTC(){ type_check.clear();}
 
 bool Symbol::insertTC(std::string ident, std::string TT){
-	bool type_match = true;
+	bool type_match = true; symbolNode sym; symbolNode temp; TCNode T_C; T_C.ident = ident; 
 	std::string type;
-	type = returnValType(ident);
-	
+	sym = returnValType(ident);
+	T_C.type = sym.str_val; 
+//cout << type << endl;	
 	//if (type != "T_ADD" || type != "T_MINUS" || type != "T_AND" || type != "T_OR" || type != "T_NOT" || type != "T_LESSTHAN" || type != "T_LESSTHANEQUAL" || type != "T_GREATERTHAN" || type != "T_GREATERTHANEQUAL" || type != "T_EQUALTO" || type != "T_NOTEQUALTO" || type != "T_ASSIGN" || type != "T_MULT" || type != "T_DIVIDE" ){
-	if (TT == "T_NUMBERVAL"){  type = "V_INTEGER"; }
-	else if (TT == "T_STRINGVAL"){  type = "V_STRING"; }
-	else if (TT == "T_CHARVAL"){  type = "V_CHAR"; }
+	if (TT == "T_NUMBERVAL"){  T_C.type = "V_INTEGER"; }
+	else if (TT == "T_STRINGVAL"){  T_C.type = "V_STRING"; }
+	else if (TT == "T_CHARVAL"){  T_C.type = "V_CHAR"; }
 
 	if (type_check.size() == 0){
-		type_check.push_back(type);
+		type_check.push_back(T_C);
 		
 	} else { 
 		for (int i = 0; i < type_check.size(); i++){
-			if ((type_check[i] == "V_INTEGER" && ident == "V_FLOAT") || (type_check[i] == "V_FLOAT" && ident == "V_INTEGER")){
+			if ((type_check[i].type == "V_INTEGER" && ident == "V_FLOAT") || (type_check[i].type == "V_FLOAT" && ident == "V_INTEGER")){
 				// Floats and Integers should be able to be compared
-			} else if (type_check[i] != type){
+			} else if (type_check[i].type != T_C.type){
 				type_match = false; 
 			}
+
+			temp = returnValType(type_check[i].ident); 	
+			if (temp.is_array != sym.is_array){ 		
+				type_match = false;
+			} 
+
+			if (temp.array_size != sym.array_size){ 		
+				type_match = false;
+			} 
 		}
 		if (type_match){ 
-			type_check.push_back(type);
+			type_check.push_back(T_C);
 		}
 	}
 	//}
 	return type_match;
 }
 
+void Symbol::modify(std::string ident){
+	bool done = false;
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = global.begin(); itr != global.end(); ++itr){
+        if (itr->first == ident){
+        	(itr->second).is_array = true;
+        	done = true; 
+        }
+    }
+    if (!done){
+    	for (int i = 0; i < size; i++){
+			if (current_proc == pos->getName()){
+				pos->modify(ident);
+				break;
+			} else {
+				pos = pos->getNext();
+			}
+		}
+    }
+}
+
+void Symbol::modify(std::string ident, std::string num, char c){ 
+	bool done = false;
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = global.begin(); itr != global.end(); ++itr){
+        if (itr->first == ident){
+        	if (c == 'L'){ 
+        		(itr->second).array_left = stoi(num);
+        	} else if (c == 'R'){
+        		(itr->second).array_right = stoi(num);
+        		(itr->second).array_size = abs((itr->second).array_left - (itr->second).array_right); 	
+        	}
+        	done = true; 
+        }
+    }
+    if (!done){
+    	for (int i = 0; i < size; i++){
+			if (current_proc == pos->getName()){
+				pos->modify(ident, num, c);
+				break;
+			} else {
+				pos = pos->getNext();
+			}
+		}
+    }
+}
 
 void Symbol::resetPos(){ pos = head; }
 
 // Finds the type of the input identifier
-std::string Symbol::returnValType(std::string ident){
-	std::string type; bool type_found = false;
+symbolNode Symbol::returnValType(std::string ident){
+	symbolNode sym; bool type_found = false;
 
 	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = global.begin(); itr != global.end(); ++itr){
         if (itr->first == ident){
-        	type = (itr->second).str_val;
+        	sym = (itr->second);
         	type_found = true;
         }
     }
@@ -73,8 +132,8 @@ std::string Symbol::returnValType(std::string ident){
     if (!type_found){
     	for (int i = 0; i < size; i++){
 			if (current_proc == pos->getName()){
-				type = pos->returnValType(ident);
-				if (type != "NULL"){
+				sym = pos->returnValType(ident);
+				if (sym.type != "NULL"){
 					type_found = true;
 				}
 				break;
@@ -88,12 +147,34 @@ std::string Symbol::returnValType(std::string ident){
     	cout << "returnType function failed" << endl;
     }
 
-	return type;
+	return sym;
 }
 
 void Symbol::init(std::string token, std::string value, symbolNode sym)
 {	
+	//if (prev2_TT_LB ){ cout << token << endl;}
+
+	if (prev_TT_SEMICOLON && token == "T_NUMBERVAL"){ 
+		modify(last_ident, value, 'R'); 
+	}
+
+	if (prev2_TT_LB && token == "T_COLON"){ 
+		prev_TT_SEMICOLON = true;
+	} else {prev_TT_SEMICOLON = false;} 
+
+	if (prev_TT_LB && token == "T_NUMBERVAL"){ 
+		modify(last_ident, value, 'L'); prev2_TT_LB = true; 			
+	} else {prev2_TT_LB = false;}
+
+	if (prev_TT_IDENT && token == "T_LBRACKET"){ 
+		modify(last_ident); prev_TT_LB = true;
+	} else {prev_TT_LB = false; }
+//last_ident = "NULL";
+
 	if (token == "T_IDENTIFIER"){
+		last_ident = value;
+
+
 		if (prev_TT_int){
 			sym.str_val = "V_INTEGER";
 		} else if (prev_TT_flt){
@@ -108,8 +189,6 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 
 		//If tok was glabol 2 toks ago && value doesn't exist in global && prev tok is a type mark
 		if ((prev2_TT_glob && newCheckGlobal(value)) && (prev_TT_int || prev_TT_flt || prev_TT_str || prev_TT_bool || prev_TT_char)){
-			
-
 			insertGlobal(value, sym);
 		} else if (prev_TT_proc){
 			newProc(value);
@@ -121,7 +200,10 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 			//Check the scopes
 			check(value);
 		}
-	}
+		prev_TT_IDENT = true;
+	} else {prev_TT_IDENT = false;  }
+
+	
 
 	if (prev_TT_end && token == "T_PROCEDURE"){
 		endProc();
@@ -228,8 +310,13 @@ void Symbol::printGlobal()
 	std::cout << "Global: "<< '\n';
 	for (itr = global.begin(); itr != global.end(); ++itr){
         std::cout  <<  '\t' << itr->first 
-              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << '\n';
-    }
+              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' '<< '\t' ;
+      	if ((itr->second).is_array){
+      		cout << "Is Array" << ' ' << '\t' << (itr->second).array_size << endl;
+      	} else {
+    		cout << "Not Array" << endl;
+    	}
+  	}
 }
 void Symbol::printTable()
 {
@@ -337,17 +424,41 @@ void ProcedureNode::setNext(ProcedureNode *input){ next = input; }
 std::string ProcedureNode::getName(){ return name; }
 ProcedureNode *ProcedureNode::getNext(){ return next; }
 
-std::string ProcedureNode::returnValType(std::string ident){
-	std::string type = "NULL";
+symbolNode ProcedureNode::returnValType(std::string ident){
+	symbolNode sym;
+	sym.type = "NULL";
 
 	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = table.begin(); itr != table.end(); ++itr){
         if (itr->first == ident){
-        	type = (itr->second).str_val;
+        	sym = (itr->second);
         }
     }
 
-	return type;
+	return sym;
+}
+
+void ProcedureNode::modify(std::string ident){
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = table.begin(); itr != table.end(); ++itr){
+        if (itr->first == ident){
+        	(itr->second).is_array = true; 
+        }
+    }
+}
+
+void ProcedureNode::modify(std::string ident, std::string num, char c){
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = table.begin(); itr != table.end(); ++itr){
+        if (itr->first == ident){
+        	if (c == 'L'){
+        		(itr->second).array_left = stoi(num);
+        	} else if (c == 'R'){
+        		(itr->second).array_right = stoi(num);
+        		(itr->second).array_size = abs((itr->second).array_left - (itr->second).array_right);
+        	}
+        }
+    }
 }
 
 void ProcedureNode::printTable()
@@ -357,7 +468,12 @@ void ProcedureNode::printTable()
 	std::cout << "Name: " << name << '\n'<< '\n';
 	for (itr = table.begin(); itr != table.end(); ++itr){
         std::cout  <<  '\t' << itr->first 
-              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << '\n';
+              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' ' <<  '\t';
+      	if ((itr->second).is_array){
+      		cout << "Is Array" << ' ' << '\t' << (itr->second).array_size << endl;
+      	} else {
+    		cout << "Not Array" << endl;
+    	}
     }
 }
 

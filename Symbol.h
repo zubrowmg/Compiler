@@ -5,12 +5,20 @@
 
 struct symbolNode{
     int line_num; std::string type;
-    
+    bool is_array; int array_left, array_right, array_size;
+
     std::string str_val; 
     int int_val;
-    
+    symbolNode()
+    {
+        is_array = false; array_size = 1; array_left = 0; array_right = 0;
+    }
 };
 
+struct TCNode{
+    std::string ident, type;
+    
+};
 
 class ProcedureNode
 {
@@ -31,7 +39,9 @@ class ProcedureNode
         bool check(std::string input);
         void error(std::string input);
 
-        std::string returnValType(std::string ident);
+        symbolNode returnValType(std::string ident);
+        void modify(std::string ident);
+        void modify(std::string ident, std::string num, char c);
 };
 
 #endif
@@ -41,6 +51,7 @@ class ProcedureNode
 
 #include <vector>
 #include <map>
+#include <string>
 
 class Symbol
 {
@@ -53,8 +64,11 @@ class Symbol
         std::vector<std::string> order;
         int order_size; std::string current_proc;
         bool prev2_TT_glob, prev_TT_glob, prev_TT_proc, prev_TT_end, prev_TT_int;
-        bool prev_TT_prog, prev_TT_flt, prev_TT_str, prev_TT_bool, prev_TT_char;  
-        std::vector<std::string> type_check;
+        bool prev_TT_prog, prev_TT_flt, prev_TT_str, prev_TT_bool, prev_TT_char;
+        bool prev_TT_SEMICOLON, prev_TT_LB, prev_TT_IDENT, prev2_TT_LB;  
+        std::vector<TCNode> type_check;
+        std::string last_ident;
+
     public:
         Symbol();
         void insertGlobal(std::string key, symbolNode sym); 
@@ -80,10 +94,12 @@ class Symbol
         void init(std::string token, std::string value, symbolNode sym); 
         
         bool find();
-        std::string returnValType(std::string ident);
+        symbolNode returnValType(std::string ident);
         void clearTC();
         bool insertTC(std::string ident, std::string TT);
 
+        void modify(std::string ident);
+        void modify(std::string ident, std::string num, char c);
 };
 
 #endif

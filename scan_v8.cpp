@@ -557,8 +557,7 @@ void parser(list scan_list){
 		if (tree.getExpressFlag() && (temp.type == "T_IDENTIFIER" || temp.type == "T_NUMBERVAL" || temp.type == "T_STRINGVAL" || temp.type == "T_CHARVAL" || temp.type == "T_FALSE" || temp.type == "T_TRUE")){
 			type_match = sym.insertTC(temp.stringValue, temp.type);
 
-		}  if (!tree.getExpressFlag()){
-		
+		}  if (!tree.getExpressFlag()){		
 			sym.clearTC();
 		}
 
