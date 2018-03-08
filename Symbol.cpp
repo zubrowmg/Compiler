@@ -26,6 +26,51 @@ Symbol::Symbol()
 	prev_TT_SEMICOLON = false; prev2_TT_LB = false;
 	last_ident = "NULL";
 }
+void Symbol::clearTC_AS(){ type_check_AS.clear();}
+
+bool Symbol::insertTC_AS(std::string ident, std::string TT){
+	bool type_match = true; symbolNode sym; symbolNode temp; TCNode T_C; T_C.ident = ident; 
+	std::string type;
+	sym = returnValType(ident);
+	T_C.type = sym.str_val;
+
+for (int i = 0; i < type_check_AS.size(); i++){
+	//cout << '\t' << type_check_AS[i].ident << " ";
+}
+//cout<<endl;
+//cout << type << endl;	
+	//if (type != "T_ADD" || type != "T_MINUS" || type != "T_AND" || type != "T_OR" || type != "T_NOT" || type != "T_LESSTHAN" || type != "T_LESSTHANEQUAL" || type != "T_GREATERTHAN" || type != "T_GREATERTHANEQUAL" || type != "T_EQUALTO" || type != "T_NOTEQUALTO" || type != "T_ASSIGN" || type != "T_MULT" || type != "T_DIVIDE" ){
+	if (TT == "T_NUMBERVAL"){  T_C.type = "V_INTEGER"; }
+	else if (TT == "T_STRINGVAL"){  T_C.type = "V_STRING"; }
+	else if (TT == "T_CHARVAL"){  T_C.type = "V_CHAR"; }
+
+	if (type_check_AS.size() == 0){
+		type_check_AS.push_back(T_C);
+		
+	} else { 
+		for (int i = 0; i < type_check_AS.size(); i++){
+			if ((type_check_AS[i].type == "V_INTEGER" && ident == "V_FLOAT") || (type_check_AS[i].type == "V_FLOAT" && ident == "V_INTEGER")){
+				// Floats and Integers should be able to be compared
+			} else if (type_check_AS[i].type != T_C.type){
+				type_match = false; 
+			}
+
+			temp = returnValType(type_check_AS[i].ident); 	
+			if (temp.is_array != sym.is_array){ 		
+				type_match = false;
+			} 
+
+			if (temp.array_size != sym.array_size){ 		
+				type_match = false;
+			} 
+		}
+		if (type_match){ 
+			type_check_AS.push_back(T_C);
+		}
+	}
+	//}
+	return type_match;
+}
 
 void Symbol::clearTC(){ type_check.clear();}
 
@@ -144,7 +189,7 @@ symbolNode Symbol::returnValType(std::string ident){
     }
 
     if (!type_found){
-    	cout << "returnType function failed" << endl;
+//    	cout << "returnType function failed" << endl;
     }
 
 	return sym;

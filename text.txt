@@ -2,14 +2,14 @@
 
 PROGRAM grant IS
 	global char jake; // [5:10]
-	global char ryan[5:10];
-	global integer zach;
+	global char ryan;
+	global integer zach[1:6];
 
 	procedure if_proc()
-		integer declaration[5:10];
-		integer k[6:10];
+		integer declaration;
+		integer k;
 		begin
-			ryan := declaration + k;
+			zach := declaration + k;
 			
 		
 	end procedure;

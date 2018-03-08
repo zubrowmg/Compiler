@@ -32,7 +32,9 @@ void Error::error(int line, int type){
 	Type Check Errors
 ------------------------------------------------------*/
 	else if (type == 8){
-		cout << "Type Mismatch" << endl;
+		cout << "Expression Type Mismatch" << endl;
+	} else if (type == 9){
+		cout << "Assignment Type Mismatch" << endl;
 	} 
 
 }
