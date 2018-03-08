@@ -462,6 +462,9 @@ list scan(char *argv[]){
 					while (c != '\n' || c == (-1)){
 						inFile.get(c);
 					}
+					if (c == '\n'){
+						line_counter++;
+					}
 				} else if(c == '*'){
 					inFile.get(c);
 					nest_comment = true;
