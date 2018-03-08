@@ -4,7 +4,7 @@
 #include <map>
 
 struct symbolNode{
-    int line_num; std::string type;
+    int line_num; std::string type; std::string proc;
     bool is_array; int array_left, array_right, array_size;
 
     std::string str_val; 
@@ -52,6 +52,8 @@ class ProcedureNode
 #include <map>
 #include <string>
 
+#include "Error.h"
+
 class Symbol
 {
     private:
@@ -67,6 +69,8 @@ class Symbol
         bool prev_TT_SEMICOLON, prev_TT_LB, prev_TT_IDENT, prev2_TT_LB;  
         std::vector<TCNode> type_check; std::vector<TCNode> type_check_AS;
         std::string last_ident;
+        Error sym_error_handler;
+
 
     public:
         Symbol();
@@ -84,9 +88,9 @@ class Symbol
         void nextPos();
 
         bool procCheck(std::string input);
-        bool newCheck(std::string input);
-        bool newCheckGlobal(std::string input); 
-        bool check(std::string input);
+        bool newCheck(std::string input, symbolNode sym);
+        bool newCheckGlobal(std::string input, symbolNode sym); 
+        bool check(std::string input, symbolNode sym);
         
         void error(std::string input, int i);
 

@@ -563,11 +563,12 @@ void parser(list scan_list){
 		}  if (!tree.getExpressFlag()){		
 			sym.clearTC();
 		}
-
-		if (tree.getAssignmentFlag() && (temp.type == "T_IDENTIFIER")){
+		if (tree.getAssignmentFlag() && (temp.type == "T_IDENTIFIER") ){
 			type_match2 = sym.insertTC_AS(temp.stringValue, temp.type);
-//cout << temp.stringValue << endl;
-		}  if (!tree.getAssignmentFlag()){		
+
+		}  
+//cout << symbol_temp.str_val << endl;
+		if (!tree.getAssignmentFlag()){		
 			sym.clearTC_AS();
 		}
 

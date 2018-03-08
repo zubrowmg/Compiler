@@ -31,12 +31,11 @@ void Symbol::clearTC_AS(){ type_check_AS.clear();}
 bool Symbol::insertTC_AS(std::string ident, std::string TT){
 	bool type_match = true; symbolNode sym; symbolNode temp; TCNode T_C; T_C.ident = ident; 
 	std::string type;
+//cout << ident << endl;
 	sym = returnValType(ident);
+//cout << ident << endl;
 	T_C.type = sym.str_val;
 
-for (int i = 0; i < type_check_AS.size(); i++){
-	//cout << '\t' << type_check_AS[i].ident << " ";
-}
 //cout<<endl;
 //cout << type << endl;	
 	//if (type != "T_ADD" || type != "T_MINUS" || type != "T_AND" || type != "T_OR" || type != "T_NOT" || type != "T_LESSTHAN" || type != "T_LESSTHANEQUAL" || type != "T_GREATERTHAN" || type != "T_GREATERTHANEQUAL" || type != "T_EQUALTO" || type != "T_NOTEQUALTO" || type != "T_ASSIGN" || type != "T_MULT" || type != "T_DIVIDE" ){
@@ -85,30 +84,34 @@ bool Symbol::insertTC(std::string ident, std::string TT){
 	else if (TT == "T_STRINGVAL"){  T_C.type = "V_STRING"; }
 	else if (TT == "T_CHARVAL"){  T_C.type = "V_CHAR"; }
 
-	if (type_check.size() == 0){
-		type_check.push_back(T_C);
-		
-	} else { 
-		for (int i = 0; i < type_check.size(); i++){
-			if ((type_check[i].type == "V_INTEGER" && ident == "V_FLOAT") || (type_check[i].type == "V_FLOAT" && ident == "V_INTEGER")){
-				// Floats and Integers should be able to be compared
-			} else if (type_check[i].type != T_C.type){
-				type_match = false; 
-			}
-
-			temp = returnValType(type_check[i].ident); 	
-			if (temp.is_array != sym.is_array){ 		
-				type_match = false;
-			} 
-
-			if (temp.array_size != sym.array_size){ 		
-				type_match = false;
-			} 
-		}
-		if (type_match){ 
+	//if (sym.proc == current_proc || sym.proc == "GLOBAL"){
+		if (type_check.size() == 0){
 			type_check.push_back(T_C);
+			
+		} else { 
+			for (int i = 0; i < type_check.size(); i++){
+				if ((type_check[i].type == "V_INTEGER" && ident == "V_FLOAT") || (type_check[i].type == "V_FLOAT" && ident == "V_INTEGER")){
+					// Floats and Integers should be able to be compared
+				} else if (type_check[i].type != T_C.type){
+					type_match = false; 
+				}
+
+				temp = returnValType(type_check[i].ident); 	
+				if (temp.is_array != sym.is_array){ 		
+					type_match = false;
+				} 
+
+				if (temp.array_size != sym.array_size){ 		
+					type_match = false;
+				} 
+			}
+			if (type_match){ 
+				type_check.push_back(T_C);
+			}
 		}
-	}
+	//} else {
+	//	type_match = false;
+	//}
 	//}
 	return type_match;
 }
@@ -163,7 +166,7 @@ void Symbol::modify(std::string ident, std::string num, char c){
 void Symbol::resetPos(){ pos = head; }
 
 // Finds the type of the input identifier
-symbolNode Symbol::returnValType(std::string ident){
+symbolNode Symbol::returnValType(std::string ident){			
 	symbolNode sym; bool type_found = false;
 
 	std::map <std::string, symbolNode> :: iterator itr;
@@ -174,18 +177,22 @@ symbolNode Symbol::returnValType(std::string ident){
         }
     }
 
-    if (!type_found){
-    	for (int i = 0; i < size; i++){
-			if (current_proc == pos->getName()){
-				sym = pos->returnValType(ident);
+    if (!type_found){ 
+    	resetPos();	
+    	for (int i = 0; i < size; i++){ //
+    		
+			if (current_proc == pos->getName()){ 	//LLLLL
+				sym = pos->returnValType(ident);		
 				if (sym.type != "NULL"){
 					type_found = true;
 				}
+
 				break;
-			} else {
+			} else { 
+
 				pos = pos->getNext();
 			}
-		}
+		} 
     }
 
     if (!type_found){
@@ -198,7 +205,7 @@ symbolNode Symbol::returnValType(std::string ident){
 void Symbol::init(std::string token, std::string value, symbolNode sym)
 {	
 	//if (prev2_TT_LB ){ cout << token << endl;}
-
+//cout << value << endl;
 	if (prev_TT_SEMICOLON && token == "T_NUMBERVAL"){ 
 		modify(last_ident, value, 'R'); 
 	}
@@ -233,7 +240,7 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 		}
 
 		//If tok was glabol 2 toks ago && value doesn't exist in global && prev tok is a type mark
-		if ((prev2_TT_glob && newCheckGlobal(value)) && (prev_TT_int || prev_TT_flt || prev_TT_str || prev_TT_bool || prev_TT_char)){
+		if ((prev2_TT_glob && newCheckGlobal(value, sym)) && (prev_TT_int || prev_TT_flt || prev_TT_str || prev_TT_bool || prev_TT_char)){
 			insertGlobal(value, sym);
 		} else if (prev_TT_proc){
 			newProc(value);
@@ -243,7 +250,7 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 
 		} else {
 			//Check the scopes
-			check(value);
+			check(value, sym);
 		}
 		prev_TT_IDENT = true;
 	} else {prev_TT_IDENT = false;  }
@@ -266,14 +273,17 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 	if (token == "T_PROGRAM"){prev_TT_prog = true;} else {prev_TT_prog = false;}
 	if (token == "T_PROCEDURE"){prev_TT_proc = true;} else {prev_TT_proc = false;}
 	if (token == "T_END"){prev_TT_end = true;} else {prev_TT_end = false;}	
+
+	//cout << "END" << endl;
 }
 
 void Symbol::insertValue(std::string key, symbolNode sym)
 { 
-	if (newCheck(key)){
+	if (newCheck(key, sym)){
 		resetPos();
 		for (int i = 0; i < size; i++){
 			if (current_proc == pos->getName()){
+				sym.proc = current_proc;
 				pos->insertValue(key, sym);
 				break;
 			} else {
@@ -283,18 +293,20 @@ void Symbol::insertValue(std::string key, symbolNode sym)
 	}	  
 }
 void Symbol::insertGlobal(std::string key, symbolNode sym){ 
-	if (newCheckGlobal(key)){
+	if (newCheckGlobal(key, sym)){
+		sym.proc = "GLOBAL";
 		global[key] = sym;
 	}
 }
 
-bool Symbol::newCheckGlobal(std::string input)
-{
+bool Symbol::newCheckGlobal(std::string input, symbolNode sym)
+{ 	
+
 	bool checker = true;
 	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = global.begin(); itr != global.end(); ++itr){
-        if (itr->first == input){
-        	error(input, 0);
+        if (itr->first == input){										//KKKKK
+        	sym_error_handler.error(sym.line_num, 0, input);
         	checker = false;
         }
     }
@@ -387,13 +399,13 @@ bool Symbol::procCheck(std::string input)
 	return checker;
 }
 
-bool Symbol::newCheck(std::string input)
+bool Symbol::newCheck(std::string input, symbolNode sym)
 {
 	bool checker = true;
 	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = global.begin(); itr != global.end(); ++itr){
         if (itr->first == input){
-        	error(input, 0);
+        	sym_error_handler.error(sym.line_num, 0, input);
         	checker = false;
         }
     }
@@ -413,7 +425,7 @@ bool Symbol::newCheck(std::string input)
 }
 
 //Checks to see if identifier is declared
-bool Symbol::check(std::string input)
+bool Symbol::check(std::string input, symbolNode sym)
 {
 	bool declared = false;
 	std::map <std::string, symbolNode> :: iterator itr;
@@ -440,8 +452,8 @@ bool Symbol::check(std::string input)
 	}
 
 
-	if (!declared){
-		error(input, 1);
+	if (!declared){ 
+		sym_error_handler.error(sym.line_num, 1, input);
 	}
 
 	return declared;
@@ -513,7 +525,7 @@ void ProcedureNode::printTable()
 	std::cout << "Name: " << name << '\n'<< '\n';
 	for (itr = table.begin(); itr != table.end(); ++itr){
         std::cout  <<  '\t' << itr->first 
-              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' ' <<  '\t';
+              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' '  <<  '\t';
       	if ((itr->second).is_array){
       		cout << "Is Array" << ' ' << '\t' << (itr->second).array_size << endl;
       	} else {

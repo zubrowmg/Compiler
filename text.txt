@@ -3,7 +3,7 @@
 PROGRAM grant IS
 	global char jake; //sdaf
 	global char ryan;
-	global integer zach[1:6];
+	global integer zach;
 
 	procedure if_proc()
 		integer declaration;
@@ -17,7 +17,7 @@ PROGRAM grant IS
 	procedure for_proc()
                 integer i;
 		begin
-			//ryan := jake + i;			
+			declaration := i + i;			
 	end procedure;
 
 	begin
