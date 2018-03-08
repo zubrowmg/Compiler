@@ -67,6 +67,9 @@ class ParseTree
         bool expression_flag;
         bool expression_done;
         int expression_count;
+        bool assignment_flag;
+        bool assignment_done;
+        int assignment_count;
 
     public:
     	ParseTree(void);
@@ -100,7 +103,8 @@ class ParseTree
         ParseNode *travel(ParseNode *input);
 
         bool getExpressFlag();
-        ParseNode *setExpressFlag(ParseNode *start);
+        bool getAssignmentFlag();
+        //ParseNode *setExpressFlag(ParseNode *start);
 };
 
 #endif

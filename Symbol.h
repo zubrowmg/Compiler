@@ -16,8 +16,7 @@ struct symbolNode{
 };
 
 struct TCNode{
-    std::string ident, type;
-    
+    std::string ident, type;  
 };
 
 class ProcedureNode
@@ -66,7 +65,7 @@ class Symbol
         bool prev2_TT_glob, prev_TT_glob, prev_TT_proc, prev_TT_end, prev_TT_int;
         bool prev_TT_prog, prev_TT_flt, prev_TT_str, prev_TT_bool, prev_TT_char;
         bool prev_TT_SEMICOLON, prev_TT_LB, prev_TT_IDENT, prev2_TT_LB;  
-        std::vector<TCNode> type_check;
+        std::vector<TCNode> type_check; std::vector<TCNode> type_check_AS;
         std::string last_ident;
 
     public:
@@ -100,6 +99,9 @@ class Symbol
 
         void modify(std::string ident);
         void modify(std::string ident, std::string num, char c);
+
+        void clearTC_AS();
+        bool insertTC_AS(std::string ident, std::string TT);
 };
 
 #endif

@@ -67,6 +67,9 @@ ParseTree::ParseTree(void)
 	expression_flag = false;
 	expression_done = false;
 	expression_count = 0;
+	assignment_flag = false;
+	assignment_done = false;
+	assignment_count = 0;
 }
 
 bool ParseTree::getLegit(){return is_legit;}
@@ -78,8 +81,8 @@ void ParseTree::clearNewNode(){ParseNode *temp = new ParseNode; new_node = temp;
 void ParseTree::clearTempNode(){ParseNode *temp = new ParseNode; temp_node = temp;}
 void ParseTree::printTree(){ printTree(treeroot);}
 bool ParseTree::getExpressFlag(){ return expression_flag;}
-
-ParseNode *ParseTree::setExpressFlag(ParseNode *start)
+bool ParseTree::getAssignmentFlag(){ return assignment_flag;}
+/*ParseNode *ParseTree::setExpressFlag(ParseNode *start)
 {	
 	if (start->getToken() == "<expression>" && get_new_pos){
  		expression_flag = false; expression_count++;
@@ -99,7 +102,7 @@ ParseNode *ParseTree::setExpressFlag(ParseNode *start)
  	
 
 	return start->getRoot();			
-}
+}*/
 
 ParseNode *ParseTree::printTree(ParseNode *node)
 {
@@ -116,6 +119,9 @@ ParseNode *ParseTree::findStart(ParseNode *start)
 	if (start->getToken() == "<expression>" ){
  		expression_flag = true; expression_count++;
  	}
+ 	if (start->getToken() == "<assignment_statement>" ){
+ 		assignment_flag = true; assignment_count++;
+ 	}
 
 	if (!(start->getLeft() == NULL)){findStart(start->getLeft());}
 	if (!(start->getMiddle() == NULL)){findStart(start->getMiddle());}
@@ -129,6 +135,10 @@ ParseNode *ParseTree::findStart(ParseNode *start)
 	
  	if (start->getToken() == "<expression>" && get_new_pos && expression_count > 0){
  		expression_flag = false;
+ 	}
+
+ 	if (start->getToken() == "<assignment_statement>" && get_new_pos && assignment_count > 0){
+ 		assignment_flag = false;
  	}
 
 	return start->getRoot();			
@@ -660,22 +670,26 @@ void ParseTree::createnode_3(){
 	} else if (pos->getToken() == "<statement1>"){ pos->setOption((pos->getOption()) + 1);	
 		
 		if (pos->getOption() == 1){	
+			assignment_flag = true;
 			temp_node->setToken("<identifier>"); newTempNode();												
 			temp_node->setToken("<statement2>"); newTempNode();
 
 			pos = pos->getLeft();
 			createnode_3();		
 		} else {
+			//assignment_flag = false;
 			backUp();
 		}
 	} else if (pos->getToken() == "<statement2>"){ pos->setOption((pos->getOption()) + 1);	
 	
 		if (pos->getOption() == 1){	
+			//assignment_flag = true;
 			temp_node->setToken("<assignment_statement>"); newTempNode();						
 
 			pos = pos->getLeft();
 			createnode_3();		
 		} else if (pos->getOption() == 2){	
+			assignment_flag = false;
 			temp_node->setToken("<procedure_call>"); newTempNode();						
 
 			pos = pos->getLeft();
@@ -744,6 +758,7 @@ void ParseTree::createnode_3(){
 --------------------------------------------------*/
  	else if (pos->getToken() == "<assignment_statement>"){ pos->setOption((pos->getOption()) + 1);			
 			
+
 		if (pos->getOption() == 1){						
 			temp_node->setToken("<destination>"); newTempNode();
 
@@ -752,6 +767,7 @@ void ParseTree::createnode_3(){
 			pos = pos->getLeft();
 			createnode_3();				
 		} else {
+			
 			backUp();
 		}
 	} else if (pos->getToken() == "<assignment_statement1>"){ pos->setOption((pos->getOption()) + 1);	

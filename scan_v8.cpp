@@ -462,6 +462,9 @@ list scan(char *argv[]){
 					while (c != '\n' || c == (-1)){
 						inFile.get(c);
 					}
+					if (c == '\n'){
+						line_counter++;
+					}
 				} else if(c == '*'){
 					inFile.get(c);
 					nest_comment = true;
@@ -536,10 +539,10 @@ bool parameter_check(int argc, char *argv[]){
 }
 
 void parser(list scan_list){
-	ParseTree tree; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true;
+	ParseTree tree; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true; bool type_match2 = true;
 
 /*--------------------------------  
-	Symbol Table and Parser 			reorder ST and Par
+	Symbol Table and Parser 			
 --------------------------------*/
   	scan_list.reset_pos();
 	for (int i = 0; i < scan_list.get_size(); i++){
@@ -561,8 +564,16 @@ void parser(list scan_list){
 			sym.clearTC();
 		}
 
+		if (tree.getAssignmentFlag() && (temp.type == "T_IDENTIFIER")){
+			type_match2 = sym.insertTC_AS(temp.stringValue, temp.type);
+//cout << temp.stringValue << endl;
+		}  if (!tree.getAssignmentFlag()){		
+			sym.clearTC_AS();
+		}
+
 		if (!type_match){error_handler.error(temp.line, 8); type_match = true; }
-	
+		if (!type_match2){error_handler.error(temp.line, 9); type_match2 = true; }
+
 		if (!(tree.getLegit()) && error_count < 2){
 			error_handler.error(temp.line, 2, temp.stringValue);			
 			error_count++;
