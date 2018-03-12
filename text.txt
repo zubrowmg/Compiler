@@ -1,15 +1,15 @@
 //leaving off end of program period.  is it correct?  officially no, but should we compile and simply issue a warning?  i leave that up to you.
 
 PROGRAM grant IS
-	global char jake; //sdaf
+	global char jake; // [5:7]
 	global char ryan;
-	global integer zach;
+	global integer zach[5:7] ;
 
 	procedure if_proc()
 		integer declaration;
 		integer k;
 		begin
-			zach := declaration + k;
+			zach [5] := declaration + k;
 			
 		
 	end procedure;
@@ -17,7 +17,7 @@ PROGRAM grant IS
 	procedure for_proc()
                 integer i;
 		begin
-			declaration := i + i;			
+			//i := i + i;			
 	end procedure;
 
 	begin

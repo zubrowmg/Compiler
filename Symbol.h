@@ -17,6 +17,11 @@ struct symbolNode{
 
 struct TCNode{
     std::string ident, type;  
+    bool array_single_access;
+    TCNode()
+    {
+        //array_single_access  = false;
+    }
 };
 
 class ProcedureNode
@@ -106,6 +111,12 @@ class Symbol
 
         void clearTC_AS();
         bool insertTC_AS(std::string ident, std::string TT);
+
+        bool modifyTC(std::string ident, std::string TT);
+        bool modifyTC_AS(std::string ident, std::string TT);
+        //bool MC(std::string ident, std::string TT);
+        bool MC();
+        bool MC_AS();
 };
 
 #endif
