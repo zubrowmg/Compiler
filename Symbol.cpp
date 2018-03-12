@@ -47,22 +47,7 @@ bool Symbol::insertTC_AS(std::string ident, std::string TT){
 		type_check_AS.push_back(T_C);
 		
 	} else { 
-		for (int i = 0; i < type_check_AS.size(); i++){
-			if ((type_check_AS[i].type == "V_INTEGER" && ident == "V_FLOAT") || (type_check_AS[i].type == "V_FLOAT" && ident == "V_INTEGER")){
-				// Floats and Integers should be able to be compared
-			} else if (type_check_AS[i].type != T_C.type){
-				type_match = false; 
-			}
-
-			temp = returnValType(type_check_AS[i].ident); 	
-			if (temp.is_array != sym.is_array){ 		
-				type_match = false;
-			} 
-
-			if (temp.array_size != sym.array_size){ 		
-				type_match = false;
-			} 
-		}
+		
 		if (type_match){ 
 			type_check_AS.push_back(T_C);
 		}
@@ -77,42 +62,150 @@ bool Symbol::insertTC(std::string ident, std::string TT){
 	bool type_match = true; symbolNode sym; symbolNode temp; TCNode T_C; T_C.ident = ident; 
 	std::string type;
 	sym = returnValType(ident);
-	T_C.type = sym.str_val; 
+	T_C.type = sym.str_val;  T_C.array_single_access = false;
 //cout << type << endl;	
 	//if (type != "T_ADD" || type != "T_MINUS" || type != "T_AND" || type != "T_OR" || type != "T_NOT" || type != "T_LESSTHAN" || type != "T_LESSTHANEQUAL" || type != "T_GREATERTHAN" || type != "T_GREATERTHANEQUAL" || type != "T_EQUALTO" || type != "T_NOTEQUALTO" || type != "T_ASSIGN" || type != "T_MULT" || type != "T_DIVIDE" ){
 	if (TT == "T_NUMBERVAL"){  T_C.type = "V_INTEGER"; }
 	else if (TT == "T_STRINGVAL"){  T_C.type = "V_STRING"; }
 	else if (TT == "T_CHARVAL"){  T_C.type = "V_CHAR"; }
 
-	//if (sym.proc == current_proc || sym.proc == "GLOBAL"){
-		if (type_check.size() == 0){
+
+	if (type_check.size() == 0){
+		type_check.push_back(T_C);
+		
+	} else { 
+		//type_match = MC(ident, TT);
+		if (type_match){ 
 			type_check.push_back(T_C);
-			
-		} else { 
-			for (int i = 0; i < type_check.size(); i++){
-				if ((type_check[i].type == "V_INTEGER" && ident == "V_FLOAT") || (type_check[i].type == "V_FLOAT" && ident == "V_INTEGER")){
-					// Floats and Integers should be able to be compared
-				} else if (type_check[i].type != T_C.type){
-					type_match = false; 
-				}
-
-				temp = returnValType(type_check[i].ident); 	
-				if (temp.is_array != sym.is_array){ 		
-					type_match = false;
-				} 
-
-				if (temp.array_size != sym.array_size){ 		
-					type_match = false;
-				} 
-			}
-			if (type_match){ 
-				type_check.push_back(T_C);
-			}
 		}
-	//} else {
-	//	type_match = false;
-	//}
-	//}
+	}
+	
+	return type_match;
+}
+
+/*bool Symbol::MC(std::string ident, std::string TT){
+	bool type_match = true; TCNode T_C; T_C.ident = ident; symbolNode sym; symbolNode temp;
+	sym = returnValType(ident); T_C.type = sym.str_val;
+	for (int i = 0; i < type_check.size(); i++){
+		if ((type_check[i].type == "V_INTEGER" && ident == "V_FLOAT") || (type_check[i].type == "V_FLOAT" && ident == "V_INTEGER")){
+			// Floats and Integers should be able to be compared
+		} else if (type_check[i].type != T_C.type){
+			type_match = false; 
+		}
+
+		temp = returnValType(type_check[i].ident); 	
+		
+
+		if (temp.is_array != sym.is_array){ 		
+			type_match = false;
+		} 
+
+		if (temp.array_size != sym.array_size){ 		
+			type_match = false;
+		} 
+	}
+	return type_match;
+}*/
+
+bool Symbol::MC(){
+	bool type_match = true; bool flag = false;
+	TCNode head;
+
+	symbolNode h_sym; symbolNode temp_sym;
+	
+	for (int j = 0; j < type_check.size(); j++){
+		head = type_check[j];
+		h_sym = returnValType(head.ident);
+
+		for (int i = 0; i < type_check.size(); i++){
+			if ((type_check[i].type == "V_INTEGER" && head.type == "V_FLOAT") || (type_check[i].type == "V_FLOAT" && head.type == "V_INTEGER")){
+				// Floats and Integers should be able to be compared
+			} else if (type_check[i].type != head.type){
+				type_match = false; 
+			}
+
+			temp_sym = returnValType(type_check[i].ident); 	
+			
+			if ((!h_sym.is_array && temp_sym.is_array && !type_check[i].array_single_access)
+					|| (h_sym.is_array && head.array_single_access && temp_sym.is_array && !type_check[i].array_single_access)
+					|| (h_sym.is_array && !head.array_single_access && temp_sym.is_array && type_check[i].array_single_access)){
+				
+				type_match = false; flag = true;
+			}
+
+			if (flag && (h_sym.is_array != temp_sym.is_array)){
+				type_match = false; 
+			}
+
+			if (h_sym.is_array && head.array_single_access && temp_sym.is_array && type_check[i].array_single_access && (temp_sym.array_size != h_sym.array_size)){ 		
+				type_match = false; 
+			}
+
+			flag = false;
+		}
+	}
+	return type_match;
+}
+
+bool Symbol::MC_AS(){
+	bool type_match = true; bool flag = false;
+	TCNode head;
+
+	symbolNode h_sym; symbolNode temp_sym;
+
+	for (int j = 0; j < type_check_AS.size(); j++){
+		head = type_check_AS[j];
+		h_sym = returnValType(head.ident);
+
+		for (int i = 0; i < type_check_AS.size(); i++){
+			if ((type_check_AS[i].type == "V_INTEGER" && head.type == "V_FLOAT") || (type_check_AS[i].type == "V_FLOAT" && head.type == "V_INTEGER")){
+				// Floats and Integers should be able to be compared
+			} else if (type_check_AS[i].type != head.type){
+				type_match = false; 
+			}
+
+			temp_sym = returnValType(type_check_AS[i].ident); 	
+			
+			if ((!h_sym.is_array && temp_sym.is_array && !type_check_AS[i].array_single_access)
+					|| (h_sym.is_array && head.array_single_access && temp_sym.is_array && !type_check_AS[i].array_single_access)
+					|| (h_sym.is_array && !head.array_single_access && temp_sym.is_array && type_check_AS[i].array_single_access)){
+				
+				type_match = false; flag = true;  
+			} 
+
+			if (flag && (h_sym.is_array != temp_sym.is_array)){
+				type_match = false; 
+			}
+
+			if (h_sym.is_array && head.array_single_access && temp_sym.is_array && type_check_AS[i].array_single_access && (temp_sym.array_size != h_sym.array_size)){ 		
+				type_match = false; 
+			}
+
+			flag = false;
+		}
+	}
+	return type_match;
+}
+
+bool Symbol::modifyTC(std::string ident, std::string TT){ 
+	bool modified = false; bool type_match = true;
+	for (int i = 0; i < type_check.size(); i++){
+		if (last_ident == type_check[i].ident){
+			type_check[i].array_single_access = true; 
+		}
+	}
+
+	return type_match;
+}
+
+bool Symbol::modifyTC_AS(std::string ident, std::string TT){ 
+	bool modified = false; bool type_match = true;
+	for (int i = 0; i < type_check_AS.size(); i++){
+		if (last_ident == type_check_AS[i].ident){
+			type_check_AS[i].array_single_access = true; 
+		}
+	}
+
 	return type_match;
 }
 

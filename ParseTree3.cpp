@@ -697,7 +697,7 @@ void ParseTree::createnode_3(){
 		} else {
 			backUp();
 		}
-	}  else if (pos->getToken() == "<statement3>"){ pos->setOption((pos->getOption()) + 1);	
+	} /*else if (pos->getToken() == "<statement3>"){ pos->setOption((pos->getOption()) + 1);	
 	
 		if (pos->getOption() == 1){	
 			temp_node->setToken("<identifier>"); newTempNode();	
@@ -708,7 +708,7 @@ void ParseTree::createnode_3(){
 		} else {
 			backUp();
 		}
-	}
+	} */
 /*--------------------------------------------------  
 	<procedure_call>
 --------------------------------------------------*/
@@ -799,7 +799,9 @@ void ParseTree::createnode_3(){
 	} else if (pos->getToken() == "<destination1>"){ pos->setOption((pos->getOption()) + 1);					
 		if (pos->getOption() == 1){																				
 			temp_node->setToken("<T_LBRACKET>"); newTempNode();
-			temp_node->setToken("<destination2>"); newTempNode();
+			temp_node->setToken("<expression>"); newTempNode();
+
+			temp_node->setToken("<T_RBRACKET>"); newTempNode();
 
 			pos = pos->getLeft();
 			createnode_3();				
@@ -811,7 +813,7 @@ void ParseTree::createnode_3(){
 		}else {
 			backUp();
 		}
-	} else if (pos->getToken() == "<destination2>"){ pos->setOption((pos->getOption()) + 1);					
+	} /*else if (pos->getToken() == "<destination2>"){ pos->setOption((pos->getOption()) + 1);					
 		if (pos->getOption() == 2){													
 			temp_node->setToken("<expression>"); newTempNode();
 
@@ -822,7 +824,7 @@ void ParseTree::createnode_3(){
 		} else {
 			backUp();
 		}
-	}
+	}*/
 /*--------------------------------------------------  
 	<if_statement>
 --------------------------------------------------*/
