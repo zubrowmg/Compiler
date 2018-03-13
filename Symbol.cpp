@@ -116,7 +116,7 @@ bool Symbol::MC(){
 	for (int j = 0; j < type_check.size(); j++){
 		head = type_check[j];
 		h_sym = returnValType(head.ident);
-
+//cout << "EX" << " " << head.ident << " " << head.type << " " << head.array_single_access << endl;
 		for (int i = 0; i < type_check.size(); i++){
 			if ((type_check[i].type == "V_INTEGER" && head.type == "V_FLOAT") || (type_check[i].type == "V_FLOAT" && head.type == "V_INTEGER")){
 				// Floats and Integers should be able to be compared
@@ -128,7 +128,8 @@ bool Symbol::MC(){
 			
 			if ((!h_sym.is_array && temp_sym.is_array && !type_check[i].array_single_access)
 					|| (h_sym.is_array && head.array_single_access && temp_sym.is_array && !type_check[i].array_single_access)
-					|| (h_sym.is_array && !head.array_single_access && temp_sym.is_array && type_check[i].array_single_access)){
+					|| (h_sym.is_array && !head.array_single_access && temp_sym.is_array && type_check[i].array_single_access)
+					|| (!h_sym.is_array && head.array_single_access) ){
 				
 				type_match = false; flag = true;
 			}
@@ -156,7 +157,7 @@ bool Symbol::MC_AS(){
 	for (int j = 0; j < type_check_AS.size(); j++){
 		head = type_check_AS[j];
 		h_sym = returnValType(head.ident);
-
+//cout << head.ident << " " << head.type << " " << head.array_single_access << endl;
 		for (int i = 0; i < type_check_AS.size(); i++){
 			if ((type_check_AS[i].type == "V_INTEGER" && head.type == "V_FLOAT") || (type_check_AS[i].type == "V_FLOAT" && head.type == "V_INTEGER")){
 				// Floats and Integers should be able to be compared
@@ -168,7 +169,8 @@ bool Symbol::MC_AS(){
 			
 			if ((!h_sym.is_array && temp_sym.is_array && !type_check_AS[i].array_single_access)
 					|| (h_sym.is_array && head.array_single_access && temp_sym.is_array && !type_check_AS[i].array_single_access)
-					|| (h_sym.is_array && !head.array_single_access && temp_sym.is_array && type_check_AS[i].array_single_access)){
+					|| (h_sym.is_array && !head.array_single_access && temp_sym.is_array && type_check_AS[i].array_single_access)
+					|| (!h_sym.is_array && head.array_single_access) ){
 				
 				type_match = false; flag = true;  
 			} 
@@ -308,11 +310,11 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 	} else {prev_TT_SEMICOLON = false;} 
 
 	if (prev_TT_LB && token == "T_NUMBERVAL"){ 
-		modify(last_ident, value, 'L'); prev2_TT_LB = true; 			
+		modify(last_ident, value, 'L'); prev2_TT_LB = true; 	 		
 	} else {prev2_TT_LB = false;}
 
-	if (prev_TT_IDENT && token == "T_LBRACKET"){ 
-		modify(last_ident); prev_TT_LB = true;
+	if ((prev2_TT_int || prev2_TT_flt || prev2_TT_str || prev2_TT_bool || prev2_TT_char) && prev_TT_IDENT && token == "T_LBRACKET"){ 						// NNNNNNN
+		modify(last_ident); prev_TT_LB = true; //cout << "HI";
 	} else {prev_TT_LB = false; }
 //last_ident = "NULL";
 
@@ -353,6 +355,13 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 	if (prev_TT_end && token == "T_PROCEDURE"){
 		endProc();
 	}
+
+
+	if (prev_TT_int){prev2_TT_int = true;} else {prev2_TT_int = false;}
+	if (prev_TT_flt){prev2_TT_flt = true;} else {prev2_TT_flt = false;}
+	if (prev_TT_str){prev2_TT_str = true;} else {prev2_TT_str = false;}
+	if (prev_TT_bool){prev2_TT_bool = true;} else {prev2_TT_bool = false;}
+	if (prev_TT_char){prev2_TT_char = true;} else {prev2_TT_char = false;}
 
 	if (token == "T_INTEGER"){prev_TT_int = true;} else {prev_TT_int = false;}
 	if (token == "T_FLOAT"){prev_TT_flt = true;} else {prev_TT_flt = false;}

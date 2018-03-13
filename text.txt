@@ -3,21 +3,21 @@
 PROGRAM grant IS
 	global char jake; // [5:7]
 	global char ryan;
-	global integer zach[5:7] ;
+	global integer zach[5:7];  
 
 	procedure if_proc()
-		integer declaration;
+		integer declaration[5:7];
 		integer k;
 		begin
-			zach [5] := declaration + k;
-			
+			zach4] := declaration[6] + k;
+			//zach [5] := declaration + k;
 		
 	end procedure;
 
 	procedure for_proc()
                 integer i;
 		begin
-			//i := i + i;			
+			i := i + i;			
 	end procedure;
 
 	begin

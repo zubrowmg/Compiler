@@ -538,10 +538,10 @@ bool parameter_check(int argc, char *argv[]){
 	} 	
 }
 
-void parser(list scan_list){
-	ParseTree tree; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true; bool type_match2 = true;
-	bool last_T_ident = false; bool expression = false; bool last_T_LBRACK = false, assignment = false;
-
+bool parser(list scan_list){
+	ParseTree tree; ParseTree snapshot; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true; bool type_match2 = true;
+	bool last_T_ident = false; bool expression = false; bool last_T_LBRACK = false, assignment = false, last2_T_ident = false;
+	bool snapshot_restored = false;
 /*--------------------------------  
 	Symbol Table and Parser 			
 --------------------------------*/
@@ -549,79 +549,97 @@ void parser(list scan_list){
 	for (int i = 0; i < scan_list.get_size(); i++){
 		temp = scan_list.get_one();
 
-		tree.setNewNode(temp.type);
+	//-------- Parse Tree --------//
+		tree.setNewNode(temp.type, temp.stringValue);
 		tree.createnode_2(temp.type);
 		tree.clearNewNode();
+		tree.setSym(sym);
 
+		if (!tree.getProgBodyFlag()){
+			snapshot = tree;
+		}
+
+	//-------- Symbol Table --------//
 		symbol_temp.type = temp.type; 
 		symbol_temp.line_num = temp.line;
 		symbol_temp.str_val = temp.stringValue;
 		sym.init(temp.type,temp.stringValue, symbol_temp);
-//cout << temp.line << endl;
-		
-		if(!last_T_LBRACK){
-			if (tree.getExpressFlag() && (temp.type == "T_IDENTIFIER" || temp.type == "T_NUMBERVAL" || temp.type == "T_STRINGVAL" || temp.type == "T_CHARVAL" || temp.type == "T_FALSE" || temp.type == "T_TRUE" || (last_T_ident && temp.type == "T_LBRACKET"))){
-				if (last_T_ident && temp.type == "T_LBRACKET"){
-					sym.modifyTC(temp.stringValue, temp.type);				
-				} else {
-					sym.insertTC(temp.stringValue, temp.type);
-				}
-				expression = true;
-			} if (!tree.getExpressFlag() && expression){
-				type_match = sym.MC();			
-			} if (!tree.getExpressFlag() && expression){
-				sym.clearTC(); expression = false;			
-			}
 
-			if (tree.getAssignmentFlag() && (temp.type == "T_IDENTIFIER" || (last_T_ident && temp.type == "T_LBRACKET"))  ){		
-				if (last_T_ident && temp.type == "T_LBRACKET"){
-					sym.modifyTC_AS(temp.stringValue, temp.type);
-				} else {
-					sym.insertTC_AS(temp.stringValue, temp.type);
-				}
-				assignment = true;
-			}  
-	//cout << symbol_temp.str_val << endl;
-			if (!tree.getAssignmentFlag() && assignment){
-				type_match2 = sym.MC_AS();		
-				sym.clearTC_AS(); assignment = false;
-			}
 
-			if (temp.type == "T_IDENTIFIER"){
-				last_T_ident = true;
-			} else {
-				last_T_ident = false;
-			}
-
-			if (!type_match){error_handler.error(temp.line, 8); type_match = true; }
-			if (!type_match2){error_handler.error(temp.line, 9); type_match2 = true; }
-
-			if (!(tree.getLegit()) && error_count < 2){
-				error_handler.error(temp.line, 2, temp.stringValue);	cout << temp.type << endl;		
-				error_count++;
-			} 
-		}
+	//-------- Type Checking --------//		
+	//if(!last_T_LBRACK){
 
 		if (temp.type == "T_LBRACKET"){
-			last_T_LBRACK = true;
+			last_T_LBRACK = true; 
 		} if (last_T_LBRACK && temp.type == "T_RBRACKET"){
 			last_T_LBRACK = false; 
 		}
+//cout << "\t" << temp.stringValue << tree.getExpressFlag() << endl;
+		if (tree.getExpressFlag() && (temp.type == "T_IDENTIFIER" || temp.type == "T_NUMBERVAL" || temp.type == "T_STRINGVAL" || temp.type == "T_CHARVAL" || temp.type == "T_FALSE" || temp.type == "T_TRUE" || (last2_T_ident && last_T_LBRACK))){
+			if (last2_T_ident && last_T_LBRACK){
+				sym.modifyTC(temp.stringValue, temp.type);		//cout << 7;		
+			} else {
+				sym.insertTC(temp.stringValue, temp.type); //cout << 8;
+			}
+			expression = true;
+		} if (!tree.getExpressFlag() && expression){
+			type_match = sym.MC();			
+		} if (!tree.getExpressFlag() && expression){
+			sym.clearTC(); expression = false;			
+		}
+
+
+		if (tree.getAssignmentFlag() && (temp.type == "T_IDENTIFIER" || (last2_T_ident && last_T_LBRACK))  ){	
+//cout << temp.stringValue << endl;	
+			if (last2_T_ident && last_T_LBRACK){
+				sym.modifyTC_AS(temp.stringValue, temp.type);
+			} else {
+				sym.insertTC_AS(temp.stringValue, temp.type);
+			}
+			assignment = true;
+		}  
+		if (!tree.getAssignmentFlag() && assignment){
+			type_match2 = sym.MC_AS();		
+			sym.clearTC_AS(); assignment = false;
+		}
+
+
+		if (!type_match){error_handler.error(temp.line, 8); type_match = true; }
+		if (!type_match2){error_handler.error(temp.line, 9); type_match2 = true; }		
+	
+
+		if (last_T_ident){ last2_T_ident = true; } else {	last2_T_ident = false; }		
+		if (temp.type == "T_IDENTIFIER"){ last_T_ident = true; } else {	last_T_ident = false; }
+
 		
-	}
+	
+//-------- Tree Snapshot --------//
+		if (!(tree.getLegit()) && error_count < 10){
+			error_handler.error(temp.line, 2, temp.stringValue);	
+			tree = snapshot;
+			snapshot_restored = true;		
+			error_count++;
+		} 
+	}	
+	//}
 
  	sym.printAll();
 /*----------------------------------------------------  
 	Checks to see if the Parser passed or failed
 ----------------------------------------------------*/
 	cout << endl << "========== PARSE ==========" << endl;
-	if (tree.getLegit()){
+	if (!snapshot_restored){
 		cout << "Is Legit" << endl;
+		cout << endl;
+		cout << "===========================" << endl << endl;
+		return false;
 	} else {
 		cout << "Is Not Legit" << endl;
+		cout << endl;
+		cout << "===========================" << endl << endl;
+		return true;
 	}
-	cout << endl;
-	cout << "===========================" << endl << endl;
+	
 
 
 }	

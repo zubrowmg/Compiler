@@ -16,7 +16,8 @@ class ParseNode
 {
     private:
         ParseNode *left, *right, *middle, *root;
-        std::string token; int option; bool done, leaf, prime;
+        std::string token, ident; int option; bool done, leaf, prime;
+
         
     public:
         ParseNode(void);
@@ -37,11 +38,12 @@ class ParseNode
         void setRight(ParseNode *input);
         void setRoot(ParseNode *input);
         void setToken(std::string input);
+        void setToken(std::string input, std::string input2);
         void setOption(int input);
         void setNodeStatus(bool input);
         void setLeaf(bool input);
 
-        
+        std::string getIdent();
 };
 
 #endif
@@ -51,7 +53,7 @@ class ParseNode
 #define ParseTree_H
 
 #include <vector>
-
+#include "Symbol.h"
 class ParseTree 
 {
     private:
@@ -70,6 +72,9 @@ class ParseTree
         bool assignment_flag;
         bool assignment_done;
         int assignment_count;
+        bool prog_body_flag, name3_flag;
+
+        Symbol sym;
 
     public:
     	ParseTree(void);
@@ -86,7 +91,7 @@ class ParseTree
     	ParseNode *getTreeRoot();
     	ParseNode *getPos();
     	ParseNode *checkStatus(ParseNode *input);
-    	void setNewNode(std::string input);
+    	void setNewNode(std::string type8, std::string ident);
         void clearNewNode();
     	void deleteAll(ParseNode *input);
     	void backUp(); 
@@ -104,7 +109,9 @@ class ParseTree
 
         bool getExpressFlag();
         bool getAssignmentFlag();
-        //ParseNode *setExpressFlag(ParseNode *start);
+        bool getProgBodyFlag();
+
+        void setSym(Symbol input_sym);
 };
 
 #endif
