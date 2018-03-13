@@ -56,5 +56,5 @@ void Error::error(int line, int type, std::string var){
 ------------------------------------------------------*/
 	else if (type == 2){
 		cout << "Incorrect Symantix -  " << var << endl;
-	} 
+	}
 }

@@ -4,7 +4,7 @@
 #include <map>
 
 struct symbolNode{
-    int line_num; std::string type;
+    int line_num; std::string type; std::string proc;
     bool is_array; int array_left, array_right, array_size;
 
     std::string str_val; 
@@ -17,6 +17,11 @@ struct symbolNode{
 
 struct TCNode{
     std::string ident, type;  
+    bool array_single_access;
+    TCNode()
+    {
+        //array_single_access  = false;
+    }
 };
 
 class ProcedureNode
@@ -52,6 +57,8 @@ class ProcedureNode
 #include <map>
 #include <string>
 
+#include "Error.h"
+
 class Symbol
 {
     private:
@@ -64,9 +71,15 @@ class Symbol
         int order_size; std::string current_proc;
         bool prev2_TT_glob, prev_TT_glob, prev_TT_proc, prev_TT_end, prev_TT_int;
         bool prev_TT_prog, prev_TT_flt, prev_TT_str, prev_TT_bool, prev_TT_char;
+
+        bool prev2_TT_int;
+        bool prev2_TT_flt, prev2_TT_str, prev2_TT_bool, prev2_TT_char;
+
         bool prev_TT_SEMICOLON, prev_TT_LB, prev_TT_IDENT, prev2_TT_LB;  
         std::vector<TCNode> type_check; std::vector<TCNode> type_check_AS;
         std::string last_ident;
+        Error sym_error_handler;
+        int left_bound;
 
     public:
         Symbol();
@@ -84,9 +97,9 @@ class Symbol
         void nextPos();
 
         bool procCheck(std::string input);
-        bool newCheck(std::string input);
-        bool newCheckGlobal(std::string input); 
-        bool check(std::string input);
+        bool newCheck(std::string input, symbolNode sym);
+        bool newCheckGlobal(std::string input, symbolNode sym); 
+        bool check(std::string input, symbolNode sym);
         
         void error(std::string input, int i);
 
@@ -102,6 +115,12 @@ class Symbol
 
         void clearTC_AS();
         bool insertTC_AS(std::string ident, std::string TT);
+
+        bool modifyTC(std::string ident, std::string TT);
+        bool modifyTC_AS(std::string ident, std::string TT);
+        //bool MC(std::string ident, std::string TT);
+        bool MC();
+        bool MC_AS();
 };
 
 #endif

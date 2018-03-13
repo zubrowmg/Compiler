@@ -405,7 +405,7 @@ list scan(char *argv[]){
 			else if (c == '='){ 
 				inFile.get(c); c = tolower(c);
 				if (c == '='){
-					temp.type = "T_EQUALTO"; current_token.line = line_counter; token_list.createnode(temp);
+					temp.type = "T_EQUALTO"; temp.line = line_counter; token_list.createnode(temp);
 					
 				} else {
 					//temp.type = "T_ASSIGN"; current_token.line = line_counter; token_list.createnode(temp);
@@ -416,45 +416,45 @@ list scan(char *argv[]){
 				
 				inFile.get(c); c = tolower(c);
 				if (c == '='){
-					temp.type = "T_ASSIGN"; current_token.line = line_counter; token_list.createnode(temp);
+					temp.type = "T_ASSIGN"; temp.line = line_counter; token_list.createnode(temp);
 					
 				} else {
-					temp.type = "T_COLON"; current_token.line = line_counter; token_list.createnode(temp);
+					temp.type = "T_COLON"; temp.line = line_counter; token_list.createnode(temp);
 					grab_prev_c = true;
 				}	
 			}
-			else if (c == '&'){ temp.type = "T_AND"; current_token.line = line_counter; token_list.createnode(temp);}
-			else if (c == '|'){ temp.type = "T_OR"; current_token.line = line_counter; token_list.createnode(temp);}
-			else if (c == '+'){ temp.type = "T_ADD"; current_token.line = line_counter; token_list.createnode(temp);}
-			else if (c == '-'){ temp.type = "T_MINUS"; current_token.line = line_counter; token_list.createnode(temp);}
+			else if (c == '&'){ temp.type = "T_AND"; temp.line = line_counter; token_list.createnode(temp);}
+			else if (c == '|'){ temp.type = "T_OR"; temp.line = line_counter; token_list.createnode(temp);}
+			else if (c == '+'){ temp.type = "T_ADD"; temp.line = line_counter; token_list.createnode(temp);}
+			else if (c == '-'){ temp.type = "T_MINUS"; temp.line = line_counter; token_list.createnode(temp);}
 			else if (c == '<'){ 
 				inFile.get(c); c = tolower(c);
 				if (c == '='){
-					temp.type = "T_LESSTHANEQUAL"; current_token.line = line_counter; token_list.createnode(temp);
+					temp.type = "T_LESSTHANEQUAL"; temp.line = line_counter; token_list.createnode(temp);
 				} else {
-					temp.type = "T_LESSTHAN"; current_token.line = line_counter; token_list.createnode(temp);
+					temp.type = "T_LESSTHAN"; temp.line = line_counter; token_list.createnode(temp);
 					grab_prev_c = true;
 				}				
 			}
 			else if (c == '>'){ 			
 				inFile.get(c); c = tolower(c);
 				if (c == '='){
-					temp.type = "T_GREATERTHANEQUAL"; current_token.line = line_counter; token_list.createnode(temp);
+					temp.type = "T_GREATERTHANEQUAL"; temp.line = line_counter; token_list.createnode(temp);
 				} else {
-					temp.type = "T_GREATERTHAN"; current_token.line = line_counter; token_list.createnode(temp);
+					temp.type = "T_GREATERTHAN"; temp.line = line_counter; token_list.createnode(temp);
 					grab_prev_c = true;
 				}			
 			}
 			else if (c == '!'){
 				inFile.get(c); c = tolower(c); 
 				if (c == '='){
-					temp.type = "T_NOTEQUALTO"; current_token.line = line_counter; token_list.createnode(temp);
+					temp.type = "T_NOTEQUALTO"; temp.line = line_counter; token_list.createnode(temp);
 				} else {
-					temp.type = "T_EXLAMANTION"; current_token.line = line_counter; token_list.createnode(temp);
+					temp.type = "T_EXLAMANTION"; temp.line = line_counter; token_list.createnode(temp);
 					grab_prev_c = true;
 				}
 			}
-			else if (c == '*'){ temp.type = "T_MULT"; current_token.line = line_counter; token_list.createnode(temp);}
+			else if (c == '*'){ temp.type = "T_MULT"; temp.line = line_counter; token_list.createnode(temp);}
 			else if (c == '/'){ 
 				inFile.get(c); c = tolower(c);
 				if (c == '/'){
@@ -494,19 +494,19 @@ list scan(char *argv[]){
 					num_of_comments = 0;
 					nest_comment = false;
 				} else {
-					temp.type = "T_DIVIDE"; current_token.line = line_counter; token_list.createnode(temp);
+					temp.type = "T_DIVIDE"; temp.line = line_counter; token_list.createnode(temp);
 					grab_prev_c = true;
 				}
 			}
-			else if (c == ','){ temp.type = "T_COMMA"; current_token.line = line_counter; token_list.createnode(temp);}
-			else if (c == ';'){ temp.type = "T_SEMICOLON"; current_token.line = line_counter; token_list.createnode(temp);}
-			else if (c == '('){ temp.type = "T_LPARANTH"; current_token.line = line_counter; token_list.createnode(temp);}
-			else if (c == ')'){ temp.type = "T_RPARANTH"; current_token.line = line_counter; token_list.createnode(temp);} 
-			else if (c == '['){ temp.type = "T_LBRACKET"; current_token.line = line_counter; token_list.createnode(temp);}
-			else if (c == ']'){ temp.type = "T_RBRACKET"; current_token.line = line_counter; token_list.createnode(temp);}
+			else if (c == ','){ temp.type = "T_COMMA"; temp.line = line_counter; token_list.createnode(temp);}
+			else if (c == ';'){ temp.type = "T_SEMICOLON"; temp.line = line_counter; token_list.createnode(temp);}
+			else if (c == '('){ temp.type = "T_LPARANTH"; temp.line = line_counter; token_list.createnode(temp);}
+			else if (c == ')'){ temp.type = "T_RPARANTH"; temp.line = line_counter; token_list.createnode(temp);} 
+			else if (c == '['){ temp.type = "T_LBRACKET"; temp.line = line_counter; token_list.createnode(temp);}
+			else if (c == ']'){ temp.type = "T_RBRACKET"; temp.line = line_counter; token_list.createnode(temp);}
 			
 
-			else {temp.type = "T_UNKOWN"; current_token.line = line_counter; token_list.createnode(temp); error_handler.error(line_counter, 1);}
+			else {temp.type = "T_UNKOWN"; temp.line = line_counter; token_list.createnode(temp); error_handler.error(line_counter, 1);}
 				
 			temp = clear_token(temp);
 		} 
@@ -538,9 +538,10 @@ bool parameter_check(int argc, char *argv[]){
 	} 	
 }
 
-void parser(list scan_list){
-	ParseTree tree; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true; bool type_match2 = true;
-
+bool parser(list scan_list){
+	ParseTree tree; ParseTree snapshot; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true; bool type_match2 = true;
+	bool last_T_ident = false; bool expression = false; bool last_T_LBRACK = false, assignment = false, last2_T_ident = false;
+	bool snapshot_restored = false;
 /*--------------------------------  
 	Symbol Table and Parser 			
 --------------------------------*/
@@ -548,51 +549,97 @@ void parser(list scan_list){
 	for (int i = 0; i < scan_list.get_size(); i++){
 		temp = scan_list.get_one();
 
-		tree.setNewNode(temp.type);
+	//-------- Parse Tree --------//
+		tree.setNewNode(temp.type, temp.stringValue);
 		tree.createnode_2(temp.type);
 		tree.clearNewNode();
+		tree.setSym(sym);
 
+		if (!tree.getProgBodyFlag()){
+			snapshot = tree;
+		}
+
+	//-------- Symbol Table --------//
 		symbol_temp.type = temp.type; 
 		symbol_temp.line_num = temp.line;
 		symbol_temp.str_val = temp.stringValue;
 		sym.init(temp.type,temp.stringValue, symbol_temp);
 
-		if (tree.getExpressFlag() && (temp.type == "T_IDENTIFIER" || temp.type == "T_NUMBERVAL" || temp.type == "T_STRINGVAL" || temp.type == "T_CHARVAL" || temp.type == "T_FALSE" || temp.type == "T_TRUE")){
-			type_match = sym.insertTC(temp.stringValue, temp.type);
 
-		}  if (!tree.getExpressFlag()){		
-			sym.clearTC();
+	//-------- Type Checking --------//		
+	//if(!last_T_LBRACK){
+
+		if (temp.type == "T_LBRACKET"){
+			last_T_LBRACK = true; 
+		} if (last_T_LBRACK && temp.type == "T_RBRACKET"){
+			last_T_LBRACK = false; 
+		}
+//cout << "\t" << temp.stringValue << tree.getExpressFlag() << endl;
+		if (tree.getExpressFlag() && (temp.type == "T_IDENTIFIER" || temp.type == "T_NUMBERVAL" || temp.type == "T_STRINGVAL" || temp.type == "T_CHARVAL" || temp.type == "T_FALSE" || temp.type == "T_TRUE" || (last2_T_ident && last_T_LBRACK))){
+			if (last2_T_ident && last_T_LBRACK){
+				sym.modifyTC(temp.stringValue, temp.type);		//cout << 7;		
+			} else {
+				sym.insertTC(temp.stringValue, temp.type); //cout << 8;
+			}
+			expression = true;
+		} if (!tree.getExpressFlag() && expression){
+			type_match = sym.MC();			
+		} if (!tree.getExpressFlag() && expression){
+			sym.clearTC(); expression = false;			
 		}
 
-		if (tree.getAssignmentFlag() && (temp.type == "T_IDENTIFIER")){
-			type_match2 = sym.insertTC_AS(temp.stringValue, temp.type);
-//cout << temp.stringValue << endl;
-		}  if (!tree.getAssignmentFlag()){		
-			sym.clearTC_AS();
+
+		if (tree.getAssignmentFlag() && (temp.type == "T_IDENTIFIER" || (last2_T_ident && last_T_LBRACK))  ){	
+//cout << temp.stringValue << endl;	
+			if (last2_T_ident && last_T_LBRACK){
+				sym.modifyTC_AS(temp.stringValue, temp.type);
+			} else {
+				sym.insertTC_AS(temp.stringValue, temp.type);
+			}
+			assignment = true;
+		}  
+		if (!tree.getAssignmentFlag() && assignment){
+			type_match2 = sym.MC_AS();		
+			sym.clearTC_AS(); assignment = false;
 		}
+
 
 		if (!type_match){error_handler.error(temp.line, 8); type_match = true; }
-		if (!type_match2){error_handler.error(temp.line, 9); type_match2 = true; }
+		if (!type_match2){error_handler.error(temp.line, 9); type_match2 = true; }		
+	
 
-		if (!(tree.getLegit()) && error_count < 2){
-			error_handler.error(temp.line, 2, temp.stringValue);			
+		if (last_T_ident){ last2_T_ident = true; } else {	last2_T_ident = false; }		
+		if (temp.type == "T_IDENTIFIER"){ last_T_ident = true; } else {	last_T_ident = false; }
+
+		
+	
+//-------- Tree Snapshot --------//
+		if (!(tree.getLegit()) && error_count < 10){
+			error_handler.error(temp.line, 2, temp.stringValue);	
+			tree = snapshot;
+			snapshot_restored = true;		
 			error_count++;
 		} 
-		
-	}
+	}	
+	//}
 
  	sym.printAll();
 /*----------------------------------------------------  
 	Checks to see if the Parser passed or failed
 ----------------------------------------------------*/
 	cout << endl << "========== PARSE ==========" << endl;
-	if (tree.getLegit()){
+	if (!snapshot_restored){
 		cout << "Is Legit" << endl;
+		cout << endl;
+		cout << "===========================" << endl << endl;
+		return false;
 	} else {
 		cout << "Is Not Legit" << endl;
+		cout << endl;
+		cout << "===========================" << endl << endl;
+		return true;
 	}
-	cout << endl;
-	cout << "===========================" << endl << endl;
+	
 
 
 }	
