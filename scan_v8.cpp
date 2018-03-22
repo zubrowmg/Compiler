@@ -11,6 +11,7 @@
 #include "List.h"
 #include "Symbol.h"
 #include "Error.h"
+#include "CodeGen.h"
 
 
 using namespace std;
@@ -147,7 +148,7 @@ int scan_init(){
 	Scan function 
 ---------------*/
 list scan(char *argv[]){
-	list token_list; tokens current_token; tokens temp;
+	list token_list; tokens current_token; tokens temp; 
 
 	int line_counter = 0, peeker = 0, num_of_comments = 0, char_length = 0;
 	bool contains_num = false, contains_letter = false, grab_prev_c = false, nest_comment = false;
@@ -541,7 +542,7 @@ bool parameter_check(int argc, char *argv[]){
 bool parser(list scan_list){
 	ParseTree tree; ParseTree snapshot; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true; bool type_match2 = true;
 	bool last_T_ident = false; bool expression = false; bool last_T_LBRACK = false, assignment = false, last2_T_ident = false;
-	bool snapshot_restored = false;
+	bool snapshot_restored = false; CodeGen gen;
 /*--------------------------------  
 	Symbol Table and Parser 			
 --------------------------------*/
@@ -565,6 +566,8 @@ bool parser(list scan_list){
 		symbol_temp.str_val = temp.stringValue;
 		sym.init(temp.type,temp.stringValue, symbol_temp);
 
+	//-------- Code Generation --------//
+		gen.init(temp, sym);
 
 	//-------- Type Checking --------//		
 	//if(!last_T_LBRACK){
@@ -622,6 +625,10 @@ bool parser(list scan_list){
 		} 
 	}	
 	//}
+
+	cout << endl << "========== CG ==========" << endl;
+	gen.display();
+	cout << "===========================" << endl << endl;
 
  	sym.printAll();
 /*----------------------------------------------------  

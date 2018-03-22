@@ -65,3 +65,13 @@ tokens list::get_one()
 	}
 	return temp->token;
 } 
+
+void list::setCG(std::string input)
+{
+	code_gen = input;
+}
+
+std::string list::getCG()
+{
+	return code_gen;
+}

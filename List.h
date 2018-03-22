@@ -15,6 +15,7 @@ class list{
 	private:
     	node *head, *tail, *pos;
     	int size;
+    	std::string code_gen;
     public:
     	list();
     	int get_size();
@@ -22,6 +23,9 @@ class list{
 		int display(); 
 		int reset_pos();
 		tokens get_one();
+
+		void setCG(std::string input);
+		std::string getCG();
 		
 };
 
