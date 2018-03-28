@@ -1,26 +1,31 @@
 //leaving off end of program period.  is it correct?  officially no, but should we compile and simply issue a warning?  i leave that up to you.
 
+// printf("%d", MM[1].int_val);
+
 PROGRAM grant IS
-	global char jake; // [5:7]
-	global char ryan;
-	global integer zach;  
+	//global char jake; // [5:7]
+	//global char ryan;
+	global integer zach; 
+ 	global integer i;
 
 	procedure if_proc()
-		integer declaration[5:7];
-		integer k;
+		//integer declaration[5:7];
+		//integer k;
 		begin
-			zach := declaration[6] + k;
+			//zach := declaration[6] + k;
 			//zach [5] := declaration + k;
 		
 	end procedure;
 
 	procedure for_proc()
-                integer i;
+                //integer j;
 		begin
-			i := i + i;			
+			//i := i + i;			
 	end procedure;
 
 	begin
-		if_proc();
-		for_proc();
+		i := 2;		
+		i := i + i;
+		//if_proc();
+		//for_proc();
 end program.

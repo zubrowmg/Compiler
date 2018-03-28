@@ -14,6 +14,7 @@ CodeGen::CodeGen()
 {	
 	
 	myfile.open ("CodeGen.c");
+	myfile2.open ("CodeGenReg.c");
 
 	prog_start = false; 
 	prog_begin = false; 
@@ -32,16 +33,20 @@ CodeGen::CodeGen()
 	prev_TT_LPAR = false;
 
 	prog_declare = false;
+
+	MM_Index = 0;
 }
 
 void CodeGen::init(tokens tok, Symbol sym)
 {
 	list empty; 
-
+	sym_table = sym;
 	//-------- Initialized Program Space Variables --------//
 	if (prog_declare){
 		temp_list.setCG("prog_declare");
 		temp_list.createnode(tok);
+
+		
 
 		if (tok.type == "T_SEMICOLON"){
 			code_gen_order.push_back(temp_list);
@@ -92,16 +97,75 @@ void CodeGen::output(list temp_list){
 			myfile << "[";
 		} else if (tok_temp.type == "T_RBRACKET"){
 			myfile << "]";
-		} 
+		} else if (tok_temp.type == "T_ADD"){
+			myfile << "+";
+		} else if (tok_temp.type == "T_ASSIGN"){
+			myfile << "=";
+		} else if (tok_temp.type == "T_NUMBERVAL"){
+			myfile << tok_temp.stringValue;
+		}
 
 		else if (tok_temp.type == "T_IDENTIFIER"){
 			myfile << " " << tok_temp.stringValue;
+//cout << MM_Index << endl;
+			MM_Index = sym_table.setMMIndex(tok_temp.stringValue, MM_Index);
 		} else if (tok_temp.type == "T_SEMICOLON"){
 			myfile << ";" << "\n";
 		}
 	}
+
 }
 
+void CodeGen::output2(list temp_list){
+	tokens tok_temp;
+
+	myfile2 << "\t";
+
+	for (int j = 0; j < temp_list.get_size(); j++){
+		tok_temp = temp_list.get_one(); 
+		
+		if (tok_temp.type == "T_IDENTIFIER"){
+			myfile2 << "MM[" << sym_table.getMMIndex(tok_temp.stringValue) << "]";
+
+			if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_INTEGER"){
+				myfile2 << ".int_val";
+			} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_BOOL"){
+				myfile2 << ".bool_val";
+			} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_CHAR"){
+				myfile2 << ".char_val";
+			} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING"){
+				myfile2 << ".string_val";
+			} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_FLOAT"){
+				myfile2 << ".float_val";
+			}
+			
+//cout << tok_temp.stringValue << sym_table.getMMIndex(tok_temp.stringValue) << endl;
+		}
+
+		else if (tok_temp.type == "T_LPARANTH"){
+			//myfile << "(";
+		} else if (tok_temp.type == "T_RPARANTH"){
+			//myfile << ")";
+		} else if (tok_temp.type == "T_LBRACKET"){
+			//myfile << "[";
+		} else if (tok_temp.type == "T_RBRACKET"){
+			//myfile << "]";
+		} else if (tok_temp.type == "T_ADD"){
+			myfile2 << "+";
+		} else if (tok_temp.type == "T_ASSIGN"){
+			myfile2 << "=";
+		} else if (tok_temp.type == "T_NUMBERVAL"){
+			myfile2 << tok_temp.stringValue;
+		}
+
+		else if (tok_temp.type == "T_IDENTIFIER"){
+			//myfile << " " << tok_temp.stringValue;
+		} else if (tok_temp.type == "T_SEMICOLON"){
+			myfile2 << ";" << "\n";
+		}
+	}
+	
+}
 void CodeGen::printCode()
 {
 
@@ -112,20 +176,38 @@ void CodeGen::printCode()
 		}		
 	}
 
+
+	myfile2 << "#include <string.h>" << "\n"
+	<< "#include <stdio.h>" << "\n"
+	<< "#include <stdbool.h>" << "\n" << "\n";
+	
+	myfile2 << "union val{" << "\n" 
+		<< "\t" << "int int_val;" << "\n" 
+		<< "\t" << "bool bool_val;" << "\n"
+		<< "\t" << "char char_val;" << "\n"
+		<< "\t" << "char string_val[20];" << "\n"
+		<< "\t" << "float float_val;" << "\n"
+	 << "};" << "\n" << "\n";
+	myfile2 << "union val MM[100];" << "\n";
+
 	
 	myfile << "\n" << "int main(){" << "\n";
+	myfile2 << "\n" << "int main(){" << "\n";
 	
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
 		if (code_gen_order[i].getCG() == "prog_begin"){ 
-			output(code_gen_order[i]);	
+			//output(code_gen_order[i]);	
+			output2(code_gen_order[i]);
 		}		
 	}
 		
 	myfile << "}" ;
+	myfile2 << "}" ;
 
   	//myfile << "Writing this to a file.\n";
   	myfile.close();
+  	myfile2.close();
 }
 
 void CodeGen::display()

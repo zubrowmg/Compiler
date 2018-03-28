@@ -1,8 +1,5 @@
-char jake;
-char ryan;
 int zach;
+int i;
 
 int main(){
- if_proc();
- for_proc();
 }
