@@ -35,6 +35,7 @@ CodeGen::CodeGen()
 	prog_declare = false;
 
 	MM_Index = 0;
+	//assign_option = 0;
 }
 
 void CodeGen::init(tokens tok, Symbol sym)
@@ -58,11 +59,13 @@ void CodeGen::init(tokens tok, Symbol sym)
 	else if (prog_begin) {
 		temp_list.setCG("prog_begin");
 		temp_list.createnode(tok);
-
+//cout << "    |" << tok.type << tok.stringValue << endl;;
 		if (tok.type == "T_SEMICOLON"){
 			code_gen_order.push_back(temp_list);
 			temp_list = empty;
 		}
+	} else {
+		temp_list = empty;
 	}
 
 
@@ -74,11 +77,11 @@ void CodeGen::init(tokens tok, Symbol sym)
 	set_flags(tok);
 }
 
-void CodeGen::output(list temp_list){
+void CodeGen::output(list temp_list2){
 	tokens tok_temp;
 
-	for (int j = 0; j < temp_list.get_size(); j++){
-		tok_temp = temp_list.get_one(); 
+	for (int j = 0; j < temp_list2.get_size(); j++){
+		tok_temp = temp_list2.get_one(); 
 		if (tok_temp.type == "T_CHAR"){
 			myfile << "char";
 		} else if (tok_temp.type == "T_INTEGER"){
@@ -107,7 +110,6 @@ void CodeGen::output(list temp_list){
 
 		else if (tok_temp.type == "T_IDENTIFIER"){
 			myfile << " " << tok_temp.stringValue;
-//cout << MM_Index << endl;
 			MM_Index = sym_table.setMMIndex(tok_temp.stringValue, MM_Index);
 		} else if (tok_temp.type == "T_SEMICOLON"){
 			myfile << ";" << "\n";
@@ -116,52 +118,144 @@ void CodeGen::output(list temp_list){
 
 }
 
-void CodeGen::output2(list temp_list){
-	tokens tok_temp;
-
-	myfile2 << "\t";
-
-	for (int j = 0; j < temp_list.get_size(); j++){
-		tok_temp = temp_list.get_one(); 
+void CodeGen::outputValType(tokens tok_temp){
+	
 		
-		if (tok_temp.type == "T_IDENTIFIER"){
-			myfile2 << "MM[" << sym_table.getMMIndex(tok_temp.stringValue) << "]";
 
-			if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_INTEGER"){
-				myfile2 << ".int_val";
-			} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_BOOL"){
-				myfile2 << ".bool_val";
-			} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_CHAR"){
-				myfile2 << ".char_val";
-			} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING"){
-				myfile2 << ".string_val";
-			} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_FLOAT"){
-				myfile2 << ".float_val";
-			}
-			
-//cout << tok_temp.stringValue << sym_table.getMMIndex(tok_temp.stringValue) << endl;
+		if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_INTEGER"){
+			myfile2 << ".int_val";
+		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_BOOL"){
+			myfile2 << ".bool_val";
+		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_CHAR"){
+			myfile2 << ".char_val";
+		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING"){
+			myfile2 << ".string_val";
+		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_FLOAT"){
+			myfile2 << ".float_val";
 		}
+		
+	
+}
 
-		else if (tok_temp.type == "T_LPARANTH"){
-			//myfile << "(";
-		} else if (tok_temp.type == "T_RPARANTH"){
-			//myfile << ")";
-		} else if (tok_temp.type == "T_LBRACKET"){
-			//myfile << "[";
-		} else if (tok_temp.type == "T_RBRACKET"){
-			//myfile << "]";
-		} else if (tok_temp.type == "T_ADD"){
-			myfile2 << "+";
+void CodeGen::output2(list temp_list2){
+
+	tokens tok_temp; tokens tok_val_type; int count = 1;
+	bool for_state, if_state, ret_state, assign_state, proc_state;
+	for_state = false; if_state = false; assign_state = false, ret_state = false; proc_state = false;
+	//-------- Check to See Statement type --------//;
+	temp_list2.reset_pos();
+	for (int j = 0; j < temp_list2.get_size(); j++){
+		tok_temp = temp_list2.get_one();
+		if (count == 1){
+			tok_val_type = tok_temp;
+			count = count + 1;
+		}
+		if (tok_temp.type == "T_FOR"){
+			for_state = true;
+			break;
+		} else if (tok_temp.type == "T_IF"){
+			if_state = true;
+			break;
+		} else if (tok_temp.type == "T_RETURN"){
+			ret_state = true;
+			break;
 		} else if (tok_temp.type == "T_ASSIGN"){
-			myfile2 << "=";
-		} else if (tok_temp.type == "T_NUMBERVAL"){
-			myfile2 << tok_temp.stringValue;
+			assign_state = true;
+			break;
+		} else if (tok_temp.type == "T_SEMICOLON"){
+			proc_state = true;
+			break;
+		}
+	}
+	temp_list2.reset_pos();
+
+
+	
+	if (if_state){
+		
+	} else if (for_state){
+		
+	} else if (ret_state){
+		
+	}
+
+
+	
+	
+	if (assign_state){
+		//temp_list.reset_pos();
+		for (int j = 0; j < temp_list2.get_size(); j++){
+			tok_temp = temp_list2.get_one();
+			if (tok_temp.type == "T_ASSIGN"){
+				
+				break;
+			}
 		}
 
-		else if (tok_temp.type == "T_IDENTIFIER"){
-			//myfile << " " << tok_temp.stringValue;
-		} else if (tok_temp.type == "T_SEMICOLON"){
-			myfile2 << ";" << "\n";
+		count = 1;
+		for (int j = 0; j < temp_list2.get_size(); j++){
+			tok_temp = temp_list2.get_one(); 
+			//count = count + 1;
+			if (count == 1){
+				//if (tok_temp.type == "T_IDENTIFIER"){
+					
+					myfile2 << "R[0]";
+					outputValType(tok_val_type);
+					myfile2 << "=";
+
+					count = count + 1;
+				//}
+			} else {
+				if (tok_temp.type != "T_SEMICOLON" ){
+					if (tok_temp.type != "T_IDENTIFIER" ){
+						myfile2  << "R[0]";
+						outputValType(tok_val_type);
+						myfile2 << "=R[0]";
+						outputValType(tok_val_type);
+						count = count + 1;
+					}
+				}
+			}
+
+
+			if (tok_temp.type == "T_IDENTIFIER"){
+				myfile2 << "MM[" << sym_table.getMMIndex(tok_temp.stringValue) << "]";
+				outputValType(tok_val_type);
+				myfile2 << ";" << "\n" << "\t";
+			}
+			else if (tok_temp.type == "T_LPARANTH"){
+				//myfile << "(";
+			} else if (tok_temp.type == "T_RPARANTH"){
+				//myfile << ")";
+			} else if (tok_temp.type == "T_LBRACKET"){
+				//myfile << "[";
+			} else if (tok_temp.type == "T_RBRACKET"){
+				//myfile << "]";
+			} else if (tok_temp.type == "T_ADD"){
+				myfile2 << "+";
+			} else if (tok_temp.type == "T_ASSIGN"){
+				myfile2 << "=";
+			} else if (tok_temp.type == "T_NUMBERVAL"){
+				myfile2 << tok_temp.stringValue;
+				myfile2 << ";" << "\n" << "\t";
+			} else if (tok_temp.type == "T_SEMICOLON"){
+				temp_list2.reset_pos();
+				tok_temp = temp_list2.get_one();
+				myfile2 << "MM[" << sym_table.getMMIndex(tok_temp.stringValue) << "]";
+//cout << tok_temp.stringValue << endl;
+//if (tok_temp.stringValue == "procedure"){
+	for (int k = 0; k < temp_list2.get_size(); k++){
+		//cout << tok_temp.stringValue << " " << temp_list.getCG() << " " << sym_table.getMMIndex(tok_temp.stringValue) << endl;
+		tok_temp = temp_list2.get_one();
+	}
+//}
+cout << tok_val_type.type << endl;
+				outputValType(tok_val_type);
+				myfile2 << "=R[0]";
+				outputValType(tok_val_type);
+				myfile2 << ";" << "\n";
+				break;
+			}
 		}
 	}
 	
@@ -189,7 +283,7 @@ void CodeGen::printCode()
 		<< "\t" << "float float_val;" << "\n"
 	 << "};" << "\n" << "\n";
 	myfile2 << "union val MM[100];" << "\n";
-
+	myfile2 << "union val R[100];" << "\n";
 	
 	myfile << "\n" << "int main(){" << "\n";
 	myfile2 << "\n" << "int main(){" << "\n";
@@ -197,7 +291,11 @@ void CodeGen::printCode()
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
 		if (code_gen_order[i].getCG() == "prog_begin"){ 
-			//output(code_gen_order[i]);	
+			//output(code_gen_order[i]);
+for	(int jk = 0; jk < code_gen_order.size(); jk++){
+cout << "              =  " << (code_gen_order[i].get_one()).stringValue << endl;
+} cout << endl;
+
 			output2(code_gen_order[i]);
 		}		
 	}

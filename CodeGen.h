@@ -11,6 +11,11 @@
 
 using namespace std;
 
+struct expNode
+{
+	int new_position;
+};
+
 class CodeGen{
 	private:
     	bool prog_start, prog_begin, prog_end, proc_start, proc_begin, proc_end;
@@ -21,7 +26,9 @@ class CodeGen{
     	ofstream myfile; ofstream myfile2;
     	int MM_Index;
 		std::vector<int> MM;    
-		Symbol sym_table;	
+		Symbol sym_table;
+		//std::std::vector<list> exp_rewrite;	
+		//int assign_option;
 
     public:
     	CodeGen();
@@ -31,6 +38,8 @@ class CodeGen{
     	void display();
     	void output(list input); 
     	void output2(list input);
+
+    	void outputValType(tokens tok_temp);
 };
 
 #endif

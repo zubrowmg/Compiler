@@ -35,6 +35,7 @@ list::list()
 	head = NULL;
 	tail = NULL;
 	pos = NULL;
+	code_gen = "";
 }	
 
 int list::display()

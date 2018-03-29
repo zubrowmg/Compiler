@@ -1,6 +1,7 @@
 //leaving off end of program period.  is it correct?  officially no, but should we compile and simply issue a warning?  i leave that up to you.
 
 // printf("%d", MM[1].int_val);
+// 5+(9-3) / (9-7)
 
 PROGRAM grant IS
 	//global char jake; // [5:7]
