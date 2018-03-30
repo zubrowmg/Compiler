@@ -67,6 +67,11 @@ tokens list::get_one()
 	return temp->token;
 } 
 
+tokens list::look_ahead() 
+{	
+	return pos->token;
+} 
+
 void list::setCG(std::string input)
 {
 	code_gen = input;

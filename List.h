@@ -23,6 +23,7 @@ class list{
 		int display(); 
 		int reset_pos();
 		tokens get_one();
+		tokens look_ahead();
 
 		void setCG(std::string input);
 		std::string getCG();

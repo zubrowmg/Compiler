@@ -43,7 +43,7 @@ int Symbol::setMMIndex(std::string ident, int index)
 //cout << new_index << endl;
 
         	if ((itr->second).is_array == true){
-        		new_index = index + (itr->second).array_size;
+        		new_index = index + (itr->second).array_size + 1;
    	
         	} else {
         		new_index = index + 1;   			
@@ -308,7 +308,7 @@ void Symbol::modify(std::string ident, std::string num, char c){
         		(itr->second).array_left = stoi(num);
         	} else if (c == 'R'){
         		(itr->second).array_right = stoi(num);
-        		(itr->second).array_size = abs((itr->second).array_left - (itr->second).array_right); 	
+        		(itr->second).array_size = abs((itr->second).array_left - (itr->second).array_right) + 1; 	
         	}
         	done = true; 
         }
@@ -403,10 +403,16 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 
 		//If tok was glabol 2 toks ago && value doesn't exist in global && prev tok is a type mark
 		if ((prev2_TT_glob && newCheckGlobal(value, sym)) && (prev_TT_int || prev_TT_flt || prev_TT_str || prev_TT_bool || prev_TT_char)){
+			if (prev_TT_str){
+				sym.is_array = true; sym.array_left = 0; sym.array_right = 49; sym.array_size = 50;
+			}
 			insertGlobal(value, sym);
 		} else if (prev_TT_proc){
 			newProc(value);
 		} else if (prev_TT_int || prev_TT_flt || prev_TT_str || prev_TT_bool || prev_TT_char){
+			if (prev_TT_str){
+				sym.is_array = true; sym.array_left = 0; sym.array_right = 49; sym.array_size = 50;
+			}
 			insertValue(value, sym);
 		} else if (prev_TT_prog){
 
@@ -538,7 +544,7 @@ void Symbol::printGlobal()
         std::cout  <<  '\t' << itr->first 
               <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' '<< '\t' ;
       	if ((itr->second).is_array){
-      		cout << "Is Array" << ' ' << '\t' << (itr->second).array_size << endl;
+      		cout << "Is Array" << ' ' << '\t' << "[" << (itr->second).array_left << ':' << (itr->second).array_right << "]" << '\t' << (itr->second).array_size << endl;
       	} else {
     		cout << "Not Array" << endl;
     	}
@@ -681,7 +687,7 @@ void ProcedureNode::modify(std::string ident, std::string num, char c){
         		(itr->second).array_left = stoi(num);
         	} else if (c == 'R'){
         		(itr->second).array_right = stoi(num);
-        		(itr->second).array_size = abs((itr->second).array_left - (itr->second).array_right);
+        		(itr->second).array_size = abs((itr->second).array_left - (itr->second).array_right) + 1;
         	}
         }
     }
@@ -694,7 +700,7 @@ int ProcedureNode::setMMIndex(std::string ident, int index){
         if (itr->first == ident){
         	(itr->second).MM_Index = index;
         	if ((itr->second).is_array == true){
-        		new_index = index + (itr->second).array_size;
+        		new_index = index + (itr->second).array_size + 1;
         	} else {
         		new_index = index + 1;
         	}
@@ -723,7 +729,7 @@ void ProcedureNode::printTable()
         std::cout  <<  '\t' << itr->first 
               <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' '  <<  '\t';
       	if ((itr->second).is_array){
-      		cout << "Is Array" << ' ' << '\t' << (itr->second).array_size << endl;
+      		cout << "Is Array" << ' ' << '\t' << "[" << (itr->second).array_left << ':' << (itr->second).array_right << "]" << '\t' << (itr->second).array_size << endl;
       	} else {
     		cout << "Not Array" << endl;
     	}

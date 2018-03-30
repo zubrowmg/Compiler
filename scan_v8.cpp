@@ -627,7 +627,7 @@ bool parser(list scan_list){
 	//}
 
 	cout << endl << "========== CG ==========" << endl;
-	gen.display();
+	//gen.display();
 	cout << "===========================" << endl << endl;
 
  	sym.printAll();

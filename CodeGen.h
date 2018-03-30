@@ -40,6 +40,7 @@ class CodeGen{
     	void output2(list input);
 
     	void outputValType(tokens tok_temp);
+    	list arrayOutput(list input_list, tokens tok_temp);
 };
 
 #endif

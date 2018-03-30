@@ -119,9 +119,6 @@ void CodeGen::output(list temp_list2){
 }
 
 void CodeGen::outputValType(tokens tok_temp){
-	
-		
-
 		if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_INTEGER"){
 			myfile2 << ".int_val";
 		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_BOOL"){
@@ -132,13 +129,12 @@ void CodeGen::outputValType(tokens tok_temp){
 			myfile2 << ".string_val";
 		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_FLOAT"){
 			myfile2 << ".float_val";
-		}
-		
+		}	
 	
 }
 
 void CodeGen::output2(list temp_list2){
-
+	tokens tok_temp2; int bs1, bs2, bs3;
 	tokens tok_temp; tokens tok_val_type; int count = 1;
 	bool for_state, if_state, ret_state, assign_state, proc_state;
 	for_state = false; if_state = false; assign_state = false, ret_state = false; proc_state = false;
@@ -176,13 +172,10 @@ void CodeGen::output2(list temp_list2){
 	} else if (for_state){
 		
 	} else if (ret_state){
-		
-	}
+		//myfile2 << "\t" << "return 0;" << "\n";
+	} else if (proc_state) {
 
-
-	
-	
-	if (assign_state){
+	} else if (assign_state){
 		//temp_list.reset_pos();
 		for (int j = 0; j < temp_list2.get_size(); j++){
 			tok_temp = temp_list2.get_one();
@@ -206,20 +199,23 @@ void CodeGen::output2(list temp_list2){
 					count = count + 1;
 				//}
 			} else {
+				if (tok_temp.type != "T_CHARVAL" ){
+				if (tok_temp.type != "T_NUMBERVAL" ){
 				if (tok_temp.type != "T_SEMICOLON" ){
-					if (tok_temp.type != "T_IDENTIFIER" ){
-						myfile2  << "R[0]";
-						outputValType(tok_val_type);
-						myfile2 << "=R[0]";
-						outputValType(tok_val_type);
-						count = count + 1;
-					}
-				}
+				if (tok_temp.type != "T_IDENTIFIER" ){
+					myfile2  << "R[0]";
+					outputValType(tok_val_type);
+					myfile2 << "=R[0]";
+					outputValType(tok_val_type);
+					count = count + 1;
+				}}}}
 			}
 
 
 			if (tok_temp.type == "T_IDENTIFIER"){
-				myfile2 << "MM[" << sym_table.getMMIndex(tok_temp.stringValue) << "]";
+				
+				temp_list2 = arrayOutput(temp_list2, tok_temp);
+
 				outputValType(tok_val_type);
 				myfile2 << ";" << "\n" << "\t";
 			}
@@ -231,25 +227,33 @@ void CodeGen::output2(list temp_list2){
 				//myfile << "[";
 			} else if (tok_temp.type == "T_RBRACKET"){
 				//myfile << "]";
-			} else if (tok_temp.type == "T_ADD"){
-				myfile2 << "+";
-			} else if (tok_temp.type == "T_ASSIGN"){
-				myfile2 << "=";
-			} else if (tok_temp.type == "T_NUMBERVAL"){
-				myfile2 << tok_temp.stringValue;
+			} else if (tok_temp.type == "T_ADD"){	  		myfile2 << "+";
+			} else if (tok_temp.type == "T_MINUS"){	  		myfile2 << "-";
+			} else if (tok_temp.type == "T_MULT"){	  		myfile2 << "*";
+			} else if (tok_temp.type == "T_DIVIDE"){  		myfile2 << "/";
+			} else if (tok_temp.type == "T_AND"){     		myfile2 << "&&";
+			} else if (tok_temp.type == "T_OR"){      		myfile2 << "||";
+			} else if (tok_temp.type == "T_NOT"){     		myfile2 << "!";
+			} else if (tok_temp.type == "T_ASSIGN"){  		myfile2 << "=";
+			} else if (tok_temp.type == "T_LESSTHAN"){		myfile2 << "<";
+			} else if (tok_temp.type == "T_LESSTHANEQUAL"){	myfile2 << "<=";
+			} else if (tok_temp.type == "T_GREATERTHAN"){	myfile2 << ">";
+			} else if (tok_temp.type == "T_GREATERTHANEQUAL"){myfile2 << ">=";
+			} else if (tok_temp.type == "T_NOTEQUALTO"){	myfile2 << "!=";
+			} else if (tok_temp.type == "T_EQUALTO"){		myfile2 << "==";
+			} else if (tok_temp.type == "T_TRUE"){			myfile2 << "true";
+			} else if (tok_temp.type == "T_FALSE"){			myfile2 << "false";
+			} else if (tok_temp.type == "T_CHARVAL"){		myfile2 << "\'" << tok_temp.stringValue << "\'";
+				myfile2 << ";" << "\n" << "\t";
+			} else if (tok_temp.type == "T_NUMBERVAL"){		myfile2 << tok_temp.stringValue;
 				myfile2 << ";" << "\n" << "\t";
 			} else if (tok_temp.type == "T_SEMICOLON"){
+				//myfile2 << ";" << "\n" << "\t";
 				temp_list2.reset_pos();
 				tok_temp = temp_list2.get_one();
-				myfile2 << "MM[" << sym_table.getMMIndex(tok_temp.stringValue) << "]";
-//cout << tok_temp.stringValue << endl;
-//if (tok_temp.stringValue == "procedure"){
-	for (int k = 0; k < temp_list2.get_size(); k++){
-		//cout << tok_temp.stringValue << " " << temp_list.getCG() << " " << sym_table.getMMIndex(tok_temp.stringValue) << endl;
-		tok_temp = temp_list2.get_one();
-	}
-//}
-cout << tok_val_type.type << endl;
+				
+				temp_list2 = arrayOutput(temp_list2, tok_temp);
+
 				outputValType(tok_val_type);
 				myfile2 << "=R[0]";
 				outputValType(tok_val_type);
@@ -260,6 +264,31 @@ cout << tok_val_type.type << endl;
 	}
 	
 }
+
+list CodeGen::arrayOutput(list temp_list2, tokens tok_temp){
+	tokens tok_temp2; int left, right;
+	myfile2 << "MM[";
+
+	left = (sym_table.returnValType(tok_temp.stringValue)).array_left;
+	right = (sym_table.returnValType(tok_temp.stringValue)).array_right;
+
+	if ((temp_list2.look_ahead()).type == "T_LBRACKET"){ 
+		tok_temp2 = temp_list2.get_one();
+		tok_temp2 = temp_list2.get_one();					
+// !!!!!!!!! NEED A BETTER INDEX FOR EGATIVE NUMBERS !!!!
+		if (left >= 0 && right >= 0 && left < right){
+			myfile2 << (sym_table.getMMIndex(tok_temp.stringValue) + atoi(tok_temp2.stringValue) - left);	
+		}		
+		tok_temp2 = temp_list2.get_one();
+	} else {
+		myfile2 << sym_table.getMMIndex(tok_temp.stringValue);
+	}
+	myfile2 << "]";
+
+	return temp_list2;
+				
+}
+
 void CodeGen::printCode()
 {
 
@@ -279,10 +308,9 @@ void CodeGen::printCode()
 		<< "\t" << "int int_val;" << "\n" 
 		<< "\t" << "bool bool_val;" << "\n"
 		<< "\t" << "char char_val;" << "\n"
-		<< "\t" << "char string_val[20];" << "\n"
 		<< "\t" << "float float_val;" << "\n"
 	 << "};" << "\n" << "\n";
-	myfile2 << "union val MM[100];" << "\n";
+	myfile2 << "union val MM[10000];" << "\n";
 	myfile2 << "union val R[100];" << "\n";
 	
 	myfile << "\n" << "int main(){" << "\n";
@@ -291,10 +319,7 @@ void CodeGen::printCode()
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
 		if (code_gen_order[i].getCG() == "prog_begin"){ 
-			//output(code_gen_order[i]);
-for	(int jk = 0; jk < code_gen_order.size(); jk++){
-cout << "              =  " << (code_gen_order[i].get_one()).stringValue << endl;
-} cout << endl;
+			
 
 			output2(code_gen_order[i]);
 		}		
