@@ -23,6 +23,7 @@ int list::createnode(tokens value)
 	}
 	else {	
 		tail->next = temp;
+		temp->previous = tail;
 		tail = temp;
 	}
 	size = size + 1;
@@ -71,6 +72,24 @@ tokens list::look_ahead()
 {	
 	return pos->token;
 } 
+
+tokens list::look_ahead_no_wrap() 
+{	
+	tokens empty;
+	if (pos == head){
+		return empty;
+	} else {
+		return pos->token;
+	}
+}
+
+void list::goBackOne(){
+	if (pos->previous == NULL){
+		pos = tail;
+	} else {
+		pos = pos->previous;
+	}
+}
 
 void list::setCG(std::string input)
 {

@@ -24,6 +24,8 @@ class list{
 		int reset_pos();
 		tokens get_one();
 		tokens look_ahead();
+		tokens look_ahead_no_wrap();
+		void goBackOne();
 
 		void setCG(std::string input);
 		std::string getCG();

@@ -6,7 +6,8 @@
 PROGRAM grant IS
 	//global char jake; // [5:7]
 	//global char ryan;
-	global string poop;	
+	global string poop;
+	global string poop2;
 	global integer zach[1:5]; 
  	global integer i[2:7];
 
@@ -26,10 +27,12 @@ PROGRAM grant IS
 	end procedure;
 
 	begin
-		zach[2] := 3 * 5;
-		i[3] := zach[2];
-		i[3] := 4;		
-		i[3] := i[3] + i[3];
+		poop := "HI" + "YO" + "JK";	
+			
+		//zach[2] := 3 * 5;
+		//i[3] := zach[2];
+		//i[3] := 4;		
+		//i[3] := i[3] + i[3];
 		//if_proc();
 		//for_proc();
 

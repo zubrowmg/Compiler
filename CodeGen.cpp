@@ -126,7 +126,7 @@ void CodeGen::outputValType(tokens tok_temp){
 		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_CHAR"){
 			myfile2 << ".char_val";
 		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING"){
-			myfile2 << ".string_val";
+			myfile2 << ".char_val";
 		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_FLOAT"){
 			myfile2 << ".float_val";
 		}	
@@ -134,8 +134,9 @@ void CodeGen::outputValType(tokens tok_temp){
 }
 
 void CodeGen::output2(list temp_list2){
+	int reg_index; bool string_detected = false; bool go_back = false;
 	tokens tok_temp2; int bs1, bs2, bs3;
-	tokens tok_temp; tokens tok_val_type; int count = 1;
+	tokens tok_temp; tokens tok_val_type; int count = 1; int count2 = 1;
 	bool for_state, if_state, ret_state, assign_state, proc_state;
 	for_state = false; if_state = false; assign_state = false, ret_state = false; proc_state = false;
 	//-------- Check to See Statement type --------//;
@@ -185,21 +186,46 @@ void CodeGen::output2(list temp_list2){
 			}
 		}
 
-		count = 1;
+		count = 1; count2 = 1; int str_array_index = 0;
 		for (int j = 0; j < temp_list2.get_size(); j++){
 			tok_temp = temp_list2.get_one(); 
+//cout << tok_temp.type << " " << tok_temp.stringValue << " 3: " << temp_list2.look_ahead().stringValue << endl;
 			//count = count + 1;
 			if (count == 1){
 				//if (tok_temp.type == "T_IDENTIFIER"){
-					
-					myfile2 << "R[0]";
-					outputValType(tok_val_type);
-					myfile2 << "=";
+					if (tok_temp.type == "T_STRINGVAL"){
+						reg_index = 0;
+						string_detected = true;
+						for (int f = 0; f < strLength(tok_temp.stringValue); f++){
+							
+							myfile2 << "R[" << f << "]";
+							outputValType(tok_val_type);
+							myfile2 << "=";
 
+							myfile2 << "\'" << tok_temp.stringValue[f] << "\'" ;
+							myfile2 << ";" << "\n" << "\t";
+							reg_index++;
+						}
+					} else {
+						myfile2 << "R[0]";
+						outputValType(tok_val_type);
+						myfile2 << "=";
+					}
 					count = count + 1;
 				//}
 			} else {
-				if (tok_temp.type != "T_CHARVAL" ){
+				//If the next token is a STRING VALUE
+				if (temp_list2.look_ahead_no_wrap().type == "T_STRINGVAL"){
+//cout << temp_list2.look_ahead().stringValue << endl;
+//cout << tok_temp.type << tok_temp.stringValue << endl;
+					myfile2  << "R[" << str_array_index << "]";
+					outputValType(tok_val_type);
+					myfile2 << "=R[" << str_array_index << "]";
+					outputValType(tok_val_type);
+					go_back = true;
+
+				} else if (tok_temp.type != "T_CHARVAL" ){
+				if (tok_temp.type != "T_STRINGVAL" ){
 				if (tok_temp.type != "T_NUMBERVAL" ){
 				if (tok_temp.type != "T_SEMICOLON" ){
 				if (tok_temp.type != "T_IDENTIFIER" ){
@@ -208,71 +234,129 @@ void CodeGen::output2(list temp_list2){
 					myfile2 << "=R[0]";
 					outputValType(tok_val_type);
 					count = count + 1;
-				}}}}
+				}}}}}
 			}
 
-
-			if (tok_temp.type == "T_IDENTIFIER"){
+			temp_list2 = outputMain(temp_list2, tok_temp, tok_val_type, reg_index, str_array_index, go_back);
+//cout << go_back << tok_temp.stringValue << endl;
+//cout << str_array_index << " " << strLength(tok_temp.stringValue) << " " << tok_temp.stringValue << " " << tok_temp.type << endl;
+			if (go_back && tok_temp.type == "T_STRINGVAL"){
+				str_array_index = str_array_index + 1;
+		
+				if (str_array_index  >= strLength(tok_temp.stringValue) ){
+					go_back = false;
+					str_array_index = 0;
+				} else {
+					temp_list2.goBackOne();
+					temp_list2.goBackOne();
+					j = j - 2;
+//cout << str_array_index << " " << strLength(tok_temp.stringValue) << tok_temp.stringValue[str_array_index - 1] << endl;
+				}
 				
-				temp_list2 = arrayOutput(temp_list2, tok_temp);
-
-				outputValType(tok_val_type);
-				myfile2 << ";" << "\n" << "\t";
 			}
-			else if (tok_temp.type == "T_LPARANTH"){
-				//myfile << "(";
-			} else if (tok_temp.type == "T_RPARANTH"){
-				//myfile << ")";
-			} else if (tok_temp.type == "T_LBRACKET"){
-				//myfile << "[";
-			} else if (tok_temp.type == "T_RBRACKET"){
-				//myfile << "]";
-			} else if (tok_temp.type == "T_ADD"){	  		myfile2 << "+";
-			} else if (tok_temp.type == "T_MINUS"){	  		myfile2 << "-";
-			} else if (tok_temp.type == "T_MULT"){	  		myfile2 << "*";
-			} else if (tok_temp.type == "T_DIVIDE"){  		myfile2 << "/";
-			} else if (tok_temp.type == "T_AND"){     		myfile2 << "&&";
-			} else if (tok_temp.type == "T_OR"){      		myfile2 << "||";
-			} else if (tok_temp.type == "T_NOT"){     		myfile2 << "!";
-			} else if (tok_temp.type == "T_ASSIGN"){  		myfile2 << "=";
-			} else if (tok_temp.type == "T_LESSTHAN"){		myfile2 << "<";
-			} else if (tok_temp.type == "T_LESSTHANEQUAL"){	myfile2 << "<=";
-			} else if (tok_temp.type == "T_GREATERTHAN"){	myfile2 << ">";
-			} else if (tok_temp.type == "T_GREATERTHANEQUAL"){myfile2 << ">=";
-			} else if (tok_temp.type == "T_NOTEQUALTO"){	myfile2 << "!=";
-			} else if (tok_temp.type == "T_EQUALTO"){		myfile2 << "==";
-			} else if (tok_temp.type == "T_TRUE"){			myfile2 << "true";
-			} else if (tok_temp.type == "T_FALSE"){			myfile2 << "false";
-			} else if (tok_temp.type == "T_CHARVAL"){		myfile2 << "\'" << tok_temp.stringValue << "\'";
-				myfile2 << ";" << "\n" << "\t";
-			} else if (tok_temp.type == "T_NUMBERVAL"){		myfile2 << tok_temp.stringValue;
-				myfile2 << ";" << "\n" << "\t";
-			} else if (tok_temp.type == "T_SEMICOLON"){
-				//myfile2 << ";" << "\n" << "\t";
-				temp_list2.reset_pos();
-				tok_temp = temp_list2.get_one();
-				
-				temp_list2 = arrayOutput(temp_list2, tok_temp);
-
-				outputValType(tok_val_type);
-				myfile2 << "=R[0]";
-				outputValType(tok_val_type);
-				myfile2 << ";" << "\n";
-				break;
-			}
+			if (tok_temp.type == "T_SEMICOLON"){ break; }
 		}
 	}
 	
 }
 
+list CodeGen::outputMain(list temp_list2, tokens tok_temp, tokens tok_val_type, int reg_index, int str_array_index, bool go_back){
+	//if (tok_temp.type == "T_STRINGVAL"){
+//cout << str_array_index << " " << go_back << " " << tok_temp.stringValue << " " << tok_temp.type << endl;
+	//}
+
+	if (tok_temp.type == "T_IDENTIFIER"){
+		
+		temp_list2 = arrayOutput(temp_list2, tok_temp);
+
+		outputValType(tok_val_type);
+		myfile2 << ";" << "\n" << "\t";
+	}
+	else if (tok_temp.type == "T_LPARANTH"){
+		//myfile << "(";
+	} else if (tok_temp.type == "T_RPARANTH"){
+		//myfile << ")";
+	} else if (tok_temp.type == "T_LBRACKET"){
+		//myfile << "[";
+	} else if (tok_temp.type == "T_RBRACKET"){
+		//myfile << "]";
+	} else if (tok_temp.type == "T_ADD"){	  		myfile2 << "+";
+	} else if (tok_temp.type == "T_MINUS"){	  		myfile2 << "-";
+	} else if (tok_temp.type == "T_MULT"){	  		myfile2 << "*";
+	} else if (tok_temp.type == "T_DIVIDE"){  		myfile2 << "/";
+	} else if (tok_temp.type == "T_AND"){     		myfile2 << "&&";
+	} else if (tok_temp.type == "T_OR"){      		myfile2 << "||";
+	} else if (tok_temp.type == "T_NOT"){     		myfile2 << "!";
+	} else if (tok_temp.type == "T_ASSIGN"){  		myfile2 << "=";
+	} else if (tok_temp.type == "T_LESSTHAN"){		myfile2 << "<";
+	} else if (tok_temp.type == "T_LESSTHANEQUAL"){	myfile2 << "<=";
+	} else if (tok_temp.type == "T_GREATERTHAN"){	myfile2 << ">";
+	} else if (tok_temp.type == "T_GREATERTHANEQUAL"){myfile2 << ">=";
+	} else if (tok_temp.type == "T_NOTEQUALTO"){	myfile2 << "!=";
+	} else if (tok_temp.type == "T_EQUALTO"){		myfile2 << "==";
+	} else if (tok_temp.type == "T_TRUE"){			myfile2 << "true";
+	} else if (tok_temp.type == "T_FALSE"){			myfile2 << "false";
+	} else if (tok_temp.type == "T_CHARVAL"){		myfile2 << "\'" << tok_temp.stringValue << "\'";
+		myfile2 << ";" << "\n" << "\t";
+	} else if (tok_temp.type == "T_NUMBERVAL"){		myfile2 << tok_temp.stringValue;
+		myfile2 << ";" << "\n" << "\t";
+	} else if (tok_temp.type == "T_STRINGVAL" && go_back){	
+		myfile2 << "\'" << tok_temp.stringValue[str_array_index] << "\'" ;
+		myfile2 << ";" << "\n" << "\t";
+		
+	} else if (tok_temp.type == "T_SEMICOLON"){
+		//myfile2 << ";" << "\n" << "\t";
+		temp_list2.reset_pos();
+		tok_temp = temp_list2.get_one();
+		
+		temp_list2 = arrayOutput(temp_list2, tok_temp);
+
+		if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING"){
+			for (int f = 0; f < reg_index; f++){
+				
+				myfile2 << "MM[";
+				myfile2 << sym_table.getMMIndex(tok_temp.stringValue) + f;
+				myfile2 << "]";
+				outputValType(tok_val_type);
+				
+				myfile2 << "=R[" << f << "]";
+				outputValType(tok_val_type);
+				myfile2 << ";" << "\n";
+				if (f == reg_index - 1){}
+				else {myfile2 << "\t";}
+			}
+		} else {
+			outputValType(tok_val_type);
+			myfile2 << "=R[0]";
+			outputValType(tok_val_type);
+			myfile2 << ";" << "\n";
+			
+		}
+		
+	}
+	return temp_list2;
+}
+
+int CodeGen::strLength(char str[256]){
+	int length = 0;
+	for (int i = 0; i < 256; i++){ 
+		if (str[i] == '\0' || str[i] == ' '){			
+		} else {
+			length++;
+		}
+	}
+	return length;
+}
+
 list CodeGen::arrayOutput(list temp_list2, tokens tok_temp){
-	tokens tok_temp2; int left, right;
-	myfile2 << "MM[";
+	tokens tok_temp2; int left, right; 
+	
 
 	left = (sym_table.returnValType(tok_temp.stringValue)).array_left;
 	right = (sym_table.returnValType(tok_temp.stringValue)).array_right;
 
-	if ((temp_list2.look_ahead()).type == "T_LBRACKET"){ 
+	if ((temp_list2.look_ahead()).type == "T_LBRACKET"){
+		myfile2 << "MM["; 
 		tok_temp2 = temp_list2.get_one();
 		tok_temp2 = temp_list2.get_one();					
 // !!!!!!!!! NEED A BETTER INDEX FOR EGATIVE NUMBERS !!!!
@@ -280,10 +364,15 @@ list CodeGen::arrayOutput(list temp_list2, tokens tok_temp){
 			myfile2 << (sym_table.getMMIndex(tok_temp.stringValue) + atoi(tok_temp2.stringValue) - left);	
 		}		
 		tok_temp2 = temp_list2.get_one();
+		myfile2 << "]";
+	} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING") {
+			
 	} else {
+		myfile2 << "MM[";
 		myfile2 << sym_table.getMMIndex(tok_temp.stringValue);
+		myfile2 << "]";
 	}
-	myfile2 << "]";
+	
 
 	return temp_list2;
 				
