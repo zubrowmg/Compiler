@@ -35,6 +35,7 @@ CodeGen::CodeGen()
 	prog_declare = false;
 
 	MM_Index = 0;
+	current_array_index = 0;
 	//assign_option = 0;
 }
 
@@ -134,7 +135,7 @@ void CodeGen::outputValType(tokens tok_temp){
 }
 
 void CodeGen::output2(list temp_list2){
-	int reg_index; bool string_detected = false; bool go_back = false;
+	int reg_index; bool string_detected = false; bool go_back = false; bool str_ident = false;
 	tokens tok_temp2; int bs1, bs2, bs3;
 	tokens tok_temp; tokens tok_val_type; int count = 1; int count2 = 1;
 	bool for_state, if_state, ret_state, assign_state, proc_state;
@@ -206,6 +207,23 @@ void CodeGen::output2(list temp_list2){
 							myfile2 << ";" << "\n" << "\t";
 							reg_index++;
 						}
+					} else if (tok_temp.type == "T_IDENTIFIER" && (sym_table.returnValType(tok_temp.stringValue)).is_array){
+						reg_index = 0;
+						string_detected = true;
+						for (int f = 0; f < (sym_table.returnValType(tok_temp.stringValue)).array_size; f++){
+							
+							myfile2 << "R[" << f << "]";
+							outputValType(tok_val_type);
+							myfile2 << "=";
+
+							myfile2 << "MM[";
+							myfile2 << sym_table.getMMIndex(tok_temp.stringValue) + f;
+							myfile2 << "]";
+							outputValType(tok_val_type);
+							myfile2 << ";" << "\n" << "\t";
+							
+							reg_index++;
+						}
 					} else {
 						myfile2 << "R[0]";
 						outputValType(tok_val_type);
@@ -216,15 +234,22 @@ void CodeGen::output2(list temp_list2){
 			} else {
 				//If the next token is a STRING VALUE
 				if (temp_list2.look_ahead_no_wrap().type == "T_STRINGVAL"){
-//cout << temp_list2.look_ahead().stringValue << endl;
-//cout << tok_temp.type << tok_temp.stringValue << endl;
 					myfile2  << "R[" << str_array_index << "]";
 					outputValType(tok_val_type);
 					myfile2 << "=R[" << str_array_index << "]";
 					outputValType(tok_val_type);
 					go_back = true;
 
-				} else if (tok_temp.type != "T_CHARVAL" ){
+				} else if (temp_list2.look_ahead_no_wrap().type == "T_IDENTIFIER" && !(temp_list2.look_ahead_no_wrap().single_array_access) && (sym_table.returnValType(temp_list2.look_ahead_no_wrap().stringValue)).is_array){
+					myfile2  << "R[" << str_array_index << "]";
+					outputValType(tok_val_type);
+					myfile2 << "=R[" << str_array_index << "]";
+					outputValType(tok_val_type);
+					go_back = true;
+					str_ident = true;
+	
+				} 
+				else if (tok_temp.type != "T_CHARVAL" ){
 				if (tok_temp.type != "T_STRINGVAL" ){
 				if (tok_temp.type != "T_NUMBERVAL" ){
 				if (tok_temp.type != "T_SEMICOLON" ){
@@ -236,21 +261,21 @@ void CodeGen::output2(list temp_list2){
 					count = count + 1;
 				}}}}}
 			}
-
+cout << tok_temp.type << " " << tok_temp.stringValue << " " << tok_temp.single_array_access << " " << go_back << endl;
 			temp_list2 = outputMain(temp_list2, tok_temp, tok_val_type, reg_index, str_array_index, go_back);
-//cout << go_back << tok_temp.stringValue << endl;
-//cout << str_array_index << " " << strLength(tok_temp.stringValue) << " " << tok_temp.stringValue << " " << tok_temp.type << endl;
-			if (go_back && tok_temp.type == "T_STRINGVAL"){
+		if (go_back && (tok_temp.type == "T_STRINGVAL" || tok_temp.type == "T_IDENTIFIER")){
 				str_array_index = str_array_index + 1;
-		
-				if (str_array_index  >= strLength(tok_temp.stringValue) ){
-					go_back = false;
+				
+				if ((str_array_index  >= 50) && tok_temp.type == "T_IDENTIFIER") {
+					go_back = false; str_ident = false;
+					str_array_index = 0;
+				} else if ((str_array_index  >= strLength(tok_temp.stringValue)) && tok_temp.type == "T_STRINGVAL" ){
+					go_back = false; str_ident = false;
 					str_array_index = 0;
 				} else {
 					temp_list2.goBackOne();
 					temp_list2.goBackOne();
 					j = j - 2;
-//cout << str_array_index << " " << strLength(tok_temp.stringValue) << tok_temp.stringValue[str_array_index - 1] << endl;
 				}
 				
 			}
@@ -261,13 +286,11 @@ void CodeGen::output2(list temp_list2){
 }
 
 list CodeGen::outputMain(list temp_list2, tokens tok_temp, tokens tok_val_type, int reg_index, int str_array_index, bool go_back){
-	//if (tok_temp.type == "T_STRINGVAL"){
-//cout << str_array_index << " " << go_back << " " << tok_temp.stringValue << " " << tok_temp.type << endl;
-	//}
 
-	if (tok_temp.type == "T_IDENTIFIER"){
+
+	if (tok_temp.type == "T_IDENTIFIER" ){
 		
-		temp_list2 = arrayOutput(temp_list2, tok_temp);
+		temp_list2 = arrayOutput(temp_list2, tok_temp, reg_index);
 
 		outputValType(tok_val_type);
 		myfile2 << ";" << "\n" << "\t";
@@ -304,15 +327,20 @@ list CodeGen::outputMain(list temp_list2, tokens tok_temp, tokens tok_val_type, 
 		myfile2 << "\'" << tok_temp.stringValue[str_array_index] << "\'" ;
 		myfile2 << ";" << "\n" << "\t";
 		
+	} else if (tok_temp.type == "T_IDENTIFIER" && go_back && !(tok_temp.single_array_access)){	
+		myfile2 << "\'" << tok_temp.stringValue[str_array_index] << "\'" ;
+		myfile2 << ";" << "\n" << "\t";
+		
 	} else if (tok_temp.type == "T_SEMICOLON"){
 		//myfile2 << ";" << "\n" << "\t";
 		temp_list2.reset_pos();
 		tok_temp = temp_list2.get_one();
 		
-		temp_list2 = arrayOutput(temp_list2, tok_temp);
+		temp_list2 = arrayOutput(temp_list2, tok_temp, reg_index);
 
 		if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING"){
-			for (int f = 0; f < reg_index; f++){
+			
+			for (int f = 0; f < 50; f++){
 				
 				myfile2 << "MM[";
 				myfile2 << sym_table.getMMIndex(tok_temp.stringValue) + f;
@@ -348,7 +376,7 @@ int CodeGen::strLength(char str[256]){
 	return length;
 }
 
-list CodeGen::arrayOutput(list temp_list2, tokens tok_temp){
+list CodeGen::arrayOutput(list temp_list2, tokens tok_temp, int reg_index){
 	tokens tok_temp2; int left, right; 
 	
 
@@ -365,8 +393,16 @@ list CodeGen::arrayOutput(list temp_list2, tokens tok_temp){
 		}		
 		tok_temp2 = temp_list2.get_one();
 		myfile2 << "]";
-	} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING") {
-			
+	} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING" && temp_list2.look_back().type == "T_SEMICOLON") {
+//cout << "HI";			
+	} else if ((sym_table.returnValType(tok_temp.stringValue)).is_array) {
+		myfile2 << "MM[";
+		myfile2 << sym_table.getMMIndex(tok_temp.stringValue) + current_array_index;
+		myfile2 << "]";
+		current_array_index = current_array_index + 1;
+		if (current_array_index >= (sym_table.returnValType(tok_temp.stringValue)).array_size){
+			current_array_index = 0;
+		}
 	} else {
 		myfile2 << "MM[";
 		myfile2 << sym_table.getMMIndex(tok_temp.stringValue);
@@ -380,7 +416,10 @@ list CodeGen::arrayOutput(list temp_list2, tokens tok_temp){
 
 void CodeGen::printCode()
 {
-
+	for (int i = 0; i < code_gen_order.size(); i++){
+		code_gen_order[i].reset_pos();
+		SinArAChecker(code_gen_order[i]);		
+	}
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
 		if (code_gen_order[i].getCG() == "prog_declare"){ 			
@@ -449,4 +488,23 @@ void CodeGen::set_flags(tokens tok)
 	if (tok.type == "T_IS" && prev_TT_ident){ prog_start = true; prog_declare = true;}
 	if (tok.type == "T_IDENTIFIER" && prev_TT_prog){ prev_TT_ident = true; } else { prev_TT_ident = false; }
 	if (tok.type == "T_PROGRAM"){ prev_TT_prog = true; } else { prev_TT_prog = false; }
+}
+
+void CodeGen::SinArAChecker(list temp_list2){
+	tokens tok_temp; bool last_T_ident = false;
+	tokens tok_last_ident;
+	for (int j = 0; j < temp_list2.get_size(); j++){
+		tok_temp = temp_list2.get_one();
+		
+		if (last_T_ident && tok_temp.type == "T_LBRACKET"){
+			temp_list2.modifyLast(tok_last_ident);
+
+		}
+
+		if (tok_temp.type == "T_IDENTIFIER"){
+			last_T_ident = true; tok_last_ident = tok_temp;
+		} else {
+			last_T_ident = false;
+		}
+	}
 }

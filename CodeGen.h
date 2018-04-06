@@ -29,6 +29,7 @@ class CodeGen{
 		Symbol sym_table;
 		//std::std::vector<list> exp_rewrite;	
 		//int assign_option;
+		int current_array_index;
 
     public:
     	CodeGen();
@@ -40,11 +41,11 @@ class CodeGen{
     	void output2(list input);
 
     	void outputValType(tokens tok_temp);
-    	list arrayOutput(list input_list, tokens tok_temp);
+    	list arrayOutput(list input_list, tokens tok_temp, int reg_index);
     	list outputMain(list temp_list2, tokens tok_temp, tokens tok_val_type, int reg_index, int str_array_index, bool go_back);
 
     	int strLength(char str[256]);
-
+    	void SinArAChecker(list input);
 };
 
 #endif

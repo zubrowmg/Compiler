@@ -55,6 +55,16 @@ int list::display()
 int list::get_size(){return size;}
 int list::reset_pos(){ pos = head; return 0;}
 
+void list::modifyLast(tokens tok){
+//cout << "*" << tok.stringValue << "*"  << "  " << "*"  << (((pos->previous)->previous)->token).stringValue << "*"  << endl;
+	//if ((tok.stringValue) == ((((pos->previous)->previous)->token).stringValue)){
+		
+//cout << "HI";
+		(((pos->previous)->previous)->token).single_array_access = true;
+
+	//}
+}
+
 tokens list::get_one() 
 {	
 	node *temp = new node;	   		
@@ -72,6 +82,18 @@ tokens list::look_ahead()
 {	
 	return pos->token;
 } 
+
+tokens list::look_back() 
+{	
+	if (pos == head){
+		return (tail->previous)->token;
+	} else if (pos == head->next){
+		return tail->token;
+	} else {
+		return ((pos->previous)->previous)->token;
+	}
+} 
+
 
 tokens list::look_ahead_no_wrap() 
 {	

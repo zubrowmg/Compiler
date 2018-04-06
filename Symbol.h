@@ -11,6 +11,7 @@ struct symbolNode{
     int int_val;
 
     int MM_Index;
+    
     symbolNode()
     {
         is_array = false; array_size = 1; array_left = 0; array_right = 0;
