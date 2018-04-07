@@ -27,10 +27,16 @@ PROGRAM grant IS
 	end procedure;
 
 	begin
+		if(true) then i[3] := i[3] + 1;
+		end if
+
 		//poop := "HI" + "Im";	
-		//poop2 := poop + "zk";	
-		zach[2] := 3 * 5;
-		//i[3] := 8 - zach[2]; 
+		//poop2 := poop + "zk";
+		//poop2 := "zk" + poop;
+	
+		//zach[2] := 3 * 5;
+		//i[3] := 8 - zach[2];
+		//i[3] := zach[2] - 8; 
 
 		//i[3] := 4;		
 		//i[3] := i[3] + i[3];

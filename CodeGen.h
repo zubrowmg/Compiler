@@ -30,6 +30,7 @@ class CodeGen{
 		//std::std::vector<list> exp_rewrite;	
 		//int assign_option;
 		int current_array_index;
+        //bool last_TT_Then;
 
     public:
     	CodeGen();
@@ -43,9 +44,17 @@ class CodeGen{
     	void outputValType(tokens tok_temp);
     	list arrayOutput(list input_list, tokens tok_temp, int reg_index);
     	list outputMain(list temp_list2, tokens tok_temp, tokens tok_val_type, int reg_index, int str_array_index, bool go_back);
+        //list outputMainSimple(list temp_list2, tokens tok_temp);
 
     	int strLength(char str[256]);
+        bool isFloat(char str[256]);
+        bool checkOp(tokens tok_input);
     	void SinArAChecker(list input);
+        
+        void generalStatements(list input, tokens tok_input);
+        void generalIf(list input);
+        void generalEnd();
+        void generalExpression(tokens tok_temp);
 };
 
 #endif
