@@ -26,12 +26,16 @@ class list{
 		tokens look_ahead();
 		tokens look_back();
 		tokens look_ahead_no_wrap();
+		tokens look_ahead_two_no_wrap();
 		void goBackOne();
 
 		void setCG(std::string input);
 		std::string getCG();
 
 		void modifyLast(tokens tok);
+
+		void deleteNode(tokens tok);
+		//void setPos();
 		
 };
 

@@ -6,10 +6,12 @@
 PROGRAM grant IS
 	//global char jake; // [5:7]
 	//global char ryan;
+	//global integer h;
+	//global integer j;
 	global string poop;
 	global string poop2;
 	global integer zach[1:5]; 
- 	global integer i[2:7];
+ 	global integer i;
 
 	procedure if_proc()
 		//integer declaration[5:7];
@@ -27,8 +29,15 @@ PROGRAM grant IS
 	end procedure;
 
 	begin
-		if(true) then i[3] := i[3] + 1;
+		if("hy" + poop + poop2) then i := i + 1;
 		end if
+		
+		// (true | false) i | true | false
+		// ident = false   (true | ident)
+		// (5 < 10) (i < 10) (10 < i)
+		// (5 < 10 | true) (i[4] < i[7])
+		// two strings (str == str2)
+
 
 		//poop := "HI" + "Im";	
 		//poop2 := poop + "zk";

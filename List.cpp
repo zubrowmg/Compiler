@@ -50,6 +50,9 @@ int list::display()
 	return 0;
 } 
 
+void list::deleteNode(tokens tok){
+
+}
 
 
 int list::get_size(){return size;}
@@ -102,6 +105,18 @@ tokens list::look_ahead_no_wrap()
 		return empty;
 	} else {
 		return pos->token;
+	}
+}
+
+tokens list::look_ahead_two_no_wrap() 
+{	
+	tokens empty;
+	if (pos == head){
+		return empty;
+	} else if (pos == tail){
+		return empty;
+	} else {
+		return (pos->next)->token;
 	}
 }
 

@@ -11,8 +11,10 @@ struct tokens{
  	int line;
 	char assigned_value[256];
 
-    bool single_array_access;	 	 
+    bool single_array_access;
+    int index;	 	 
     tokens(){
+        index = 0;
         single_array_access = false;
     }
 };

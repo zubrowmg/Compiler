@@ -21,6 +21,7 @@ class CodeGen{
     	bool prog_start, prog_begin, prog_end, proc_start, proc_begin, proc_end;
     	bool prev_TT_prog, prev_TT_ident, prev_TT_is, prev_TT_begin, prev_TT_end;
     	bool prev_TT_proc, prev_TT_semi, prog_declare, prev_TT_ident2, prev_TT_LPAR;
+        bool prev_TT_int, prev_TT_bool, prev_TT_str, prev_TT_char, prev_TT_float;
     	std::vector<list> code_gen_order;
     	list temp_list;
     	ofstream myfile; ofstream myfile2;
@@ -44,7 +45,7 @@ class CodeGen{
     	void outputValType(tokens tok_temp);
     	list arrayOutput(list input_list, tokens tok_temp, int reg_index);
     	list outputMain(list temp_list2, tokens tok_temp, tokens tok_val_type, int reg_index, int str_array_index, bool go_back);
-        //list outputMainSimple(list temp_list2, tokens tok_temp);
+        list outputMainNew(list temp_list2, tokens tok_temp, int count, int index);
 
     	int strLength(char str[256]);
         bool isFloat(char str[256]);
@@ -54,7 +55,9 @@ class CodeGen{
         void generalStatements(list input, tokens tok_input);
         void generalIf(list input);
         void generalEnd();
-        void generalExpression(tokens tok_temp);
+        void generalExpression(list temp_list2);
+        void evalExpression(list expression_list);
+        void evalRelation(list expression_list);
 };
 
 #endif

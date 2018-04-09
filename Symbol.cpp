@@ -36,17 +36,14 @@ int Symbol::setMMIndex(std::string ident, int index)
 	bool done = false;
 	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = global.begin(); itr != global.end(); ++itr){
+//cout << "\t" << ident << itr->first << endl;
+        
         if (itr->first == ident){
-
         	(itr->second).MM_Index = index;
-
-//cout << new_index << endl;
-
         	if ((itr->second).is_array == true){
-        		new_index = index + (itr->second).array_size + 1;
-   	
+        		new_index = index + (itr->second).array_size ;
         	} else {
-        		new_index = index + 1;   			
+        		new_index = index + 1; 
         	}
         	done = true; 
         }
@@ -295,10 +292,6 @@ void Symbol::modify(std::string ident){
     }
 }
 
-
-
-
-
 void Symbol::modify(std::string ident, std::string num, char c){ 
 	bool done = false;
 	std::map <std::string, symbolNode> :: iterator itr;
@@ -544,7 +537,7 @@ void Symbol::printGlobal()
         std::cout  <<  '\t' << itr->first 
               <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' '<< '\t' ;
       	if ((itr->second).is_array){
-      		cout << "Is Array" << ' ' << '\t' << "[" << (itr->second).array_left << ':' << (itr->second).array_right << "]" << '\t' << (itr->second).array_size << endl;
+      		cout << "Is Array" << ' ' << '\t' << "[" << (itr->second).array_left << ':' << (itr->second).array_right << "]" << '\t' << (itr->second).array_size << '\t' << (itr->second).MM_Index << endl;
       	} else {
     		cout << "Not Array" << endl;
     	}
@@ -700,7 +693,7 @@ int ProcedureNode::setMMIndex(std::string ident, int index){
         if (itr->first == ident){
         	(itr->second).MM_Index = index;
         	if ((itr->second).is_array == true){
-        		new_index = index + (itr->second).array_size + 1;
+        		new_index = index + (itr->second).array_size;
         	} else {
         		new_index = index + 1;
         	}
@@ -729,7 +722,7 @@ void ProcedureNode::printTable()
         std::cout  <<  '\t' << itr->first 
               <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' '  <<  '\t';
       	if ((itr->second).is_array){
-      		cout << "Is Array" << ' ' << '\t' << "[" << (itr->second).array_left << ':' << (itr->second).array_right << "]" << '\t' << (itr->second).array_size << endl;
+      		cout << "Is Array" << ' ' << '\t' << "[" << (itr->second).array_left << ':' << (itr->second).array_right << "]" << '\t' << (itr->second).array_size << '\t' << (itr->second).MM_Index << endl;
       	} else {
     		cout << "Not Array" << endl;
     	}
