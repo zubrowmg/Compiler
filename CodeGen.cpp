@@ -352,41 +352,50 @@ void CodeGen::generalExpression(list temp_list2){
 
 void CodeGen::evalExpression(list expression_list){
 	bool relation = false; list relation_list; list empty; tokens tok_temp2;
+	int num_of_relations = 0; tokens tok_relation; int index = 0;
 
 	// Relation checker
 	expression_list.reset_pos();
 	for (int j = 0; j < expression_list.get_size(); j++){
 		tok_temp2 = expression_list.get_one();
-		if (tok_temp2.type == "T_LESSTHAN" || tok_temp2.type == "T_LESSTHANEQUAL" 
-										   || tok_temp2.type == "T_GREATERTHAN" || tok_temp2.type == "T_GREATERTHANEQUAL"
-										   || tok_temp2.type == "T_NOTEQUALTO" || tok_temp2.type == "T_EQUALTO"
-										   || j == expression_list.get_size() - 1){
+		if (isRelation(tok_temp2) || j == expression_list.get_size() - 1){
+			if (isRelation(tok_temp2)){
+				num_of_relations = num_of_relations + 1;
+				tok_relation = tok_temp2;
+			}
 			if (j == expression_list.get_size() - 1){
 				relation_list.createnode(tok_temp2);	
 			}
-			//expression_list.display();
-			evalRelation(relation_list);
+ //relation_list.display();
+ //cout << "----" << endl;
+ //cout << index << endl;
+			index = evalRelation(relation_list, index);
 			relation_list = empty;
 		} else {
 			relation_list.createnode(tok_temp2);
 		}
+
+		if (num_of_relations > 1){
+
+		}
 	}
 }
 
-void CodeGen::evalRelation(list relation_list){
-	int count = 1; int index = 0; tokens tok_temp2; int left, right;
 
+
+int CodeGen::evalRelation(list relation_list, int prority_index){
+	int count = 1; int index = 0; tokens tok_temp2; int left, right;
+	int index_return = 0;
 	relation_list.reset_pos();
 	for (int j = 0; j < relation_list.get_size(); j++){
 		tok_temp2 = relation_list.get_one();
 		if (count == 1){
-
 			if (tok_temp2.type == "T_IDENTIFIER"){
 				if (sym_table.returnValType(tok_temp2.stringValue).is_array){
 					left = (sym_table.returnValType(tok_temp2.stringValue)).array_left;
 					right = (sym_table.returnValType(tok_temp2.stringValue)).array_right;
 					if (tok_temp2.single_array_access){
-						myfile2 << "R[" << index << "]";
+						myfile2 << "R[" << index + prority_index<< "]";
 						outputValType(tok_temp2);
 						myfile2 << "=";
 						myfile2 << "MM[";
@@ -400,14 +409,15 @@ void CodeGen::evalRelation(list relation_list){
 							outputValType(tok_temp2);
 							myfile2 << "=";
 							myfile2 << "MM[";
-							myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + k  - 1;
+							myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + k  ;
 							myfile2 << "]";
 							outputValType(tok_temp2);
 							myfile2 << ";" << "\n" << "\t";
 						}
 					}
 				} else {
-					myfile2 << "R[" << index << "]";
+
+					myfile2 << "R[" << (index + prority_index) << "]";
 					outputValType(tok_temp2);
 					myfile2 << "=";
 					myfile2 << "MM[";
@@ -418,16 +428,16 @@ void CodeGen::evalRelation(list relation_list){
 				}
 			} else if(tok_temp2.type == "T_STRINGVAL"){
 				for (int k = 0; k < strLength(tok_temp2.stringValue); k++){
-					myfile2 << "R[" << k << "]";
+					myfile2 << "R[" << k + prority_index<< "]";
 					outputValType(tok_temp2);
 					myfile2 << "=";
 					myfile2 << "\'";
 					myfile2 << tok_temp2.stringValue[k];
-					myfile2 << "\'";
+					myfile2 << "\'"; 
 					myfile2 << ";" << "\n" << "\t";
 				}
 			} else {
-				myfile2 << "R[" << index << "]";
+				myfile2 << "R[" << index + prority_index << "]";
 				outputValType(tok_temp2);
 				myfile2 << "=";
 			}
@@ -437,18 +447,18 @@ void CodeGen::evalRelation(list relation_list){
             if (tok_temp2.type != "T_STRINGVAL" ){
             if (tok_temp2.type != "T_NUMBERVAL" ){
             if (tok_temp2.type != "T_IDENTIFIER" ){
-				myfile2 << "R[" << index << "]";
+				myfile2 << "R[" << index + prority_index << "]";
 				outputValType(relation_list.look_ahead());
-				myfile2 << "=R[" << index << "]";
+				myfile2 << "=R[" << index + prority_index << "]";
 				outputValType(relation_list.look_ahead());
 			}}}}
 			count = count + 1;
 		}
 
-		outputMainNew(relation_list, tok_temp2, count, index);
+		outputMainNew(relation_list, tok_temp2, count, index + prority_index);
 
 		if (tok_temp2.type == "T_IDENTIFIER" && sym_table.returnValType(tok_temp2.stringValue).is_array 
-											 && !(tok_temp2.single_array_access)){
+											 && !(tok_temp2.single_array_access) && count > 2){
 			if (index < sym_table.returnValType(tok_temp2.stringValue).array_size - 1){
 				relation_list.goBackOne();
 				relation_list.goBackOne();
@@ -459,8 +469,43 @@ void CodeGen::evalRelation(list relation_list){
 				index = 0;
 			}
 
+		} else if(tok_temp2.type == "T_STRINGVAL" && count > 2){
+			if (index  < strLength(tok_temp2.stringValue) - 1){
+				relation_list.goBackOne();
+				relation_list.goBackOne();
+				j = j - 2;
+			}
+			index = index + 1;
+			if (index >= strLength(tok_temp2.stringValue) ){
+				index = 0;
+			}
+		}
+
+		// Index evaluation
+		if (tok_temp2.type == "T_STRINGVAL" 
+						|| (tok_temp2.type == "T_IDENTIFIER" && !(tok_temp2.single_array_access) && sym_table.returnValType(tok_temp2.stringValue).is_array)){
+
+			if (tok_temp2.type == "T_IDENTIFIER" && index_return < sym_table.returnValType(tok_temp2.stringValue).array_size ){
+				index_return = sym_table.returnValType(tok_temp2.stringValue).array_size ;
+			} else if (tok_temp2.type == "T_STRINGVAL" && index_return < strLength(tok_temp2.stringValue)){
+
+				index_return = strLength(tok_temp2.stringValue);
+			}
+		} else if (tok_temp2.type == "T_IDENTIFIER" && !(sym_table.returnValType(tok_temp2.stringValue).is_array)) {
+			if (index_return < sym_table.returnValType(tok_temp2.stringValue).array_size){
+				index_return = sym_table.returnValType(tok_temp2.stringValue).array_size;
+			}
+		} else if (tok_temp2.type == "T_NUMBERVAL" || tok_temp2.type == "T_CHARVAL") {
+			if (index_return < sym_table.returnValType(tok_temp2.stringValue).array_size){
+				index_return = sym_table.returnValType(tok_temp2.stringValue).array_size;
+			}
 		}
 	}
+
+	
+ //cout << index_return << endl;
+
+	return index_return;
 }
 
 list CodeGen::outputMainNew(list temp_list2,tokens tok_temp, int count, int index){
@@ -496,10 +541,10 @@ list CodeGen::outputMainNew(list temp_list2,tokens tok_temp, int count, int inde
 		myfile2 << ";" << "\n" << "\t";
 	} else if (tok_temp.type == "T_NUMBERVAL"){		myfile2 << tok_temp.stringValue;
 		myfile2 << ";" << "\n" << "\t";
-	} /*else if (tok_temp.type == "T_STRINGVAL" && go_back){	
-		myfile2 << "\'" << tok_temp.stringValue[str_array_index] << "\'" ;
+	} else if (tok_temp.type == "T_STRINGVAL"  && count > 2){	
+		myfile2 << "\'" << tok_temp.stringValue[index] << "\'" ;
 		myfile2 << ";" << "\n" << "\t";		
-	} */
+	} 
 		
 	return temp_list2;
 }
@@ -516,14 +561,14 @@ list CodeGen::arrayOutput(list temp_list2, tokens tok_temp, int reg_index){
 		myfile2 << "MM["; 
 		tok_temp2 = temp_list2.get_one();
 		tok_temp2 = temp_list2.get_one();					
-// !!!!!!!!! NEED A BETTER INDEX FOR EGATIVE NUMBERS !!!!
+ // !!!!!!!!! NEED A BETTER INDEX FOR EGATIVE NUMBERS !!!!
 		if (left >= 0 && right >= 0 && left < right){
 			myfile2 << (sym_table.getMMIndex(tok_temp.stringValue) + atoi(tok_temp2.stringValue) - left);	
 		}		
 		tok_temp2 = temp_list2.get_one();
 		myfile2 << "]";
 	} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING" && temp_list2.look_back().type == "T_SEMICOLON") {
-//cout << "HI";			
+ //cout << "HI";			
 	} else if ((sym_table.returnValType(tok_temp.stringValue)).is_array) {
 		myfile2 << "MM[";
 		myfile2 << sym_table.getMMIndex(tok_temp.stringValue) + current_array_index;
@@ -757,16 +802,14 @@ int CodeGen::strLength(char str[256]){
 
 
 
-void CodeGen::display()
-{
+void CodeGen::display(){
 	for (int i = 0; i < code_gen_order.size(); i++){
 		cout << "\t" << code_gen_order[i].getCG() << endl;
 		code_gen_order[i].display();
 	}
 }
 
-void CodeGen::set_flags(tokens tok)
-{
+void CodeGen::set_flags(tokens tok){
 	//cout << tok.type << endl;
 
 	if (tok.type == "T_PROGRAM" && prev_TT_end && prog_begin ) { proc_begin = false; prog_end = true; }
@@ -808,5 +851,15 @@ void CodeGen::SinArAChecker(list temp_list2){
 		} else {
 			last_T_ident = false;
 		}
+	}
+}
+
+bool CodeGen::isRelation(tokens tok_temp2){
+	if (tok_temp2.type == "T_LESSTHAN" || tok_temp2.type == "T_LESSTHANEQUAL" 
+									   || tok_temp2.type == "T_GREATERTHAN" || tok_temp2.type == "T_GREATERTHANEQUAL"
+									   || tok_temp2.type == "T_NOTEQUALTO" || tok_temp2.type == "T_EQUALTO"){
+		return true;
+	} else {
+		return false;
 	}
 }

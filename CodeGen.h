@@ -49,6 +49,7 @@ class CodeGen{
 
     	int strLength(char str[256]);
         bool isFloat(char str[256]);
+        bool isRelation(tokens tok);
         bool checkOp(tokens tok_input);
     	void SinArAChecker(list input);
         
@@ -57,7 +58,7 @@ class CodeGen{
         void generalEnd();
         void generalExpression(list temp_list2);
         void evalExpression(list expression_list);
-        void evalRelation(list expression_list);
+        int evalRelation(list expression_list, int index);
 };
 
 #endif
