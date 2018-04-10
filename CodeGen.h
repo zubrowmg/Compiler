@@ -28,10 +28,12 @@ class CodeGen{
     	int MM_Index;
 		std::vector<int> MM;    
 		Symbol sym_table;
-		//std::std::vector<list> exp_rewrite;	
-		//int assign_option;
 		int current_array_index;
-        //bool last_TT_Then;
+
+        // Used in evalExpression and evalRelation
+        tokens second_tok_val_type, first_tok_val_type;
+        int first_reg_index, second_reg_index;
+        
 
     public:
     	CodeGen();
@@ -59,6 +61,7 @@ class CodeGen{
         void generalExpression(list temp_list2);
         void evalExpression(list expression_list);
         int evalRelation(list expression_list, int index);
+        void outputRelation(tokens relation);
 };
 
 #endif
