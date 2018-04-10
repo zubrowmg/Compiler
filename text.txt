@@ -29,7 +29,7 @@ PROGRAM grant IS
 	end procedure;
 
 	begin
-		if("lol" + "lol") then z[4] := i + 1;
+		if(true + false == "lol" - "kill") then z[4] := i + 1;
 		end if
 		
 		// (true | false) i | true | false

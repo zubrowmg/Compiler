@@ -1,6 +1,6 @@
 string;
 string;
-int[15];
+int[312];
 int;
 
 int main(){

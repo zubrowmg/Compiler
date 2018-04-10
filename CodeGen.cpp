@@ -506,7 +506,8 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 
 			count = count + 1;
 		} else {
-
+			if (tok_temp2.type != "T_TRUE" ){
+			if (tok_temp2.type != "T_FALSE" ){
 			if (tok_temp2.type != "T_CHARVAL" ){
             if (tok_temp2.type != "T_STRINGVAL" ){
             if (tok_temp2.type != "T_NUMBERVAL" ){
@@ -515,7 +516,7 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 				outputValType(relation_list.look_ahead());
 				myfile2 << "=R[" << index + prority_index << "]";
 				outputValType(relation_list.look_ahead());
-			}}}}
+			}}}}}}
 			count = count + 1;
 		}
 
@@ -534,24 +535,14 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 			}
 
 		} else if(tok_temp2.type == "T_STRINGVAL" && count > 2){
-			if (index  < strLength(tok_temp2.stringValue) - 1){
+			if (index  < 49 ){
 				relation_list.goBackOne();
 				relation_list.goBackOne();
 				j = j - 2;
 			}
-	cout << strLength(tok_temp2.stringValue) - 1 << endl;
-			if (index >= strLength(tok_temp2.stringValue) - 1){
-				//for (int k = strLength(tok_temp2.stringValue); k < 50; k++){
-				//	myfile2 << "R[" << k + prority_index<< "]";
-				//	outputValType(tok_temp2);
-				//	myfile2 << "=";
-				//	myfile2 << "\'" << " ";
-				//	myfile2 << "\'"; 
-				//	myfile2 << ";" << "\n" << "\t";
-				//} 
-			}
 			index = index + 1;
-			if (index >= strLength(tok_temp2.stringValue) ){
+	//cout << index << endl;
+			if (index > 49 ){
 				index = 0;
 			}
 		}
@@ -562,7 +553,7 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
  
 			if (tok_temp2.type == "T_IDENTIFIER" && index_return < sym_table.returnValType(tok_temp2.stringValue).array_size ){
 				index_return = sym_table.returnValType(tok_temp2.stringValue).array_size + prority_index;
-			} else if (tok_temp2.type == "T_STRINGVAL" && index_return < strLength(tok_temp2.stringValue)){
+			} else if (tok_temp2.type == "T_STRINGVAL" && index_return < 50){
 
 				index_return = 50 + prority_index;
 			}
@@ -577,6 +568,10 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 			}
  //cout <<  tok_temp2.stringValue << " " << prority_index << " " << index_return << endl;
 		} else if ( (tok_temp2.type == "T_IDENTIFIER" && (tok_temp2.single_array_access) && sym_table.returnValType(tok_temp2.stringValue).is_array)){
+			if (index_return < 1){
+				index_return = 1 + prority_index;
+			}
+		} else if (tok_temp2.type == "T_TRUE" || tok_temp2.type == "T_FALSE"){
 			if (index_return < 1){
 				index_return = 1 + prority_index;
 			}
@@ -616,15 +611,20 @@ list CodeGen::outputMainNew(list temp_list2,tokens tok_temp, int count, int inde
 	} else if (tok_temp.type == "T_GREATERTHANEQUAL"){//myfile2 << ">=";
 	} else if (tok_temp.type == "T_NOTEQUALTO"){	//myfile2 << "!=";
 	} else if (tok_temp.type == "T_EQUALTO"){		//myfile2 << "==";
-	} else if (tok_temp.type == "T_TRUE"){			myfile2 << "true";
-	} else if (tok_temp.type == "T_FALSE"){			myfile2 << "false";
+	} else if (tok_temp.type == "T_TRUE"){			myfile2 << "true" ; myfile2 << ";" << "\n" << "\t";
+	} else if (tok_temp.type == "T_FALSE"){			myfile2 << "false"; myfile2 << ";" << "\n" << "\t"; 
 	} else if (tok_temp.type == "T_CHARVAL"){		myfile2 << "\'" << tok_temp.stringValue << "\'";
 		myfile2 << ";" << "\n" << "\t";
 	} else if (tok_temp.type == "T_NUMBERVAL"){		myfile2 << tok_temp.stringValue;
 		myfile2 << ";" << "\n" << "\t";
 	} else if (tok_temp.type == "T_STRINGVAL"  && count > 2){	
-		myfile2 << "\'" << tok_temp.stringValue[index] << "\'" ;
-		myfile2 << ";" << "\n" << "\t";		
+		if (strLength(tok_temp.stringValue) <= index){
+			myfile2 << "\'" << " " << "\'" ;
+			myfile2 << ";" << "\n" << "\t";
+		} else {
+			myfile2 << "\'" << tok_temp.stringValue[index] << "\'" ;
+			myfile2 << ";" << "\n" << "\t";
+		}		
 	} 
 		
 	return temp_list2;
