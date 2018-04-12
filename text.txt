@@ -1,6 +1,6 @@
 //leaving off end of program period.  is it correct?  officially no, but should we compile and simply issue a warning?  i leave that up to you.
 
-// printf("%d", MM[1].int_val);
+
 // 5+(9-3) / (9-7)
 
 PROGRAM grant IS
@@ -12,7 +12,7 @@ PROGRAM grant IS
 	global string poop2;
 	global integer z[3:12]; 
  	global integer i;
-	global char ch[0:2];
+	global integer ch[0:2];
 
 	procedure if_proc()
 		//integer declaration[5:7];
@@ -30,10 +30,12 @@ PROGRAM grant IS
 	end procedure;
 
 	begin
-		ch[0] := 'l'; ch[1] := 'o'; ch[2] := 'l';
-		if( ch == "LOL") then z[4] := i + 1;
+		ch[0] := 1; ch[1] := 2; ch[2] := 3;
+		if( ch == ch == ch) then z[4] := i + 1;
 		end if
 		
+		// printf("%d", MM[1].int_val);
+
 		// (true | false) i | true | false
 		// ident = false   (true | ident)
 		// (5 < 10) (i < 10) (10 < i)
