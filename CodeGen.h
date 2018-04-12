@@ -33,6 +33,7 @@ class CodeGen{
         // Used in evalExpression and evalRelation
         tokens second_tok_val_type, first_tok_val_type;
         int first_reg_index, second_reg_index;
+        int first_array_index_start, second_array_index_start; 
         
 
     public:

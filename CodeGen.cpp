@@ -42,8 +42,7 @@ CodeGen::CodeGen()
 	//assign_option = 0;
 }
 
-void CodeGen::init(tokens tok, Symbol sym)
-{
+void CodeGen::init(tokens tok, Symbol sym){
 	list empty; 
 	sym_table = sym;
 	//-------- Initialized Program Space Variables --------//
@@ -86,8 +85,7 @@ void CodeGen::init(tokens tok, Symbol sym)
 	set_flags(tok);
 }
 
-void CodeGen::printCode()
-{
+void CodeGen::printCode(){
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
 		SinArAChecker(code_gen_order[i]);		
@@ -280,7 +278,7 @@ void CodeGen::generalIf(list temp_list2){
 		}
 	}
 
-//EXPRESSION SHIT HERE
+ //EXPRESSION SHIT HERE
 	for (int j = 0; j < temp_list2.get_size(); j++){
 		tok_temp = temp_list2.get_one();
 		if (tok_temp.type == "T_RPARANTH"){		
@@ -295,7 +293,7 @@ void CodeGen::generalIf(list temp_list2){
 
 	myfile2 << "\n" << "if (";
 	for (int j = 0; j < temp_list2.get_size(); j++){
-// Final Bool SHIT HERE
+ // Final Bool SHIT HERE
 	}
 	myfile2 << ") {" << "\n" << "\t";
 }
@@ -352,7 +350,7 @@ void CodeGen::generalExpression(list temp_list2){
 void CodeGen::evalExpression(list expression_list){
 	bool relation = false; list relation_list; list empty; tokens tok_temp2;
 	int num_of_relations = 0; int index = 0, count = 1; 
-	tokens new_tok_relation, old_tok_relation; 
+	tokens new_tok_relation, old_tok_relation; int bool_index = 0; int random_counter = 0;
 
 	// Relation checker
 	expression_list.reset_pos();
@@ -377,9 +375,11 @@ void CodeGen::evalExpression(list expression_list){
 			relation_list = empty;
 
 			if (num_of_relations > 1){
- 				
+
+
  				// If it is a single entity, no arrays
 				if (first_tok_val_type.type == "T_NUMBERVAL"
+							|| first_tok_val_type.type == "T_TRUE" || first_tok_val_type.type == "T_FALSE"
 							|| first_tok_val_type.type == "T_CHARVAL"
 							|| (first_tok_val_type.type == "T_IDENTIFIER" && sym_table.returnValType(first_tok_val_type.stringValue).is_array) && first_tok_val_type.single_array_access
 							|| (first_tok_val_type.type == "T_IDENTIFIER" && !(sym_table.returnValType(first_tok_val_type.stringValue).is_array))){
@@ -398,14 +398,130 @@ void CodeGen::evalExpression(list expression_list){
 						outputValType(first_tok_val_type);
 						myfile2 << ";" << "\n";
 					}
-				// String or an array
-				} else if (first_tok_val_type.type == "T_STRINGVAL"
-							|| (first_tok_val_type.type == "T_IDENTIFIER" && sym_table.returnValType(first_tok_val_type.stringValue).is_array) && !first_tok_val_type.single_array_access){
+				// String
+				} else if (first_tok_val_type.type == "T_STRINGVAL"){
 					if (count == 1){
-						
+
+ 						if (second_tok_val_type.type == "T_STRINGVAL"){
+							for (int k = 0; k < 50; k++){
+								myfile2 << "R[" << k << "].bool_val=R[" << second_array_index_start + k << "]";
+								outputValType(second_tok_val_type); 
+								outputRelation(old_tok_relation);
+								myfile2 << "R[" << first_array_index_start + k << "]";
+								outputValType(first_tok_val_type);
+								myfile2 << ";" << "\n" << "\t" << "\t";
+							}
+							for (int k = 49; k > 0; k--){
+								myfile2 << "R[" << k - 1 << "].bool_val=R[" << k << "].bool_val&&"; 
+								myfile2 << "R[" << k - 1 << "].bool_val";
+								myfile2 << ";" << "\n" << "\t";
+							}
+							bool_index = bool_index + 50;
+						} else if ((second_tok_val_type.type == "T_IDENTIFIER" && sym_table.returnValType(second_tok_val_type.stringValue).is_array) && !second_tok_val_type.single_array_access){
+	cout << 78 << endl;
+						}
 						count = count + 1;
 					} else {
-						
+
+ //(sym_table.returnValType(tok_temp.stringValue)).str_val == "V_CHAR"
+						if (second_tok_val_type.type == "T_STRINGVAL"){
+							for (int k = 0; k < 50; k++){
+								myfile2 << "R[" << k + bool_index << "].bool_val=R[" << second_array_index_start + k << "]";
+								outputValType(second_tok_val_type); 
+								outputRelation(old_tok_relation);
+								myfile2 << "R[" << first_array_index_start + k << "]";
+								outputValType(first_tok_val_type);
+								myfile2 << ";" << "\n" << "\t" << "\t";
+							}
+							for (int k = 49; k > 0; k--){
+								myfile2 << "R[" << k - 1 + bool_index << "].bool_val=R[" << k + bool_index << "].bool_val&&"; 
+								myfile2 << "R[" << k - 1 + bool_index << "].bool_val";
+								myfile2 << ";" << "\n" << "\t";
+							}
+
+							myfile2 << "R[0].bool_val=R[0].bool_val&&R[" << bool_index << "].bool_val;";
+							myfile2 << ";" << "\n" << "\n" << "\t";
+							bool_index = bool_index + 50;
+						}
+					}
+				// Array
+				} else if ((first_tok_val_type.type == "T_IDENTIFIER" && sym_table.returnValType(first_tok_val_type.stringValue).is_array) && !first_tok_val_type.single_array_access){
+					if (count == 1){
+						if (second_tok_val_type.type == "T_STRINGVAL"){
+ 							random_counter = 0;
+							for (int k = 0; k < 50; k++){								
+								if (k < sym_table.returnValType(first_tok_val_type.stringValue).array_size){									
+									myfile2 << "R[" << k << "].bool_val=R[" << second_array_index_start + k << "]";
+									outputValType(second_tok_val_type);
+									outputRelation(old_tok_relation);
+									myfile2 << "R[" << first_array_index_start + k << "]";
+									outputValType(first_tok_val_type);
+									myfile2 << ";" << "\n" << "\t" << "\t";	
+									random_counter = random_counter + 1;
+								} else {
+									if (strLength(second_tok_val_type.stringValue) != sym_table.returnValType(first_tok_val_type.stringValue).array_size){
+										myfile2 << "R[" << k << "].bool_val=R[" << second_array_index_start + k << "]";
+										outputValType(second_tok_val_type);
+										outputRelation(old_tok_relation);
+										myfile2 << "\'" << " " << "\'";
+										myfile2 << ";" << "\n" << "\t" << "\t";
+										random_counter = random_counter + 1;
+									}	
+								}
+							}
+							if (strLength(second_tok_val_type.stringValue) != sym_table.returnValType(first_tok_val_type.stringValue).array_size){
+								bool_index = bool_index + 50;
+							} else {
+								bool_index = bool_index + strLength(second_tok_val_type.stringValue);
+							}
+
+							for (int k = random_counter - 1; k > 0; k--){
+								myfile2 << "R[" << k - 1 << "].bool_val=R[" << k << "].bool_val&&"; 
+								myfile2 << "R[" << k - 1 << "].bool_val";
+								myfile2 << ";" << "\n" << "\t";
+							}
+							
+						}
+						count = count + 1;
+					} else {
+						if (second_tok_val_type.type == "T_STRINGVAL"){
+ 							random_counter = 0;
+							for (int k = 0; k < 50; k++){								
+								if (k < sym_table.returnValType(first_tok_val_type.stringValue).array_size){									
+									myfile2 << "R[" << k + bool_index << "].bool_val=R[" << second_array_index_start + k << "]";
+									outputValType(second_tok_val_type);
+									outputRelation(old_tok_relation);
+									myfile2 << "R[" << first_array_index_start + k << "]";
+									outputValType(first_tok_val_type);
+									myfile2 << ";" << "\n" << "\t" << "\t";	
+									random_counter = random_counter + 1;
+								} else {
+									if (strLength(second_tok_val_type.stringValue) != sym_table.returnValType(first_tok_val_type.stringValue).array_size){
+										myfile2 << "R[" << k + bool_index << "].bool_val=R[" << second_array_index_start + k << "]";
+										outputValType(second_tok_val_type);
+										outputRelation(old_tok_relation);
+										myfile2 << "\'" << " " << "\'";
+										myfile2 << ";" << "\n" << "\t" << "\t";
+										random_counter = random_counter + 1;
+									}	
+								}
+							}
+
+							for (int k = random_counter - 1; k > 0; k--){
+								myfile2 << "R[" << k - 1 + bool_index<< "].bool_val=R[" << k + bool_index << "].bool_val&&"; 
+								myfile2 << "R[" << k - 1 + bool_index << "].bool_val";
+								myfile2 << ";" << "\n" << "\t";
+							}
+
+							myfile2 << "R[0].bool_val=R[0].bool_val&&R[" << bool_index << "].bool_val;";
+							myfile2 << ";" << "\n" << "\n" << "\t";
+							
+							if (strLength(second_tok_val_type.stringValue) != sym_table.returnValType(first_tok_val_type.stringValue).array_size){
+								bool_index = bool_index + 50;
+							} else {
+								bool_index = bool_index + strLength(second_tok_val_type.stringValue);
+							}
+						}
 					}
 				}
 			} 
@@ -415,6 +531,7 @@ void CodeGen::evalExpression(list expression_list){
 
 		
 	}
+
 }
 
 void CodeGen::outputRelation(tokens relation){
@@ -454,6 +571,8 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 						outputValType(tok_temp2);
 						myfile2 << ";" << "\n" << "\t";
 					} else {
+						second_array_index_start = first_array_index_start;
+						first_array_index_start = prority_index;
 						for (int k = 0; k < (sym_table.returnValType(tok_temp2.stringValue)).array_size; k++){
 							myfile2 << "R[" << k + prority_index << "]";
 							outputValType(tok_temp2);
@@ -478,6 +597,8 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 					myfile2 << ";" << "\n" << "\t";
 				}
 			} else if(tok_temp2.type == "T_STRINGVAL"){
+				second_array_index_start = first_array_index_start;
+				first_array_index_start = prority_index;		
 				for (int k = 0; k < strLength(tok_temp2.stringValue); k++){
 					myfile2 << "R[" << k + prority_index<< "]";
 					outputValType(tok_temp2);
@@ -566,7 +687,6 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 			if (index_return < sym_table.returnValType(tok_temp2.stringValue).array_size){
 				index_return = sym_table.returnValType(tok_temp2.stringValue).array_size + prority_index;
 			}
- //cout <<  tok_temp2.stringValue << " " << prority_index << " " << index_return << endl;
 		} else if ( (tok_temp2.type == "T_IDENTIFIER" && (tok_temp2.single_array_access) && sym_table.returnValType(tok_temp2.stringValue).is_array)){
 			if (index_return < 1){
 				index_return = 1 + prority_index;
@@ -579,7 +699,6 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 	}
 
 	
- //cout << index_return << endl;
 
 	return index_return;
 }
@@ -603,7 +722,7 @@ list CodeGen::outputMainNew(list temp_list2,tokens tok_temp, int count, int inde
 	} else if (tok_temp.type == "T_DIVIDE"){  		myfile2 << "/";
 	} else if (tok_temp.type == "T_AND"){     		//myfile2 << "&&";
 	} else if (tok_temp.type == "T_OR"){      		//myfile2 << "||";
-	} else if (tok_temp.type == "T_NOT"){     		myfile2 << "!";
+	} else if (tok_temp.type == "T_NOT"){     		//myfile2 << "!";
 	} else if (tok_temp.type == "T_ASSIGN"){  		myfile2 << "=";
 	} else if (tok_temp.type == "T_LESSTHAN"){		//myfile2 << "<";
 	} else if (tok_temp.type == "T_LESSTHANEQUAL"){	//myfile2 << "<=";
