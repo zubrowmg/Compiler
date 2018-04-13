@@ -9,7 +9,14 @@ struct tokens{
  	double doubleValue; 			// holds lexeme value if double
 
  	int line;
-	char assigned_value[256];	 	 
+	char assigned_value[256];
+
+    bool single_array_access;
+    int index;	 	 
+    tokens(){
+        index = 0;
+        single_array_access = false;
+    }
 };
 
 class ParseNode

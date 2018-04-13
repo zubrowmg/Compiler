@@ -9,6 +9,9 @@ struct symbolNode{
 
     std::string str_val; 
     int int_val;
+
+    int MM_Index;
+    
     symbolNode()
     {
         is_array = false; array_size = 1; array_left = 0; array_right = 0;
@@ -31,6 +34,7 @@ class ProcedureNode
         ProcedureNode *next;
         std::string name;
 
+
     public:
         ProcedureNode();
         void insertValue(std::string key, symbolNode sym);
@@ -46,6 +50,9 @@ class ProcedureNode
         symbolNode returnValType(std::string ident);
         void modify(std::string ident);
         void modify(std::string ident, std::string num, char c);
+
+        int setMMIndex(std::string ident, int index);
+        int getMMIndex(std::string ident);
 };
 
 #endif
@@ -80,6 +87,9 @@ class Symbol
         std::string last_ident;
         Error sym_error_handler;
         int left_bound;
+
+        
+        
 
     public:
         Symbol();
@@ -121,6 +131,9 @@ class Symbol
         //bool MC(std::string ident, std::string TT);
         bool MC();
         bool MC_AS();
+
+        int setMMIndex(std::string ident, int index);
+        int getMMIndex(std::string ident);
 };
 
 #endif
