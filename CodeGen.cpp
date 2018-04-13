@@ -10,36 +10,25 @@
 
 using namespace std;
 
-CodeGen::CodeGen()
-{	
-	
+CodeGen::CodeGen(){	
 	myfile.open ("CodeGen.c");
 	myfile2.open ("CodeGenReg.c");
 
-	prog_start = false; 
-	prog_begin = false; 
-	prog_end = false; 
-	proc_start = false; 
-	proc_begin = false; 
-	//proc_end = false;
+	prog_start = false; prog_begin = false; prog_end = false; proc_start = false; proc_begin = false; 
 
-	prev_TT_prog = false; 
-	prev_TT_proc = false; 
-	prev_TT_ident = false; prev_TT_ident2 = false;
-	prev_TT_is = false;
-	prev_TT_begin = false;
-	prev_TT_end = false;
-	prev_TT_semi = false;
-	prev_TT_LPAR = false;
+	prev_TT_prog = false; prev_TT_proc = false;	prev_TT_ident = false; prev_TT_ident2 = false;
+	prev_TT_is = false;	prev_TT_begin = false; prev_TT_end = false;	prev_TT_semi = false; prev_TT_LPAR = false;
 
 	prog_declare = false;
 
 	prev_TT_int = false; prev_TT_str = false; prev_TT_bool = false; prev_TT_float = false; prev_TT_char = false;
 
-	//last_TT_Then = false;
 	MM_Index = 0;
 	current_array_index = 0;
-	//assign_option = 0;
+
+	inside_if_statment = false;
+	
+	goto_index = 0; if_count = 0;
 }
 
 void CodeGen::init(tokens tok, Symbol sym){
@@ -66,6 +55,9 @@ void CodeGen::init(tokens tok, Symbol sym){
 			code_gen_order.push_back(temp_list);
 			temp_list = empty;
 		} else if (tok.type == "T_THEN" ){			//If statements
+			code_gen_order.push_back(temp_list);
+			temp_list = empty;
+		} else if (tok.type == "T_ELSE"){
 			code_gen_order.push_back(temp_list);
 			temp_list = empty;
 		} else if (tok.type == "T_IF" && prev_TT_end){
@@ -107,9 +99,10 @@ void CodeGen::printCode(){
 		<< "\t" << "bool bool_val;" << "\n"
 		<< "\t" << "char char_val;" << "\n"
 		<< "\t" << "float float_val;" << "\n"
-	 << "};" << "\n" << "\n";
+	 	<< "};" << "\n" << "\n";
 	myfile2 << "union val MM[10000];" << "\n";
 	myfile2 << "union val R[10000];" << "\n";
+	myfile2 << "union val R2[10000];" << "\n";
 	
 	myfile << "\n" << "int main(){" << "\n";
 	myfile2 << "\n" << "int main(){" << "\n";
@@ -212,9 +205,9 @@ bool CodeGen::isFloat(char str[256]){
 
 void CodeGen::output2(list temp_list2){
 	tokens tok_val_type; int count = 1; tokens tok_temp; 
-	bool for_state, if_state, ret_state, assign_state, proc_state, end_if_for;
+	bool for_state, if_state, ret_state, assign_state, proc_state, end_if_for, if_else_state;
 	for_state = false; if_state = false; assign_state = false, ret_state = false; proc_state = false;
-	end_if_for = false;
+	end_if_for = false; if_else_state = false;
 	//-------- Check to See Statement type --------//;
 	temp_list2.reset_pos();
 	for (int j = 0; j < temp_list2.get_size(); j++){
@@ -231,6 +224,10 @@ void CodeGen::output2(list temp_list2){
 			break;
 		} else if (tok_temp.type == "T_IF"){
 			if_state = true;
+			if_count = if_count + 1;
+			break;
+		} else if (tok_temp.type == "T_ELSE"){
+			if_else_state = true;
 			break;
 		} else if (tok_temp.type == "T_RETURN"){
 			ret_state = true;
@@ -245,27 +242,136 @@ void CodeGen::output2(list temp_list2){
 	}
 	temp_list2.reset_pos();
 
-
+ temp_list2.display();
+ cout << "---" << endl;
 	
 	if (if_state){
+		inside_if_statment = true;
 		generalIf(temp_list2);
+		
+	} else if (if_else_state){
+		generalIfElse(temp_list2);
 	} else if (for_state){
 		
 	} else if (end_if_for){
-		generalEnd();
+		inside_if_statment = false;
+		generalIfEnd();
+		if_count = if_count - 1;
 	} else if (ret_state){
 		//myfile2 << "\t" << "return 0;" << "\n";
 	} else if (proc_state) {
 
 	} else if (assign_state){	
-		for (int j = 0; j < temp_list2.get_size(); j++){
+		/*for (int j = 0; j < temp_list2.get_size(); j++){
 			tok_temp = temp_list2.get_one();
 			if (tok_temp.type == "T_ASSIGN"){
 				break;
 			}
 		}	
-		generalStatements(temp_list2, tok_val_type);		
+		generalStatements(temp_list2, tok_val_type);
+		*/
+		generalAssignStatement(temp_list2);		
 	}
+}
+
+void CodeGen::generalAssignStatement(list temp_list2){
+	list expression_list, destination_list; tokens tok_temp; bool assign_passed = false;
+
+	temp_list2.reset_pos();
+	for (int j = 0; j < temp_list2.get_size(); j++){
+		tok_temp = temp_list2.get_one();
+
+		if (assign_passed){
+			expression_list.createnode(tok_temp);
+		} else if (tok_temp.type != "T_ASSIGN"){
+			destination_list.createnode(tok_temp);
+		}
+
+		if (tok_temp.type == "T_ASSIGN"){
+			assign_passed = true;
+		}
+	} 
+
+	generalExpression(expression_list);
+	evalDestination(destination_list, expression_list);
+}
+
+void CodeGen::evalDestination(list destination_list, list expression_list){
+	list new_list; bool last_T_LBRACKET = false; tokens tok_temp2, tok_val_type, tok_temp; bool and_or_not = false; bool relation = false;
+
+	// Trim the list from [] for single array access
+	destination_list.reset_pos();
+	for (int j = 0; j < destination_list.get_size(); j++){
+		tok_temp2 = destination_list.get_one();
+		if (destination_list.look_ahead_no_wrap().type == "T_LBRACKET") {
+			tok_temp2.single_array_access = true;
+			tok_temp2.index = atoi((destination_list.look_ahead_two_no_wrap()).stringValue);
+			new_list.createnode(tok_temp2);
+		} else if (last_T_LBRACKET){
+			//Do nothing, we don't want the number in the []
+		} else if (tok_temp2.type == "T_RBRACKET" || tok_temp2.type == "T_LBRACKET"){
+			//Do nothing
+		} else {
+			new_list.createnode(tok_temp2);
+		}
+
+		if (tok_temp2.type == "T_LBRACKET" ){
+			last_T_LBRACKET = true;
+		} else {
+			last_T_LBRACKET = false;
+		}
+	}
+
+	new_list.reset_pos();
+	tok_temp2 = destination_list.get_one();
+
+	myfile2 << "MM[";
+	myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;
+	myfile2 << "]";
+	outputValType(tok_temp2);
+	myfile2 << "=";
+
+	expression_list.reset_pos();
+	for (int j = 0; j < expression_list.get_size(); j++){
+		tok_temp = expression_list.get_one();
+ 		if (tok_temp.type == "T_NOT" || tok_temp.type == "T_OR" || tok_temp.type == "T_AND"){
+ 			 and_or_not = true;
+ 		} else if (isRelation(tok_temp)){
+ 			relation = true;
+ 		} else if (tok_temp.type == "T_NUMBERVAL" || tok_temp.type == "T_STRINGVAL" || tok_temp.type == "T_CHARVAL" 
+ 												  || tok_temp.type == "T_IDENTIFIER"){
+ 			tok_val_type = tok_temp;
+ 		}
+	}
+	if (and_or_not){
+		myfile2 << "R2[0].bool_val";
+	} else if (relation){
+		myfile2 << "R[0].bool_val";
+	} else {
+		myfile2 << "R[0]";
+		outputValType(tok_val_type);
+	}
+
+	
+	myfile2 << ";" << "\n" << "\n"; 
+
+}
+
+void CodeGen::generalIfElse(list temp_list2){
+	tokens tok_temp; list new_list;
+
+	temp_list2.reset_pos();
+	for (int j = 0; j < temp_list2.get_size(); j++){
+		tok_temp = temp_list2.get_one();
+		if (tok_temp.type == "T_ELSE"){					
+		} else {
+			new_list.createnode(tok_temp);		
+		}
+	}
+
+	myfile2 << "\t" << "goto IF" << goto_index << ";" << "\n" << "\n";
+	myfile2 << "IF" << goto_index - 1  << ":" << "\n";
+
 }
 
 void CodeGen::generalIf(list temp_list2){
@@ -278,7 +384,6 @@ void CodeGen::generalIf(list temp_list2){
 		}
 	}
 
- //EXPRESSION SHIT HERE
 	for (int j = 0; j < temp_list2.get_size(); j++){
 		tok_temp = temp_list2.get_one();
 		if (tok_temp.type == "T_RPARANTH"){		
@@ -290,21 +395,59 @@ void CodeGen::generalIf(list temp_list2){
 
 	generalExpression(temp_list3);
 	
-
 	myfile2 << "\n" << "if (";
-	for (int j = 0; j < temp_list2.get_size(); j++){
- // Final Bool SHIT HERE
-	}
-	myfile2 << ") {" << "\n" << "\t";
+	outputInsideIfParenth(temp_list3);
+	myfile2 << ".bool_val"; 
+	myfile2 << ") goto IF" << goto_index ;	
+	myfile2 << ";" << "\n";
+	goto_index = goto_index + 1;
+
+	myfile2 << "if (!";
+	outputInsideIfParenth(temp_list3);
+	myfile2 << ".bool_val";
+	myfile2 << ") goto IF" << goto_index  << ";" << "\n" << "\n" ;
+	
+	myfile2 << "IF" << goto_index - 1  << ":" << "\n";
+	goto_index = goto_index + 1;
+
+	//myfile2 << "IF" << goto_index << ":" << "\n";
+
+	
 }
 
-void CodeGen::generalEnd(){
-	myfile2 << "}" << "\n";
+void CodeGen::generalIfEnd(){
+	myfile2 << "IF" << goto_index << ":" << "\n";
+	goto_index = goto_index + 1;
+}
+
+void CodeGen::outputInsideIfParenth(list temp_list3){
+	tokens tok_temp, tok_val_type; bool and_or_not = false;  bool relation = false;
+	temp_list3.reset_pos();
+	for (int j = 0; j < temp_list3.get_size(); j++){
+		tok_temp = temp_list3.get_one();
+ 		if (tok_temp.type == "T_NOT" || tok_temp.type == "T_OR" || tok_temp.type == "T_AND"){
+ 			 and_or_not = true;
+ 		} else if (isRelation(tok_temp)){
+ 			relation = true;
+ 		} else if (tok_temp.type == "T_NUMBERVAL" || tok_temp.type == "T_STRINGVAL" || tok_temp.type == "T_CHARVAL" 
+ 												  || tok_temp.type == "T_IDENTIFIER"){
+ 			tok_val_type = tok_temp;
+ 		}
+	}
+	if (and_or_not){
+		myfile2 << "R2[0].bool_val";
+	} else if (relation){
+		myfile2 << "R[0].bool_val";
+	} else {
+		myfile2 << "R[0]";
+		outputValType(tok_val_type);
+	}
 }
 
 void CodeGen::generalExpression(list temp_list2){
 	tokens tok_temp2; int count = 1; list new_list; bool last_T_LBRACKET = false; list empty; 
-	int num_of_expressions = 0; tokens old_tok_AndOr, new_tok_AndOr;
+	int num_of_expressions = 0; tokens old_tok_AndOr, new_tok_AndOr; int expression_index = 1;
+	bool tok_not_detected = false;
 	
 	// This for loop will disect the list first, gets rid of single array access
 	temp_list2.reset_pos();
@@ -332,25 +475,73 @@ void CodeGen::generalExpression(list temp_list2){
 	new_list.reset_pos(); list expression_list;
 	for (int j = 0; j < new_list.get_size(); j++){
 		tok_temp2 = new_list.get_one();
-		if (tok_temp2.type == "T_AND" || tok_temp2.type == "T_OR" || j == new_list.get_size() - 1){
- // Detect Nots by modifiying the token 
+		
+		if (tok_temp2.type == "T_NOT"){
+			tok_not_detected = true;
+		} else if (tok_temp2.type == "T_AND" || tok_temp2.type == "T_OR" || j == new_list.get_size() - 1){
 			num_of_expressions = num_of_expressions + 1;
 			old_tok_AndOr = new_tok_AndOr;
 			new_tok_AndOr = tok_temp2;
-
+ 
 			if (j == new_list.get_size() - 1){
 				expression_list.createnode(tok_temp2);	
 			}
 		
 			evalExpression(expression_list);
 			expression_list = empty;
+ 			
+ 			if ((count == 1 && num_of_expressions <= 1) && j != new_list.get_size() - 1){
+				if (tok_not_detected){
+					myfile2 << "R2[0].bool_val=!R[0].bool_val;" << "\n" << "\t";
+				} else {
+					myfile2 << "R2[0].bool_val=R[0].bool_val;" << "\n" << "\t";	
+				}
+				
+			}	
+
+			if (num_of_expressions > 1){
+				
+				if (count == 1){
+					myfile2 << "R2[0].bool_val=R2[0].bool_val";
+					outputAndOr(old_tok_AndOr);
+					//if (tok_not_detected){
+					//	myfile2 << "!R[0].bool_val;" << "\n" << "\t";
+					//} else {
+						myfile2 << "R[0].bool_val;" << "\n" << "\t";
+					//}
+					count = count + 1;
+				} else {
+					//myfile2 << "R2[1].bool_val=R[0].bool_val;" << "\n" << "\t";
+
+					myfile2 << "R2[0].bool_val=R2[0].bool_val";
+					outputAndOr(old_tok_AndOr);
+					//if (tok_not_detected){
+					//	myfile2 << "!R[0].bool_val;" << "\n" << "\t";
+					//} else {
+						myfile2 << "R[0].bool_val;" << "\n" << "\t";
+					//}
+				}
+			}
+
+			tok_not_detected = false;
+			expression_index = expression_index + 1;
 		} else {
 			expression_list.createnode(tok_temp2);
 		}
 	}
 }
 
-void CodeGen::evalExpression(list expression_list){
+void CodeGen::outputAndOr(tokens and_or){
+	if (and_or.type == "T_AND"){
+		myfile2 << "&&";
+	} else if(and_or.type == "T_OR"){
+		myfile2 << "||";
+	} else if(and_or.type == "T_NOT"){
+		myfile2 << "!";
+	}
+}
+
+int CodeGen::evalExpression(list expression_list){
 	bool relation = false; list relation_list; list empty; tokens tok_temp2;
 	int num_of_relations = 0; int index = 0, count = 1; 
 	tokens new_tok_relation, old_tok_relation; int bool_index = 0; int random_counter = 0;
@@ -401,7 +592,7 @@ void CodeGen::evalExpression(list expression_list){
 						outputValType(first_tok_val_type);
 						myfile2 << ";" << "\n";
 					}
-				// String
+									// String
 				} else if (first_tok_val_type.type == "T_STRINGVAL"){
 					if (count == 1){
 
@@ -638,10 +829,8 @@ void CodeGen::evalExpression(list expression_list){
 		} else {
 			relation_list.createnode(tok_temp2);
 		}
-
-		
 	}
-
+	return 0;
 }
 
 void CodeGen::outputRelation(tokens relation){
@@ -743,11 +932,12 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
             if (tok_temp2.type != "T_STRINGVAL" ){
             if (tok_temp2.type != "T_NUMBERVAL" ){
             if (tok_temp2.type != "T_IDENTIFIER" ){
+        	if (tok_temp2.type != "T_SEMICOLON" ){
 				myfile2 << "R[" << index + prority_index << "]";
 				outputValType(relation_list.look_ahead());
 				myfile2 << "=R[" << index + prority_index << "]";
 				outputValType(relation_list.look_ahead());
-			}}}}}}
+			}}}}}}}
 			count = count + 1;
 		}
 

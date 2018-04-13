@@ -34,6 +34,10 @@ class CodeGen{
         tokens second_tok_val_type, first_tok_val_type;
         int first_reg_index, second_reg_index;
         int first_array_index_start, second_array_index_start; 
+        bool inside_if_statment;
+
+        // used in if statements
+        int goto_index, if_count; 
         
 
     public:
@@ -58,11 +62,16 @@ class CodeGen{
         
         void generalStatements(list input, tokens tok_input);
         void generalIf(list input);
-        void generalEnd();
+        void generalIfEnd();
         void generalExpression(list temp_list2);
-        void evalExpression(list expression_list);
+        int evalExpression(list expression_list);
         int evalRelation(list expression_list, int index);
         void outputRelation(tokens relation);
+        void outputAndOr(tokens and_or);
+        void generalAssignStatement(list temp_list2);
+        void evalDestination(list destination_list, list expression_list);
+        void generalIfElse(list temp_list2);
+        void outputInsideIfParenth(list temp_list2);
 };
 
 #endif
