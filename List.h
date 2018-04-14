@@ -16,6 +16,8 @@ class list{
     	node *head, *tail, *pos;
     	int size;
     	std::string code_gen;
+    	int if_goto_num;
+    	
     public:
     	list();
     	int get_size();

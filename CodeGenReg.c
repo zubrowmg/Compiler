@@ -20,15 +20,8 @@ R[0].int_val=10;
 R[0].int_val=10;
 	MM[97].int_val=R[0].int_val;
 
-R[0].bool_val=true;
-	
-if (R[0].bool_val) goto IF0;
-if (!R[0].bool_val) goto IF1;
+R[0].int_val=MM[110].int_val;
+	R[0].int_val=R[0].int_val+1;
+	MM[110].int_val=R[0].int_val;
 
-IF0:
-
-R[0].int_val=1;
-	MM[97].int_val=R[0].int_val;
-
-IF2:
 }

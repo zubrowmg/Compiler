@@ -37,6 +37,7 @@ list::list()
 	tail = NULL;
 	pos = NULL;
 	code_gen = "";
+	if_goto_num = 0;
 }	
 
 int list::display()
@@ -44,7 +45,9 @@ int list::display()
 	node *temp = new node;
 	temp = head;    		
 	while(temp != NULL) {
-		cout << temp->token.type << "  "<< '[' << temp->token.stringValue << ']' << endl;
+		cout << temp->token.type << "  "<< '[' << temp->token.stringValue << ']';
+		//cout << " " << temp->token.if_goto_label_num;
+		cout << endl;
 		temp = temp->next;
 	}
 	return 0;

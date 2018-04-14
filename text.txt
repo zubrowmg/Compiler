@@ -31,13 +31,19 @@ PROGRAM grant IS
 
 	begin
 		i := 10; z[4] := 10;
+		
+
+		for(i := 0; i < 10)
+			i := i + 1;
+		end for;
+
 		//ch[0] := 1; ch[1] := 2; ch[2] := 3;
-		if( true ) then 
-			z[4] := 1;
-			
-		
-		end if
-		
+		//if( false ) then 
+		//	z[4] := 1;			
+		//else
+		//	i := 2;
+		//end if;
+
 		// printf("%d", MM[1].int_val); printf("%d", R2[0].bool_val);
 
 		// (true | false) i | true | false
@@ -45,7 +51,6 @@ PROGRAM grant IS
 		// (5 < 10) (i < 10) (10 < i)
 		// (5 < 10 | true) (i[4] < i[7])
 		// two strings (str == str2)
-
 
 		//poop := "HI" + "Im";	
 		//poop2 := poop + "zk";

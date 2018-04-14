@@ -37,11 +37,13 @@ class CodeGen{
         bool inside_if_statment;
 
         // used in if statements
-        int goto_index, if_count; 
+        int goto_index, if_count, normal_if_count, normal_end_if_count, seq_if; 
+        bool end_if_before;
         
 
     public:
     	CodeGen();
+        list preInit(list scan_list);
     	void init(tokens tok, Symbol sym);	
     	void set_flags(tokens tok);
     	void printCode();

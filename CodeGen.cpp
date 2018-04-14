@@ -29,6 +29,56 @@ CodeGen::CodeGen(){
 	inside_if_statment = false;
 	
 	goto_index = 0; if_count = 0;
+
+	end_if_before = false; normal_if_count = 0; normal_end_if_count = 0; seq_if = 0;
+}
+
+list CodeGen::preInit(list code_gen_list){
+	tokens tok_temp; list temp_list2;
+	bool for_state, if_state, ret_state, assign_state, proc_state, end_if_for, if_else_state;
+	for_state = false; if_state = false; assign_state = false, ret_state = false; proc_state = false;
+	end_if_for = false; if_else_state = false;
+	//-------- Check to See Statement type --------//;
+	temp_list2.reset_pos();
+	for (int j = 0; j < temp_list2.get_size(); j++){
+		tok_temp = temp_list2.get_one();
+		
+		if (tok_temp.type == "T_FOR"){
+			break;
+		} else if (tok_temp.type == "T_END"){
+			end_if_for = true;
+			break;
+		} else if (tok_temp.type == "T_IF"){
+			if_state = true;
+			break;
+		} else if (tok_temp.type == "T_ELSE"){
+			if_else_state = true;
+			break;
+		} else if (tok_temp.type == "T_RETURN"){
+			ret_state = true;
+			break;
+		} else if (tok_temp.type == "T_ASSIGN"){
+			assign_state = true;
+			break;
+		} else if (tok_temp.type == "T_SEMICOLON"){
+			proc_state = true;
+			break;
+		}
+	}
+
+	temp_list2.reset_pos();
+
+	
+	if (if_state){
+		inside_if_statment = true;
+		
+	} else if (if_else_state){
+
+	} else if (end_if_for){
+		inside_if_statment = false;
+	} 
+
+	return code_gen_list;
 }
 
 void CodeGen::init(tokens tok, Symbol sym){
@@ -107,11 +157,18 @@ void CodeGen::printCode(){
 	myfile << "\n" << "int main(){" << "\n";
 	myfile2 << "\n" << "int main(){" << "\n";
 	
+
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
 		if (code_gen_order[i].getCG() == "prog_begin"){ 
-			
+			//output2(code_gen_order[i]);
+		}		
+	}
 
+
+	for (int i = 0; i < code_gen_order.size(); i++){
+		code_gen_order[i].reset_pos();
+		if (code_gen_order[i].getCG() == "prog_begin"){ 
 			output2(code_gen_order[i]);
 		}		
 	}
@@ -205,9 +262,9 @@ bool CodeGen::isFloat(char str[256]){
 
 void CodeGen::output2(list temp_list2){
 	tokens tok_val_type; int count = 1; tokens tok_temp; 
-	bool for_state, if_state, ret_state, assign_state, proc_state, end_if_for, if_else_state;
+	bool for_state, if_state, ret_state, assign_state, proc_state, end_if, if_else_state, last_tok_end = false;
 	for_state = false; if_state = false; assign_state = false, ret_state = false; proc_state = false;
-	end_if_for = false; if_else_state = false;
+	end_if = false; if_else_state = false;
 	//-------- Check to See Statement type --------//;
 	temp_list2.reset_pos();
 	for (int j = 0; j < temp_list2.get_size(); j++){
@@ -219,12 +276,11 @@ void CodeGen::output2(list temp_list2){
 		if (tok_temp.type == "T_FOR"){
 			for_state = true;
 			break;
-		} else if (tok_temp.type == "T_END"){
-			end_if_for = true;
+		} else if (tok_temp.type == "T_IF" && last_tok_end){
+			end_if = true;
 			break;
 		} else if (tok_temp.type == "T_IF"){
 			if_state = true;
-			if_count = if_count + 1;
 			break;
 		} else if (tok_temp.type == "T_ELSE"){
 			if_else_state = true;
@@ -239,24 +295,35 @@ void CodeGen::output2(list temp_list2){
 			proc_state = true;
 			break;
 		}
+
+		if (tok_temp.type == "T_END"){
+			last_tok_end = true;
+		} else {
+			last_tok_end = false;
+		}
 	}
 	temp_list2.reset_pos();
 
- temp_list2.display();
- cout << "---" << endl;
+ //temp_list2.display();
+ //cout << "---" << endl;
 	
 	if (if_state){
 		inside_if_statment = true;
+		if_count = if_count + 3;
 		generalIf(temp_list2);
-		
+		normal_if_count = normal_if_count + 1;
 	} else if (if_else_state){
 		generalIfElse(temp_list2);
 	} else if (for_state){
 		
-	} else if (end_if_for){
+	} else if (end_if){
 		inside_if_statment = false;
 		generalIfEnd();
-		if_count = if_count - 1;
+		if_count = if_count - 3;
+		normal_end_if_count = normal_end_if_count + 1;
+		if (normal_end_if_count == normal_if_count){
+			seq_if = seq_if + 3;
+		}
 	} else if (ret_state){
 		//myfile2 << "\t" << "return 0;" << "\n";
 	} else if (proc_state) {
@@ -369,13 +436,16 @@ void CodeGen::generalIfElse(list temp_list2){
 		}
 	}
 
-	myfile2 << "\t" << "goto IF" << goto_index << ";" << "\n" << "\n";
-	myfile2 << "IF" << goto_index - 1  << ":" << "\n";
-
+	goto_index = 2;
+	myfile2 << "\t" << "goto IF" << goto_index + if_count + seq_if << ";" << "\n" << "\n";
+	myfile2 << "IF" << goto_index - 1 + if_count + seq_if << ":" << "\n";
+	end_if_before = false;
 }
 
 void CodeGen::generalIf(list temp_list2){
 	tokens tok_temp; list temp_list3;
+
+
 	// Get the Lparanthesis tok
 	for (int j = 0; j < temp_list2.get_size(); j++){
 		tok_temp = temp_list2.get_one();
@@ -394,30 +464,39 @@ void CodeGen::generalIf(list temp_list2){
 	}
 
 	generalExpression(temp_list3);
-	
+														goto_index = 0;
 	myfile2 << "\n" << "if (";
 	outputInsideIfParenth(temp_list3);
 	myfile2 << ".bool_val"; 
-	myfile2 << ") goto IF" << goto_index ;	
+	myfile2 << ") goto IF" << goto_index + if_count + seq_if;	
 	myfile2 << ";" << "\n";
-	goto_index = goto_index + 1;
+	//goto_index = goto_index + 1;
 
 	myfile2 << "if (!";
 	outputInsideIfParenth(temp_list3);
 	myfile2 << ".bool_val";
-	myfile2 << ") goto IF" << goto_index  << ";" << "\n" << "\n" ;
+	myfile2 << ") goto IF" << goto_index + 1 + if_count + seq_if << ";" << "\n" << "\n" ;
 	
-	myfile2 << "IF" << goto_index - 1  << ":" << "\n";
-	goto_index = goto_index + 1;
-
+	myfile2 << "IF" << goto_index + if_count + seq_if << ":" << "\n";
+	goto_index = 1;
+	end_if_before = false;
 	//myfile2 << "IF" << goto_index << ":" << "\n";
 
 	
 }
 
 void CodeGen::generalIfEnd(){
-	myfile2 << "IF" << goto_index << ":" << "\n";
-	goto_index = goto_index + 1;
+	//myfile2 << "IF" << goto_index - 1 << ": 1;" << "\n" << "\n";
+	if (goto_index == 1 ){
+		myfile2 << "IF" << goto_index + if_count + seq_if << ": 1;" << "\n";
+		goto_index = 2;
+	} //else 
+	if (end_if_before){
+		//myfile2 << "IF" << goto_index + if_count - 1 << ": 1;" << "\n";
+	}
+
+	myfile2 << "IF" << goto_index + if_count + seq_if << ": 1;" << "\n";
+	end_if_before = true;
 }
 
 void CodeGen::outputInsideIfParenth(list temp_list3){
