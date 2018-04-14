@@ -37,6 +37,7 @@ list::list()
 	tail = NULL;
 	pos = NULL;
 	code_gen = "";
+	if_goto_num = 0;
 }	
 
 int list::display()
@@ -44,12 +45,17 @@ int list::display()
 	node *temp = new node;
 	temp = head;    		
 	while(temp != NULL) {
-		cout << temp->token.type << "  "<< '[' << temp->token.stringValue << ']' << endl;
+		cout << temp->token.type << "  "<< '[' << temp->token.stringValue << ']';
+		//cout << " " << temp->token.if_goto_label_num;
+		cout << endl;
 		temp = temp->next;
 	}
 	return 0;
 } 
 
+void list::deleteNode(tokens tok){
+
+}
 
 
 int list::get_size(){return size;}
@@ -102,6 +108,18 @@ tokens list::look_ahead_no_wrap()
 		return empty;
 	} else {
 		return pos->token;
+	}
+}
+
+tokens list::look_ahead_two_no_wrap() 
+{	
+	tokens empty;
+	if (pos == head){
+		return empty;
+	} else if (pos == tail){
+		return empty;
+	} else {
+		return (pos->next)->token;
 	}
 }
 

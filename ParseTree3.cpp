@@ -954,7 +954,7 @@ prog_body_flag = true;
 	} else if (pos->getToken() == "<loop_statement3>"){ pos->setOption((pos->getOption()) + 1);	
 				
 		if (pos->getOption() == 1){						
-			temp_node->setToken("<statement3>"); newTempNode();
+			temp_node->setToken("<statement>"); newTempNode();
 			//temp_node->setToken("<statement>"); newTempNode();
 			temp_node->setToken("<T_SEMICOLON>"); newTempNode();
 

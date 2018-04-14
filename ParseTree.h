@@ -11,9 +11,15 @@ struct tokens{
  	int line;
 	char assigned_value[256];
 
-    bool single_array_access;	 	 
+    bool single_array_access;
+    int index;	 	
+
+    int if_goto_label_num;
+
     tokens(){
+        index = 0;
         single_array_access = false;
+        if_goto_label_num = -1;
     }
 };
 

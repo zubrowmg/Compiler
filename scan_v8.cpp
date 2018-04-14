@@ -543,6 +543,13 @@ bool parser(list scan_list){
 	ParseTree tree; ParseTree snapshot; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true; bool type_match2 = true;
 	bool last_T_ident = false; bool expression = false; bool last_T_LBRACK = false, assignment = false, last2_T_ident = false;
 	bool snapshot_restored = false; CodeGen gen;
+	list code_gen_list;
+
+	
+	//code_gen_list = gen.preInit(scan_list);
+
+	//code_gen_list.reset_pos();
+
 /*--------------------------------  
 	Symbol Table and Parser 			
 --------------------------------*/
@@ -566,8 +573,7 @@ bool parser(list scan_list){
 		symbol_temp.str_val = temp.stringValue;
 		sym.init(temp.type,temp.stringValue, symbol_temp);
 
-	//-------- Code Generation --------//
-		gen.init(temp, sym);
+	
 
 	//-------- Type Checking --------//		
 	//if(!last_T_LBRACK){
@@ -614,7 +620,8 @@ bool parser(list scan_list){
 		if (last_T_ident){ last2_T_ident = true; } else {	last2_T_ident = false; }		
 		if (temp.type == "T_IDENTIFIER"){ last_T_ident = true; } else {	last_T_ident = false; }
 
-		
+		//-------- Code Gen --------//
+		gen.init(temp, sym);
 	
 //-------- Tree Snapshot --------//
 		if (!(tree.getLegit()) && error_count < 10){
@@ -661,6 +668,9 @@ int main(int argc, char *argv[]){
 		symbol_gen(scan_list);
 		parser(scan_list);
 	}
+
+	
+
 
 	return 0;
 }

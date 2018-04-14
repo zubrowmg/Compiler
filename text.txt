@@ -1,15 +1,18 @@
 //leaving off end of program period.  is it correct?  officially no, but should we compile and simply issue a warning?  i leave that up to you.
 
-// printf("%d", MM[1].int_val);
+
 // 5+(9-3) / (9-7)
 
 PROGRAM grant IS
 	//global char jake; // [5:7]
 	//global char ryan;
+	//global integer h;
+	//global integer j;
 	global string poop;
 	global string poop2;
-	global integer zach[1:5]; 
- 	global integer i[2:7];
+	global integer z[3:12]; 
+ 	global integer i;
+	global integer ch[0:2];
 
 	procedure if_proc()
 		//integer declaration[5:7];
@@ -27,10 +30,36 @@ PROGRAM grant IS
 	end procedure;
 
 	begin
+		i := 10; z[4] := 10;
+		
+
+		for(i := 0; i < 10)
+			i := i + 1;
+		end for;
+
+		//ch[0] := 1; ch[1] := 2; ch[2] := 3;
+
+		//if( i < 10 ) then 
+		//	z[4] := 1;			
+		//else
+		//	i := 2;
+		//end if;
+
+		// printf("%d", MM[1].int_val); printf("%d", R2[0].bool_val);
+
+		// (true | false) i | true | false
+		// ident = false   (true | ident)
+		// (5 < 10) (i < 10) (10 < i)
+		// (5 < 10 | true) (i[4] < i[7])
+		// two strings (str == str2)
+
 		//poop := "HI" + "Im";	
-		//poop2 := poop + "zk";	
-		zach[2] := 3 * 5;
-		//i[3] := 8 - zach[2]; 
+		//poop2 := poop + "zk";
+		//poop2 := "zk" + poop;
+	
+		//zach[2] := 3 * 5;
+		//i[3] := 8 - zach[2];
+		//i[3] := zach[2] - 8; 
 
 		//i[3] := 4;		
 		//i[3] := i[3] + i[3];
