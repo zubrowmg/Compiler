@@ -41,7 +41,8 @@ class CodeGen{
         bool end_if_before;
 
         // used in for loops
-        bool for_encountered;
+        bool for_encountered; int for_count, normal_for_count, normal_end_for_count, seq_for;
+        int goto_index_for;
 
     public:
     	CodeGen();

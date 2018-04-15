@@ -32,7 +32,8 @@ CodeGen::CodeGen(){
 
 	end_if_before = false; normal_if_count = 0; normal_end_if_count = 0; seq_if = 0;
 
-	for_encountered = false;
+	for_encountered = false; normal_for_count = 0; normal_end_for_count = 0; seq_for = 0; goto_index_for = 0;
+	for_count = 0;
 }
 
 list CodeGen::preInit(list code_gen_list){
@@ -328,9 +329,16 @@ void CodeGen::output2(list temp_list2){
 			seq_if = seq_if + 3;
 		}
 	} else if (for_state){
+		for_count = for_count + 3;
 		generalFor(temp_list2);
+		normal_for_count = normal_for_count + 1;
 	} else if (end_for){
 		generalForEnd();
+		for_count = for_count - 3;
+		normal_end_for_count = normal_end_for_count + 1;
+		if (normal_end_for_count == normal_for_count){
+			seq_for = seq_for + 3;
+		}
 	} else if (ret_state){
 
 	} else if (proc_state) {
@@ -362,7 +370,8 @@ void CodeGen::generalFor(list temp_list2){
 
 	generalAssignStatement(assign_statement_list);
 
-	myfile2 << "\n" << "FOR" << "\n" << "\t"; 
+	goto_index_for = 0;
+	myfile2 << "\n" << "FOR" << goto_index_for + seq_for + for_count << ":" << "\n" << "\t"; 
 
 	for (int h = 0; h < temp_list2.get_size(); h++){
 		tok_temp = temp_list2.get_one();
@@ -374,18 +383,22 @@ void CodeGen::generalFor(list temp_list2){
 	}
 
 	generalExpression(expression_list);
+	goto_index_for = 1;
 
 	myfile2 << "\n" << "if (";
 	outputInsideIfParenth(expression_list);
-	myfile2 << ") goto FOR";	
+	myfile2 << ") goto FOR" << goto_index_for + seq_for + for_count;	
 	myfile2 << ";" << "\n";
 
-	myfile2 << "if (";
+	goto_index_for = 2;
+
+	myfile2 << "if (!";
 	outputInsideIfParenth(expression_list);
-	myfile2 << ") goto FOR";	
+	myfile2 << ") goto FOR" << goto_index_for + seq_for + for_count;	
 	myfile2 << ";" << "\n";
 
-	myfile2 << "\n" << "FOR" << "\n" << "\t"; 
+	goto_index_for = 1;
+	myfile2 << "\n" << "FOR" << goto_index_for + seq_for + for_count << ":" << "\n" << "\t"; 
 
 	//assign_statement_list.display();
 	//cout << 666 << endl;
@@ -393,8 +406,11 @@ void CodeGen::generalFor(list temp_list2){
 }
 
 void CodeGen::generalForEnd(){
-	myfile2 << "\t" << "goto FOR" << ";";	
-	myfile2 << "\n" << "FOR" << "\n" << "\n"; 
+	goto_index_for = 0;
+	myfile2 << "\t" << "goto FOR" << goto_index_for + seq_for + for_count << ";";	
+
+	goto_index_for = 2;
+	myfile2 << "\n" << "FOR" << goto_index_for + seq_for + for_count << ": 1;" << "\n" << "\n"; 
 }
 
 void CodeGen::generalAssignStatement(list temp_list2){
@@ -422,6 +438,8 @@ void CodeGen::generalAssignStatement(list temp_list2){
 void CodeGen::evalDestination(list destination_list, list expression_list){
 	list new_list; bool last_T_LBRACKET = false; tokens tok_temp2, tok_val_type, tok_temp; bool and_or_not = false; bool relation = false;
 
+ //destination_list.display();
+
 	// Trim the list from [] for single array access
 	destination_list.reset_pos();
 	for (int j = 0; j < destination_list.get_size(); j++){
@@ -445,11 +463,11 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 		}
 	}
 
-	new_list.reset_pos();
-	tok_temp2 = destination_list.get_one();
 
+	new_list.reset_pos();
+	tok_temp2 = new_list.get_one();
 	myfile2 << "MM[";
-	myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;
+	myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left ;
 	myfile2 << "]";
 	outputValType(tok_temp2);
 	myfile2 << "=";
@@ -540,7 +558,7 @@ void CodeGen::generalIf(list temp_list2){
 }
 
 void CodeGen::generalIfEnd(){
-	//myfile2 << "IF" << goto_index - 1 << ": 1;" << "\n" << "\n";
+	
 	if (goto_index == 1 ){
 		myfile2 << "IF" << goto_index + if_count + seq_if << ": 1;" << "\n";
 		goto_index = 2;
@@ -980,6 +998,8 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 	int index_return = 0;
 	relation_list.reset_pos();
 
+ //relation_list.display();
+ //cout << "====" << endl;
 
 	for (int j = 0; j < relation_list.get_size(); j++){
 		tok_temp2 = relation_list.get_one();
@@ -991,6 +1011,7 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 				if (sym_table.returnValType(tok_temp2.stringValue).is_array){
 					left = (sym_table.returnValType(tok_temp2.stringValue)).array_left;
 					right = (sym_table.returnValType(tok_temp2.stringValue)).array_right;
+	//cout << left << " " << right << endl;
 					if (tok_temp2.single_array_access){
 						second_reg_index = first_reg_index;
 						first_reg_index = index + prority_index;
@@ -998,7 +1019,8 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 						outputValType(tok_temp2);
 						myfile2 << "=";
 						myfile2 << "MM[";
-						myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - left - 1;
+
+						myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - left;
 						myfile2 << "]";
 						outputValType(tok_temp2);
 						myfile2 << ";" << "\n" << "\t";

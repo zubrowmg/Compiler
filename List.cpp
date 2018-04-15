@@ -47,6 +47,7 @@ int list::display()
 	while(temp != NULL) {
 		cout << temp->token.type << "  "<< '[' << temp->token.stringValue << ']';
 		//cout << " " << temp->token.if_goto_label_num;
+		cout << " " << temp->token.index;
 		cout << endl;
 		temp = temp->next;
 	}
