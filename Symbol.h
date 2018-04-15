@@ -7,10 +7,10 @@ struct symbolNode{
     int line_num; std::string type; std::string proc;
     bool is_array; int array_left, array_right, array_size;
 
-    std::string str_val; 
+    std::string str_val, current_val; 
     int int_val;
 
-    int MM_Index;
+    int MM_Index; int actual_string_size;
     
     symbolNode()
     {

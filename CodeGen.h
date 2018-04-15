@@ -8,6 +8,7 @@
 #include "Symbol.h"
 #include "ParseTree.h"
 #include "List.h"
+#include "Error.h"
 
 using namespace std;
 
@@ -18,6 +19,7 @@ struct expNode
 
 class CodeGen{
 	private:
+        Error error_handler;
     	bool prog_start, prog_begin, prog_end, proc_start, proc_begin, proc_end;
     	bool prev_TT_prog, prev_TT_ident, prev_TT_is, prev_TT_begin, prev_TT_end;
     	bool prev_TT_proc, prev_TT_semi, prog_declare, prev_TT_ident2, prev_TT_LPAR;
@@ -39,7 +41,10 @@ class CodeGen{
         // used in if statements
         int goto_index, if_count, normal_if_count, normal_end_if_count, seq_if; 
         bool end_if_before;
-        
+
+        // used in for loops
+        bool for_encountered; int for_count, normal_for_count, normal_end_for_count, seq_for;
+        int goto_index_for;
 
     public:
     	CodeGen();
@@ -63,17 +68,27 @@ class CodeGen{
     	void SinArAChecker(list input);
         
         void generalStatements(list input, tokens tok_input);
-        void generalIf(list input);
-        void generalIfEnd();
+        void generalAssignStatement(list temp_list2);
+        
         void generalExpression(list temp_list2);
         int evalExpression(list expression_list);
         int evalRelation(list expression_list, int index);
         void outputRelation(tokens relation);
-        void outputAndOr(tokens and_or);
-        void generalAssignStatement(list temp_list2);
+        void outputAndOr(tokens and_or);      
         void evalDestination(list destination_list, list expression_list);
+
+        void generalIf(list input);
+        void generalIfEnd();
         void generalIfElse(list temp_list2);
         void outputInsideIfParenth(list temp_list2);
+
+        void generalFor(list temp_list2);
+        void generalForEnd();
+
+        void generalProcStatement(list temp_list2);
+        void generalIO(list temp_list2);
+        void evalProcStatement(list temp_list2);
+
 };
 
 #endif

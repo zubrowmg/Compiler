@@ -36,6 +36,37 @@ void Error::error(int line, int type){
 	} else if (type == 9){
 		cout << "Assignment Type Mismatch" << endl;
 	} 
+	// Type Check Errors in Code Gen
+ 	else if (type == 10){
+		cout << "putInteger does not accept floats" << endl;
+	} else if (type == 11){
+		cout << "putInteger only accepts integer indentifiers" << endl;
+	} else if (type == 12){
+		cout << "putInteger only accepts integers" << endl;
+	} else if (type == 13){
+		cout << "putInteger only accepts char indentifiers" << endl;
+	} else if (type == 14){
+		cout << "putInteger only accepts chars" << endl;
+	} else if (type == 15){
+		cout << "putInteger does not accept integers" << endl;
+	} else if (type == 16){
+		cout << "putInteger only accepts float indentifiers" << endl;
+	} else if (type == 17){
+		cout << "putInteger only accepts floats" << endl;
+	} else if (type == 18){
+		cout << "putInteger only accepts bool indentifiers" << endl;
+	} else if (type == 19){
+		cout << "putInteger only accepts bools" << endl;
+	} else if (type == 20){
+		cout << "putInteger only accepts string indentifiers" << endl;
+	} else if (type == 21){
+		cout << "putInteger only accepts strings" << endl;
+	}
+
+	else if (type == 22){
+		cout << "Array size difference" << endl;
+	}
+
 
 }
 

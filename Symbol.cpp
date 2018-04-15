@@ -619,6 +619,14 @@ bool Symbol::check(std::string input, symbolNode sym)
 		declared = procCheck(input);							//Checks procedure names
 	}
 
+	if(!declared){
+		if (input == "putinteger" || input == "putbool" || input == "putfloat" 
+				|| input == "putstring" || input == "putchar" ||input == "getinterger" ||input == "getbool" 
+				||input == "getfloat" ||input == "getstring" ||input == "getchar" ){
+			declared = true;
+		} 		
+	}
+
 
 	if (!declared){ 
 		sym_error_handler.error(sym.line_num, 1, input);
