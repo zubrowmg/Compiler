@@ -1,6 +1,8 @@
+int[817];
+int[09];
 string;
 string;
-int[312];
+int[372];
 int;
 char;
 float;

@@ -172,7 +172,7 @@ void CodeGen::printCode(){
 	
 	myfile2 << "\n" << "int main(){" << "\n";
 		
-	myfile2 << "FILE *outfile;" << " outfile = fopen(\"output.txt\",\"w\");" << "\n" << "\n";
+	myfile2 << "FILE *outfile;" << " outfile = fopen(\"output.txt\",\"w\");" << "\n";
 	myfile2 << "FILE *infile;" << " infile = fopen(\"input.txt\",\"r\");" << "\n" << "\n";
 
 	for (int i = 0; i < code_gen_order.size(); i++){
@@ -371,19 +371,18 @@ void CodeGen::generalProcStatement(list temp_list2){
 	tok_temp = temp_list2.get_one();
  
 	
-	if (tok_temp.type != "T_IDENTIFIER"){
+	if (tok_temp.type != "T_IDENTIFIER" ){
 		//tok_temp = temp_list2.get_one();
-		for (int j = 0; j < temp_list2.get_size() - 1; j++){
+		for (int j = 0; j < temp_list2.get_size() ; j++){
 			tok_temp = temp_list2.get_one();
-			if (j > 0){
+			//if (j > 0){
 				new_list.createnode(tok_temp);
-			}
+			//}
 		}
 	}
 
 	new_list.reset_pos();
 	tok_temp = new_list.get_one();
-	new_list.display();
 	if ( strcmp(tok_temp.stringValue, "putinteger") == 0 || strcmp(tok_temp.stringValue, "putbool") == 0
 			|| strcmp(tok_temp.stringValue, "putfloat") == 0 || strcmp(tok_temp.stringValue, "putstring") == 0
 			|| strcmp(tok_temp.stringValue, "putchar") == 0 || strcmp(tok_temp.stringValue, "getinteger") == 0
@@ -395,10 +394,12 @@ void CodeGen::generalProcStatement(list temp_list2){
 	} else {
 		evalProcStatement(new_list);
 	}
+
 }
 
 void CodeGen::generalIO(list temp_list2){
 	tokens tok_temp, tok_temp2; list new_list; bool last_T_LBRACKET = false; 
+
 
 	temp_list2.reset_pos();
 	for (int j = 0; j < temp_list2.get_size(); j++){
@@ -426,7 +427,7 @@ void CodeGen::generalIO(list temp_list2){
 	tok_temp = new_list.get_one();
 	if (strcmp(tok_temp.stringValue, "putinteger") == 0){
 		tok_temp2 = new_list.look_ahead_two_no_wrap();
-
+ 
 		if (tok_temp2.type == "T_NUMBERVAL"){
 			if (isFloat(tok_temp2.stringValue)) {
 				error_handler.error(tok_temp2.line, 10);
@@ -616,6 +617,7 @@ void CodeGen::generalIO(list temp_list2){
 			error_handler.error(tok_temp2.line, 24);
 		}
 	}
+
 }
 
 void CodeGen::evalProcStatement(list temp_list2){
