@@ -643,6 +643,14 @@ void Symbol::error(std::string input, int i){
 	}
 }
 
+bool Symbol::errorsEncountered(){
+	if (sym_error_handler.getTotalErrors() > 0){
+		return true;
+	} else {
+		return false;
+	}
+}
+
 /*------------------------------------------------------
 	Symbol Node Class
 ------------------------------------------------------*/

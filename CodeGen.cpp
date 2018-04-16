@@ -277,6 +277,10 @@ void CodeGen::output2(list temp_list2){
 	bool for_state, if_state, ret_state, assign_state, proc_state, end_if, if_else_state, end_for = false, last_tok_end = false;
 	for_state = false; if_state = false; assign_state = false, ret_state = false; proc_state = false;
 	end_if = false; if_else_state = false;
+	
+ //temp_list2.display();
+ 
+
 	//-------- Check to See Statement type --------//;
 	temp_list2.reset_pos();
 	for (int j = 0; j < temp_list2.get_size(); j++){
@@ -319,9 +323,10 @@ void CodeGen::output2(list temp_list2){
 	}
 	temp_list2.reset_pos();
 
- //temp_list2.display();
- //cout << "---" << endl;
-	
+ 
+ //cout << proc_state << if_state << end_if << end_for << for_state << assign_state << endl;
+ //cout << "=====" << endl;	
+
 	if (if_state){
 		inside_if_statment = true;
 		if_count = if_count + 3;
@@ -358,20 +363,37 @@ void CodeGen::output2(list temp_list2){
 }
 
 void CodeGen::generalProcStatement(list temp_list2){
-	tokens tok_temp;
+	tokens tok_temp; list new_list;
 	
+	
+
 	temp_list2.reset_pos();
 	tok_temp = temp_list2.get_one();
+ 
+	
+	if (tok_temp.type != "T_IDENTIFIER"){
+		//tok_temp = temp_list2.get_one();
+		for (int j = 0; j < temp_list2.get_size() - 1; j++){
+			tok_temp = temp_list2.get_one();
+			if (j > 0){
+				new_list.createnode(tok_temp);
+			}
+		}
+	}
+
+	new_list.reset_pos();
+	tok_temp = new_list.get_one();
+	new_list.display();
 	if ( strcmp(tok_temp.stringValue, "putinteger") == 0 || strcmp(tok_temp.stringValue, "putbool") == 0
 			|| strcmp(tok_temp.stringValue, "putfloat") == 0 || strcmp(tok_temp.stringValue, "putstring") == 0
 			|| strcmp(tok_temp.stringValue, "putchar") == 0 || strcmp(tok_temp.stringValue, "getinteger") == 0
 			|| strcmp(tok_temp.stringValue, "getbool") == 0 || strcmp(tok_temp.stringValue, "getfloat") == 0
 			|| strcmp(tok_temp.stringValue, "getstring") == 0 || strcmp(tok_temp.stringValue, "getchar") == 0) {
  
-		generalIO(temp_list2);
+		generalIO(new_list);
 
 	} else {
-		evalProcStatement(temp_list2);
+		evalProcStatement(new_list);
 	}
 }
 
@@ -509,7 +531,7 @@ void CodeGen::generalIO(list temp_list2){
 				error_handler.error(tok_temp2.line, 20);
 			}
 		} else {
-			error_handler.error(tok_temp2.line, 22);
+			error_handler.error(tok_temp2.line, 21);
 		}
 	} else if (strcmp(tok_temp.stringValue, "getinteger") == 0){	
 		tok_temp2 = new_list.look_ahead_two_no_wrap();
@@ -763,7 +785,7 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 			if ((sym_table.returnValType(tok_temp2.stringValue)).array_size == (sym_table.returnValType(tok_temp.stringValue)).array_size){
 
 			} else {
-				error_handler.error(tok_temp2.line, 22);
+				//error_handler.error(tok_temp2.line, 22);
 			}
 		}
 	} else {
@@ -1306,15 +1328,24 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 
 	for (int j = 0; j < relation_list.get_size(); j++){
 		tok_temp2 = relation_list.get_one();
+		
+		if (tok_temp2.type == "T_IDENTIFIER" || tok_temp2.type == "T_CHARVAL" || tok_temp2.type == "T_NUMBERVAL"
+											 || tok_temp2.type == "T_TRUE" || tok_temp2.type == "T_STRINGVAL"
+											 || tok_temp2.type == "T_FALSE"){
+			TC_2 = TC_1;
+			TC_1 = tok_temp2;
+			if (count > 1){
+				typeCheckRelation();
+			}
+		}
+
 		if (count == 1){
 			second_tok_val_type = first_tok_val_type;
 			first_tok_val_type = tok_temp2;
-			if (tok_temp2.type == "T_IDENTIFIER"){
-	
+			if (tok_temp2.type == "T_IDENTIFIER"){	
 				if (sym_table.returnValType(tok_temp2.stringValue).is_array){
 					left = (sym_table.returnValType(tok_temp2.stringValue)).array_left;
 					right = (sym_table.returnValType(tok_temp2.stringValue)).array_right;
-	//cout << left << " " << right << endl;
 					if (tok_temp2.single_array_access){
 						second_reg_index = first_reg_index;
 						first_reg_index = index + prority_index;
@@ -1459,6 +1490,117 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 	
 
 	return index_return;
+}
+
+void CodeGen::typeCheckRelation(){
+	if (TC_1.type == "T_IDENTIFIER"){
+		if (TC_2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(TC_1.stringValue)).str_val != (sym_table.returnValType(TC_2.stringValue)).str_val){
+				error_handler.error(TC_1.line, 0, TC_1.stringValue, TC_2.stringValue);
+			}
+
+			if ((sym_table.returnValType(TC_1.stringValue)).is_array && (sym_table.returnValType(TC_2.stringValue)).is_array){
+				if (TC_1.single_array_access && TC_2.single_array_access){
+					// No error
+				} else if (!TC_1.single_array_access && !TC_2.single_array_access){
+					if ((sym_table.returnValType(TC_1.stringValue)).array_size != (sym_table.returnValType(TC_2.stringValue)).array_size){
+						error_handler.error(TC_1.line, 1, TC_1.stringValue, TC_2.stringValue);
+					}
+				} else if ((!TC_1.single_array_access && TC_2.single_array_access) 
+								|| (TC_1.single_array_access && !TC_2.single_array_access)){
+					error_handler.error(TC_1.line, 3, TC_1.stringValue, TC_2.stringValue);
+				}
+			} else if ((sym_table.returnValType(TC_1.stringValue)).is_array && !(sym_table.returnValType(TC_2.stringValue)).is_array){
+				if (!TC_1.single_array_access){
+					error_handler.error(TC_1.line, 2, TC_1.stringValue, TC_2.stringValue);
+				}
+			} else if (!(sym_table.returnValType(TC_1.stringValue)).is_array && (sym_table.returnValType(TC_2.stringValue)).is_array){
+				if (!TC_2.single_array_access){
+					error_handler.error(TC_1.line, 4, TC_1.stringValue, TC_2.stringValue);
+				}
+			}
+		} else if (TC_2.type == "T_STRINGVAL"){
+			if ((sym_table.returnValType(TC_1.stringValue)).str_val != "V_STRING"){
+				error_handler.error(TC_1.line, 5, TC_1.stringValue, TC_2.stringValue);
+			}
+		} else if (TC_2.type == "T_CHARVAL"){
+			if ((sym_table.returnValType(TC_1.stringValue)).str_val != "V_CHAR"){
+				error_handler.error(TC_1.line, 7, TC_1.stringValue, TC_2.stringValue);
+			}
+		} else if (TC_2.type == "T_NUMBERVAL"){
+			if ((sym_table.returnValType(TC_1.stringValue)).str_val != "V_FLOAT" || (sym_table.returnValType(TC_1.stringValue)).str_val != "V_INTEGER"){
+				// Error ident is not a number
+			}
+		} else if (TC_2.type == "T_TRUE" || TC_2.type == "T_FALSE"){
+			if ((sym_table.returnValType(TC_1.stringValue)).str_val != "V_BOOL"){
+				// Error ident is not a bool
+			}
+		}
+	} else if (TC_1.type == "T_STRINGVAL"){
+		if (TC_2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_BOOL" || (sym_table.returnValType(TC_2.stringValue)).str_val == "V_FLOAT"
+																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_INTEGER"
+																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_CHAR"){
+				error_handler.error(TC_1.line, 6, TC_1.stringValue, TC_2.stringValue);
+			}
+		} else if (TC_2.type == "T_STRINGVAL"){
+			// No error
+		} else if (TC_2.type == "T_CHARVAL"){
+			error_handler.error(TC_1.line, 9, TC_1.stringValue, TC_2.stringValue);
+		} else if (TC_2.type == "T_NUMBERVAL"){
+			error_handler.error(TC_1.line, 10, TC_1.stringValue, TC_2.stringValue);
+		} else if (TC_2.type == "T_TRUE" || TC_2.type == "T_FALSE"){			
+			error_handler.error(TC_1.line, 11, TC_1.stringValue, TC_2.stringValue);			
+		}
+	} else if (TC_1.type == "T_CHARVAL"){
+		if (TC_2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_BOOL" || (sym_table.returnValType(TC_2.stringValue)).str_val == "V_FLOAT"
+																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_INTEGER"){
+				error_handler.error(TC_1.line, 8, TC_1.stringValue, TC_2.stringValue);
+			} else if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_STRING" && !TC_2.single_array_access){
+				error_handler.error(TC_1.line, 16, TC_1.stringValue, TC_2.stringValue);
+			}
+		} else if (TC_2.type == "T_STRINGVAL"){
+			error_handler.error(TC_1.line, 17, TC_1.stringValue, TC_2.stringValue);
+		} else if (TC_2.type == "T_CHARVAL"){
+			// No error
+		} else if (TC_2.type == "T_NUMBERVAL"){
+			error_handler.error(TC_1.line, 18, TC_1.stringValue, TC_2.stringValue);
+		} else if (TC_2.type == "T_TRUE" || TC_2.type == "T_FALSE"){			
+			error_handler.error(TC_1.line, 19, TC_1.stringValue, TC_2.stringValue);		
+		}
+	} else if (TC_1.type == "T_NUMBERVAL"){
+		if (TC_2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_STRING" || (sym_table.returnValType(TC_2.stringValue)).str_val == "V_BOOL"
+																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_CHAR"){
+				error_handler.error(TC_1.line, 20, TC_1.stringValue, TC_2.stringValue);
+			}
+		} else if (TC_2.type == "T_STRINGVAL"){
+			error_handler.error(TC_1.line, 21, TC_1.stringValue, TC_2.stringValue);
+		} else if (TC_2.type == "T_CHARVAL"){
+			error_handler.error(TC_1.line, 22, TC_1.stringValue, TC_2.stringValue);
+		} else if (TC_2.type == "T_NUMBERVAL"){
+			// No error
+		} else if (TC_2.type == "T_TRUE" || TC_2.type == "T_FALSE"){			
+			error_handler.error(TC_1.line, 23, TC_1.stringValue, TC_2.stringValue);		
+		}
+	} else if (TC_1.type == "T_TRUE" || TC_1.type == "T_FALSE"){
+		if (TC_2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_STRING" || (sym_table.returnValType(TC_2.stringValue)).str_val == "V_FLOAT"
+																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_INTEGER"
+																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_CHAR"){
+				error_handler.error(TC_1.line, 12, TC_1.stringValue, TC_2.stringValue);
+			}
+		} else if (TC_2.type == "T_STRINGVAL"){
+			error_handler.error(TC_1.line, 13, TC_1.stringValue, TC_2.stringValue);
+		} else if (TC_2.type == "T_CHARVAL"){
+			error_handler.error(TC_1.line, 14, TC_1.stringValue, TC_2.stringValue);
+		} else if (TC_2.type == "T_NUMBERVAL"){
+			error_handler.error(TC_1.line, 15, TC_1.stringValue, TC_2.stringValue);
+		} else if (TC_2.type == "T_TRUE" || TC_2.type == "T_FALSE"){			
+			// No error			
+		}
+	} 
 }
 
 list CodeGen::outputMainNew(list temp_list2,tokens tok_temp, int count, int index){
@@ -1816,6 +1958,14 @@ bool CodeGen::isRelation(tokens tok_temp2){
 	if (tok_temp2.type == "T_LESSTHAN" || tok_temp2.type == "T_LESSTHANEQUAL" 
 									   || tok_temp2.type == "T_GREATERTHAN" || tok_temp2.type == "T_GREATERTHANEQUAL"
 									   || tok_temp2.type == "T_NOTEQUALTO" || tok_temp2.type == "T_EQUALTO"){
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool CodeGen::errorsEncountered(){
+	if (error_handler.getTotalErrors() > 0){
 		return true;
 	} else {
 		return false;

@@ -134,6 +134,8 @@ class Symbol
 
         int setMMIndex(std::string ident, int index);
         int getMMIndex(std::string ident);
+
+        bool errorsEncountered();
 };
 
 #endif

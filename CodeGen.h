@@ -46,6 +46,9 @@ class CodeGen{
         bool for_encountered; int for_count, normal_for_count, normal_end_for_count, seq_for;
         int goto_index_for;
 
+        // Redone Type Check
+        tokens TC_1, TC_2;
+
     public:
     	CodeGen();
         list preInit(list scan_list);
@@ -72,8 +75,11 @@ class CodeGen{
         
         void generalExpression(list temp_list2);
         int evalExpression(list expression_list);
+
         int evalRelation(list expression_list, int index);
         void outputRelation(tokens relation);
+        void typeCheckRelation();
+
         void outputAndOr(tokens and_or);      
         void evalDestination(list destination_list, list expression_list);
 
@@ -89,6 +95,7 @@ class CodeGen{
         void generalIO(list temp_list2);
         void evalProcStatement(list temp_list2);
 
+        bool errorsEncountered();
 };
 
 #endif

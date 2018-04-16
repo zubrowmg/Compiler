@@ -3,11 +3,20 @@
 #include <cstdlib>
 
 #include "Error.h"
+#include "ParseTree.h"
 
 using namespace std;
 
-void Error::error(int line, int type){
+Error::Error(){
+	total_errors = 0;
+}
 
+int Error::getTotalErrors(){
+	return total_errors;
+}
+
+void Error::error(int line, int type){
+	total_errors = total_errors + 1;
 	cout << "[" << line << "]" << "\t" << "Error:  ";
 
 /*------------------------------------------------------
@@ -85,7 +94,7 @@ void Error::error(int line, int type){
 }
 
 void Error::error(int line, int type, std::string var){
-
+	total_errors = total_errors + 1;
 	cout << "[" << line << "]" << "\t" << "Error:  ";
 
 /*------------------------------------------------------
@@ -102,4 +111,68 @@ void Error::error(int line, int type, std::string var){
 	else if (type == 2){
 		cout << "Incorrect Symantix -  " << var << endl;
 	}
+}
+
+void Error::error(int line, int type, std::string TC_1, std::string TC_2){
+	total_errors = total_errors + 1;
+	cout << "[" << line << "]" << "\t" << "Error:  ";
+
+	if (type == 0){
+		cout << "Indentifiers Are Different Types - " << TC_1 << ", " << TC_2 << endl;
+	} else if (type == 1){
+		cout << "Array Sizes Don't Match - " << TC_1 << ", " << TC_2 << endl;
+	} else if (type == 2){
+		cout << "Array Can't Be Compared With Non Array - " << TC_1 << ", " << TC_2 << endl;
+	} else if (type == 3){
+		cout << "Array Access Can't Be Compared With Array - " << TC_1 << ", " << TC_2 << endl;
+	} else if (type == 4){
+		cout << "Non Array Can't Be Compared With Array - " << TC_1 << ", " << TC_2 << endl;
+	} else if (type == 5){
+		cout << "String Value Can't Be Compared With A Non String Indentifier - " << TC_1 << ", " << "\"" << TC_2 << "\"" << endl;
+	} else if (type == 6){
+		cout << "String Value Can't Be Compared With A Non String Indentifier - " << "\"" << TC_1 << "\"" << ", " << TC_2 << endl;
+	} else if (type == 7){
+		cout << "Char Value Can't Be Compared With A Non Char Indentifier - " << TC_1 << ", " << "\'" << TC_2 << "\'" << endl;
+	} else if (type == 8){
+		cout << "Char Value Can't Be Compared With A Non Char Indentifier - " << "\'" << TC_1 << "\'"  << ", " << TC_2 << endl;
+	} else if (type == 9){
+		cout << "String Value Can't Be Compared With A Char Value - " << "\"" << TC_1 << "\"" << ", "  << "\'"  << TC_2 << "\'"  << endl;
+	} else if (type == 10){
+		cout << "String Value Can't Be Compared With A Number Value - " << "\"" << TC_1 << "\"" << ", " << TC_2 << endl;
+	} else if (type == 11){
+		cout << "String Value Can't Be Compared With A Bool Value - " << "\"" << TC_1 << "\"" << ", " << TC_2 << endl;
+	} else if (type == 12){
+		cout << "Bool Value Can't Be Compared With A Non Bool Indentifier - " <<  TC_1  << ", " << TC_2 << endl;
+	} else if (type == 13){
+		cout << "Bool Value Can't Be Compared With A String Value - " << TC_1 << ", " << "\"" << TC_2 << "\"" << endl;
+	} else if (type == 14){
+		cout << "Bool Value Can't Be Compared With A Char Value - " << TC_1 << ", " << "\'" << TC_2 << "\'" << endl;
+	} else if (type == 15){
+		cout << "Bool Value Can't Be Compared With A Number Value - " << TC_1 << ", " << TC_2 << endl;
+	} else if (type == 16){
+		cout << "Char Value Can't Be Compared With A Full String Indentifier - " << "\'" << TC_1 << "\'" << ", " << TC_2 << endl;
+	} else if (type == 17){
+		cout << "Char Value Can't Be Compared With A String Value - " << "\'" << TC_1 << "\'" << ", " << "\"" << TC_2 << "\"" << endl;
+	} else if (type == 18){
+		cout << "Char Value Can't Be Compared With A Number Value - " << "\'" << TC_1 << "\'" << ", " << TC_2 << endl;
+	} else if (type == 19){
+		cout << "Char Value Can't Be Compared With A Bool Value - " << "\'" << TC_1 << "\'" << ", " << TC_2 << endl;
+	} else if (type == 20){
+		cout << "Number Value Can't Be Compared With A Non Number Indentifier - " <<  TC_1  << ", " << TC_2 << endl;
+	} else if (type == 21){
+		cout << "Number Value Can't Be Compared With A String Value - " << TC_1  << ", " << "\"" << TC_2 << "\"" << endl;
+	} else if (type == 22){
+		cout << "Number Value Can't Be Compared With A Char Value - " << TC_1  << ", " << "\'" << TC_2 << "\'" << endl;
+	} else if (type == 23){
+		cout << "Number Value Can't Be Compared With A Bool Value - " << TC_1  << ", " << TC_2 << endl;
+	} else if (type == 24){
+
+	} else if (type == 25){
+
+	} else if (type == 26){
+
+	} else if (type == 27){
+
+	}
+
 }

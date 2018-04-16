@@ -1,4 +1,4 @@
-//leaving off end of program period.  is it correct?  officially no, but should we compile and simply issue a warning?  i leave that up to you.
+//leaving off end of program period.   a warning?  i leave that up to you.
 
 
 // 5+(9-3) / (9-7)
@@ -6,11 +6,11 @@
 PROGRAM grant IS
 	//global char jake; // [5:7]
 	//global char ch;
-	//global integer h;
-	//global integer j;
+	global integer h[8:17];
+	global integer j[0:9];
 	global string poop;
 	global string poop2;
-	global integer z[3:12]; 
+	global integer z[3:72]; 
  	global integer i;
 	global char ch;
 	global float fl;
@@ -32,20 +32,14 @@ PROGRAM grant IS
 	end procedure;
 
 	begin
-		//i := 10;// z[4] := 1;
-		//z[3] := 8;	
-		poop := "lol";
-		putString(poop);
-		getString(poop);
-		putString(poop);
-
-		//for(i := 0; i < 10)
-		//	i := i + 1;
-		//	z[4] := z[4] * 2;	
-		//end for;
-
-
-
+		
+		z[4] := 1;
+		for(i := 0; i < 10)
+			i := i + 1;
+			z[4] := z[4] + 2;	
+		end for;
+		
+		putInteger(z[4]);
 		//ch[0] := 1; ch[1] := 2; ch[2] := 3;
 
 		//if( i < 10 ) then 

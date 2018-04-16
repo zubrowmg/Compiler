@@ -1,6 +1,7 @@
 #ifndef ParseNode_H
 #define ParseNode_H
 
+
 struct tokens{
 	std::string type;
 	
@@ -65,6 +66,7 @@ class ParseNode
 
 #include <vector>
 #include "Symbol.h"
+
 class ParseTree 
 {
     private:
@@ -123,6 +125,8 @@ class ParseTree
         bool getProgBodyFlag();
 
         void setSym(Symbol input_sym);
+
+        
 };
 
 #endif
