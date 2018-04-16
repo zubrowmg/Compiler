@@ -2,7 +2,7 @@ string;
 string;
 int[312];
 int;
-int[02];
-
-int main(){
+char;
+float;
+bool;
 }

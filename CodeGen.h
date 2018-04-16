@@ -8,6 +8,7 @@
 #include "Symbol.h"
 #include "ParseTree.h"
 #include "List.h"
+#include "Error.h"
 
 using namespace std;
 
@@ -18,6 +19,7 @@ struct expNode
 
 class CodeGen{
 	private:
+        Error error_handler;
     	bool prog_start, prog_begin, prog_end, proc_start, proc_begin, proc_end;
     	bool prev_TT_prog, prev_TT_ident, prev_TT_is, prev_TT_begin, prev_TT_end;
     	bool prev_TT_proc, prev_TT_semi, prog_declare, prev_TT_ident2, prev_TT_LPAR;
@@ -82,6 +84,11 @@ class CodeGen{
 
         void generalFor(list temp_list2);
         void generalForEnd();
+
+        void generalProcStatement(list temp_list2);
+        void generalIO(list temp_list2);
+        void evalProcStatement(list temp_list2);
+
 };
 
 #endif

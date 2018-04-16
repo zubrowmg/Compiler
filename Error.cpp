@@ -36,6 +36,51 @@ void Error::error(int line, int type){
 	} else if (type == 9){
 		cout << "Assignment Type Mismatch" << endl;
 	} 
+	// Type Check Errors in Code Gen
+ 	else if (type == 10){
+		cout << "putInteger does not accept floats" << endl;
+	} else if (type == 11){
+		cout << "putInteger only accepts integer indentifiers" << endl;
+	} else if (type == 12){
+		cout << "putInteger only accepts integers" << endl;
+	} else if (type == 13){
+		cout << "putChar only accepts char indentifiers" << endl;
+	} else if (type == 14){
+		cout << "putChar only accepts chars" << endl;
+	} else if (type == 15){
+		cout << "putFloat does not accept integers" << endl;
+	} else if (type == 16){
+		cout << "putFloat only accepts float indentifiers" << endl;
+	} else if (type == 17){
+		cout << "putFloat only accepts floats" << endl;
+	} else if (type == 18){
+		cout << "putBool only accepts bool indentifiers" << endl;
+	} else if (type == 19){
+		cout << "putBool only accepts bools" << endl;
+	} else if (type == 20){
+		cout << "putString only accepts string indentifiers" << endl;
+	} else if (type == 21){
+		cout << "putString only accepts strings" << endl;
+	}
+
+	else if (type == 22){
+		cout << "Array size difference" << endl;
+	}
+
+	else if (type == 23){
+		cout << "getInteger only accepts integer indentifiers" << endl;
+	} else if (type == 24){
+		cout << "get function only accepts indentifiers" << endl;
+	} else if (type == 25){
+		cout << "getFloat  only accepts float indentifiers" << endl;
+	} else if (type == 26){
+		cout << "getChar only accepts char indentifiers" << endl;
+	} else if (type == 27){
+		cout << "getBool only accepts bool indentifiers" << endl;
+	} else if (type == 28){
+		cout << "getString only accepts string indentifiers" << endl;
+	}
+
 
 }
 

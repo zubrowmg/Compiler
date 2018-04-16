@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <cstdlib>
 #include <fstream>
+#include <string.h>
 
 #include "CodeGen.h"
 #include "Symbol.h"
@@ -156,6 +157,8 @@ void CodeGen::printCode(){
 	myfile2 << "#include <string.h>" << "\n"
 	<< "#include <stdio.h>" << "\n"
 	<< "#include <stdbool.h>" << "\n" << "\n";
+
+
 	
 	myfile2 << "union val{" << "\n" 
 		<< "\t" << "int int_val;" << "\n" 
@@ -167,9 +170,10 @@ void CodeGen::printCode(){
 	myfile2 << "union val R[10000];" << "\n";
 	myfile2 << "union val R2[10000];" << "\n";
 	
-	myfile << "\n" << "int main(){" << "\n";
 	myfile2 << "\n" << "int main(){" << "\n";
-	
+		
+	myfile2 << "FILE *outfile;" << " outfile = fopen(\"output.txt\",\"w\");" << "\n" << "\n";
+	myfile2 << "FILE *infile;" << " infile = fopen(\"input.txt\",\"r\");" << "\n" << "\n";
 
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
@@ -177,7 +181,10 @@ void CodeGen::printCode(){
 			output2(code_gen_order[i]);
 		}		
 	}
-		
+
+	myfile2 << "\n" << "fclose(outfile);" << "\n";
+	myfile2 << "fclose(infile);" << "\n";
+
 	myfile << "}" ;
 	myfile2 << "}" ;
 
@@ -300,6 +307,8 @@ void CodeGen::output2(list temp_list2){
 		} else if (tok_temp.type == "T_ASSIGN"){
 			assign_state = true;
 			break;
+		} else if (j == temp_list2.get_size() - 1){
+			proc_state = true;
 		}
 
 		if (tok_temp.type == "T_END"){
@@ -342,11 +351,256 @@ void CodeGen::output2(list temp_list2){
 	} else if (ret_state){
 
 	} else if (proc_state) {
-
+		generalProcStatement(temp_list2);
 	} else if (assign_state){	
 		generalAssignStatement(temp_list2);		
 	}
 }
+
+void CodeGen::generalProcStatement(list temp_list2){
+	tokens tok_temp;
+	
+	temp_list2.reset_pos();
+	tok_temp = temp_list2.get_one();
+	if ( strcmp(tok_temp.stringValue, "putinteger") == 0 || strcmp(tok_temp.stringValue, "putbool") == 0
+			|| strcmp(tok_temp.stringValue, "putfloat") == 0 || strcmp(tok_temp.stringValue, "putstring") == 0
+			|| strcmp(tok_temp.stringValue, "putchar") == 0 || strcmp(tok_temp.stringValue, "getinteger") == 0
+			|| strcmp(tok_temp.stringValue, "getbool") == 0 || strcmp(tok_temp.stringValue, "getfloat") == 0
+			|| strcmp(tok_temp.stringValue, "getstring") == 0 || strcmp(tok_temp.stringValue, "getchar") == 0) {
+ 
+		generalIO(temp_list2);
+
+	} else {
+		evalProcStatement(temp_list2);
+	}
+}
+
+void CodeGen::generalIO(list temp_list2){
+	tokens tok_temp, tok_temp2; list new_list; bool last_T_LBRACKET = false; 
+
+	temp_list2.reset_pos();
+	for (int j = 0; j < temp_list2.get_size(); j++){
+		tok_temp2 = temp_list2.get_one();
+		if (temp_list2.look_ahead_no_wrap().type == "T_LBRACKET") {
+			tok_temp2.single_array_access = true;
+			tok_temp2.index = atoi((temp_list2.look_ahead_two_no_wrap()).stringValue);
+			new_list.createnode(tok_temp2);
+		} else if (last_T_LBRACKET){
+			//Do nothing, we don't want the number in the []
+		} else if (tok_temp2.type == "T_RBRACKET" || tok_temp2.type == "T_LBRACKET"){
+			//Do nothing
+		} else {
+			new_list.createnode(tok_temp2);
+		}
+
+		if (tok_temp2.type == "T_LBRACKET" ){
+			last_T_LBRACKET = true;
+		} else {
+			last_T_LBRACKET = false;
+		}
+	}
+
+	new_list.reset_pos();
+	tok_temp = new_list.get_one();
+	if (strcmp(tok_temp.stringValue, "putinteger") == 0){
+		tok_temp2 = new_list.look_ahead_two_no_wrap();
+
+		if (tok_temp2.type == "T_NUMBERVAL"){
+			if (isFloat(tok_temp2.stringValue)) {
+				error_handler.error(tok_temp2.line, 10);
+			} else {
+				for (int k = 0; k < strLength(tok_temp2.stringValue); k++){
+					myfile2 << "putc(" << "\'" << (tok_temp2.stringValue)[k] << "\'" <<  ", outfile);" << "\n";	
+				}
+			}			
+		} else if (tok_temp2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_INTEGER"){
+				myfile2 << "fprintf(outfile, \"%" << "d\"," << "MM[";
+				myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
+				myfile2 << "]";
+				outputValType(tok_temp2);
+				myfile2  << ");" << "\n";
+			} else {
+				error_handler.error(tok_temp2.line, 11);
+			}
+		} else {
+			error_handler.error(tok_temp2.line, 12);
+		}
+	} else if (strcmp(tok_temp.stringValue, "putchar") == 0){
+		tok_temp2 = new_list.look_ahead_two_no_wrap();
+		if (tok_temp2.type == "T_CHARVAL"){
+			myfile2 << "putc(" << "\'" << (tok_temp2.stringValue) << "\'" <<  ", outfile);" << "\n";				
+		} else if (tok_temp2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_CHAR"){
+				myfile2 << "fprintf(outfile, \"%" << "c\"," << "MM[";
+				myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
+				myfile2 << "]";
+				outputValType(tok_temp2);
+				myfile2  << ");" << "\n";
+			} else {
+				error_handler.error(tok_temp2.line, 13);
+			}
+		} else {
+			error_handler.error(tok_temp2.line, 14);
+		}
+	} if (strcmp(tok_temp.stringValue, "putfloat") == 0){
+		tok_temp2 = new_list.look_ahead_two_no_wrap();
+
+		if (tok_temp2.type == "T_NUMBERVAL"){
+			if (isFloat(tok_temp2.stringValue)) {
+				for (int k = 0; k < strLength(tok_temp2.stringValue); k++){
+					myfile2 << "putc(" << "\'" << (tok_temp2.stringValue)[k] << "\'" <<  ", outfile);" << "\n";	
+				} 
+			} else {
+				error_handler.error(tok_temp2.line, 15);
+			}			
+		} else if (tok_temp2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_FLOAT"){
+				myfile2 << "fprintf(outfile, \"%" << "f\"," << "MM[";
+				myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
+				myfile2 << "]";
+				outputValType(tok_temp2);
+				myfile2  << ");" << "\n";
+			} else {
+				error_handler.error(tok_temp2.line, 16);
+			}
+		} else {
+			error_handler.error(tok_temp2.line, 17);
+		}
+	} else if (strcmp(tok_temp.stringValue, "putbool") == 0){
+		tok_temp2 = new_list.look_ahead_two_no_wrap();
+		if (tok_temp2.type == "T_TRUE" || tok_temp2.type == "T_FALSE"){
+			myfile2 << "putc(" << "\'";
+			if (tok_temp2.type == "T_TRUE"){
+				myfile2 << 1;
+			} else if (tok_temp2.type == "T_FALSE"){
+				myfile2 << 0;
+			}
+		 	myfile2 << "\'" <<  ", outfile);" << "\n";				
+		} else if (tok_temp2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_BOOL"){
+				myfile2 << "fprintf(outfile, \"%" << "d\"," << "MM[";
+				myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
+				myfile2 << "]";
+				outputValType(tok_temp2);
+				myfile2  << ");" << "\n";
+			} else {
+				error_handler.error(tok_temp2.line, 18);
+			}
+		} else {
+			error_handler.error(tok_temp2.line, 19);
+		}
+	} else if (strcmp(tok_temp.stringValue, "putstring") == 0){
+		tok_temp2 = new_list.look_ahead_two_no_wrap();
+		if (tok_temp2.type == "T_STRINGVAL"){
+			for (int k = 0; k < strLength(tok_temp2.stringValue); k++){
+				myfile2 << "putc(" << "\'" << (tok_temp2.stringValue)[k] << "\'" <<  ", outfile);" << "\n";	
+			}			
+		} else if (tok_temp2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_STRING"){
+				for (int r = 0; r < 50; r++){
+					myfile2 << "fprintf(outfile, \"%" << "c\"," << "MM[";
+					myfile2 << r + sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
+					myfile2 << "]";
+					outputValType(tok_temp2);
+					myfile2  << ");" << "\n";
+				}
+			} else {
+				error_handler.error(tok_temp2.line, 20);
+			}
+		} else {
+			error_handler.error(tok_temp2.line, 22);
+		}
+	} else if (strcmp(tok_temp.stringValue, "getinteger") == 0){	
+		tok_temp2 = new_list.look_ahead_two_no_wrap();
+		if (tok_temp2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_INTEGER"){
+					myfile2 << "fscanf(infile, \"%" << "d\"," << "&MM[";
+					myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
+					myfile2 << "]"; 
+					outputValType(tok_temp2);
+					myfile2  << ");" << "\n";
+			} else {
+				error_handler.error(tok_temp2.line, 23);
+			}
+		} else {
+			error_handler.error(tok_temp2.line, 24);
+		}
+	} else if (strcmp(tok_temp.stringValue, "getfloat") == 0){	
+		tok_temp2 = new_list.look_ahead_two_no_wrap();
+		if (tok_temp2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_FLOAT"){
+					myfile2 << "fscanf(infile, \"%" << "f\"," << "&MM[";
+					myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
+					myfile2 << "]"; 
+					outputValType(tok_temp2);
+					myfile2  << ");" << "\n";
+			} else {
+				error_handler.error(tok_temp2.line, 25);
+			}
+		} else {
+			error_handler.error(tok_temp2.line, 24);
+		}
+	} else if (strcmp(tok_temp.stringValue, "getchar") == 0){	
+		tok_temp2 = new_list.look_ahead_two_no_wrap();
+		if (tok_temp2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_CHAR"){
+					myfile2 << "fscanf(infile, \"%" << "c\"," << "&MM[";
+					myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
+					myfile2 << "]"; 
+					outputValType(tok_temp2);
+					myfile2  << ");" << "\n";
+			} else {
+				error_handler.error(tok_temp2.line, 26);
+			}
+		} else {
+			error_handler.error(tok_temp2.line, 24);
+		}
+	} else if (strcmp(tok_temp.stringValue, "getbool") == 0){	
+		tok_temp2 = new_list.look_ahead_two_no_wrap();
+		if (tok_temp2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_BOOL"){
+					myfile2 << "fscanf(infile, \"%" << "d\"," << "&MM[";
+					myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
+					myfile2 << "].int_val"; 
+					
+					myfile2  << ");" << "\n";
+			} else {
+				error_handler.error(tok_temp2.line, 27);
+			}
+		} else {
+			error_handler.error(tok_temp2.line, 24);
+		}
+	} else if (strcmp(tok_temp.stringValue, "getstring") == 0){	
+		tok_temp2 = new_list.look_ahead_two_no_wrap();
+		if (tok_temp2.type == "T_IDENTIFIER"){
+			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_STRING"){
+					myfile2 << "fscanf(infile, \"";
+					for (int r = 0; r < 50; r++){
+						myfile2 << "%" << "c"; 
+					} 
+					myfile2 << "\"";
+					for (int r = 0; r < 50; r++){
+						myfile2 << ",&MM[";
+						myfile2 << r + sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
+						myfile2 << "]"; 
+						outputValType(tok_temp2);
+					}
+					myfile2  << ");" << "\n";
+			} else {
+				error_handler.error(tok_temp2.line, 26);
+			}
+		} else {
+			error_handler.error(tok_temp2.line, 24);
+		}
+	}
+}
+
+void CodeGen::evalProcStatement(list temp_list2){
+
+}
+
+
 
 void CodeGen::generalFor(list temp_list2){
 	tokens tok_temp; list assign_statement_list, expression_list;
@@ -466,35 +720,84 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 
 	new_list.reset_pos();
 	tok_temp2 = new_list.get_one();
-	myfile2 << "MM[";
-	myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left ;
-	myfile2 << "]";
-	outputValType(tok_temp2);
-	myfile2 << "=";
+	if ((sym_table.returnValType(tok_temp2.stringValue)).is_array && !tok_temp2.single_array_access){
+		expression_list.reset_pos();
+		for (int j = 0; j < expression_list.get_size(); j++){
+			tok_temp = expression_list.get_one();
+	 		if (tok_temp.type == "T_NOT" || tok_temp.type == "T_OR" || tok_temp.type == "T_AND"){
+	 			 and_or_not = true;
+	 		} else if (isRelation(tok_temp)){
+	 			relation = true;
+	 		} else if (tok_temp.type == "T_NUMBERVAL" || tok_temp.type == "T_STRINGVAL" || tok_temp.type == "T_CHARVAL" 
+	 												  || tok_temp.type == "T_IDENTIFIER" || tok_temp.type == "T_FALSE"
+	 												  || tok_temp.type == "T_TRUE"){
+	 			tok_val_type = tok_temp;
+	 		}
+		}
 
-	expression_list.reset_pos();
-	for (int j = 0; j < expression_list.get_size(); j++){
+		expression_list.reset_pos();
 		tok_temp = expression_list.get_one();
- 		if (tok_temp.type == "T_NOT" || tok_temp.type == "T_OR" || tok_temp.type == "T_AND"){
- 			 and_or_not = true;
- 		} else if (isRelation(tok_temp)){
- 			relation = true;
- 		} else if (tok_temp.type == "T_NUMBERVAL" || tok_temp.type == "T_STRINGVAL" || tok_temp.type == "T_CHARVAL" 
- 												  || tok_temp.type == "T_IDENTIFIER"){
- 			tok_val_type = tok_temp;
- 		}
-	}
-	if (and_or_not){
-		myfile2 << "R2[0].bool_val";
-	} else if (relation){
-		myfile2 << "R[0].bool_val";
-	} else {
-		myfile2 << "R[0]";
-		outputValType(tok_val_type);
-	}
+		if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_STRING"){
+			myfile2 << "\n"; 
+			for (int r = 0; r < 50; r++){
+				myfile2 << "\t" << "MM[";
+				myfile2 << r + sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left ;
+				myfile2 << "]";
+				outputValType(tok_temp2);
+				myfile2 << "=";
 
-	
-	myfile2 << ";" << "\n" << "\n"; 
+
+				if (and_or_not){
+					myfile2 << "R2[" << r << "].bool_val";
+				} else if (relation){
+					myfile2 << "R[" << r << "].bool_val";
+				} else {
+					myfile2 << "R[" << r << "]";
+					outputValType(tok_val_type);
+				}
+
+				
+				myfile2 << ";" << "\n";
+			}
+		} else {
+			if ((sym_table.returnValType(tok_temp2.stringValue)).array_size == (sym_table.returnValType(tok_temp.stringValue)).array_size){
+
+			} else {
+				error_handler.error(tok_temp2.line, 22);
+			}
+		}
+	} else {
+		myfile2 << "MM[";
+		myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left ;
+		myfile2 << "]";
+		outputValType(tok_temp2);
+		myfile2 << "=";
+
+		expression_list.reset_pos();
+		for (int j = 0; j < expression_list.get_size(); j++){
+			tok_temp = expression_list.get_one();
+	 		if (tok_temp.type == "T_NOT" || tok_temp.type == "T_OR" || tok_temp.type == "T_AND"){
+	 			 and_or_not = true;
+	 		} else if (isRelation(tok_temp)){
+	 			relation = true;
+	 		} else if (tok_temp.type == "T_NUMBERVAL" || tok_temp.type == "T_STRINGVAL" || tok_temp.type == "T_CHARVAL" 
+	 												  || tok_temp.type == "T_IDENTIFIER" || tok_temp.type == "T_FALSE"
+	 												  || tok_temp.type == "T_TRUE"){
+	 			tok_val_type = tok_temp;
+	 		}
+		}
+		if (and_or_not){
+			myfile2 << "R2[0].bool_val";
+		} else if (relation){
+			myfile2 << "R[0].bool_val";
+		} else {
+			myfile2 << "R[0]";
+			outputValType(tok_val_type);
+		}
+
+		
+		myfile2 << ";" << "\n" << "\n";
+	} 
 
 }
 

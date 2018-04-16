@@ -295,7 +295,19 @@ list scan(char *argv[]){
 			else if (reserved_word_checker(current_token, "false")){current_token.type = "T_FALSE"; current_token.line = line_counter; token_list.createnode(current_token);}
 			else if (reserved_word_checker(current_token, "not")){current_token.type = "T_NOT"; current_token.line = line_counter; token_list.createnode(current_token);}
 			else if (reserved_word_checker(current_token, "string")){current_token.type = "T_STRING"; current_token.line = line_counter; token_list.createnode(current_token);}
-			else {
+			
+			/*else if (reserved_word_checker(current_token, "getString")){current_token.type = "T_GETSTRING"; current_token.line = line_counter; token_list.createnode(current_token);}
+			else if (reserved_word_checker(current_token, "getChar")){current_token.type = "T_GETCHAR"; current_token.line = line_counter; token_list.createnode(current_token);}
+			else if (reserved_word_checker(current_token, "getInteger")){current_token.type = "T_GETINTEGER"; current_token.line = line_counter; token_list.createnode(current_token);}
+			else if (reserved_word_checker(current_token, "getBool")){current_token.type = "T_GETBOOL"; current_token.line = line_counter; token_list.createnode(current_token);}
+			else if (reserved_word_checker(current_token, "getFloat")){current_token.type = "T_GETFLOAT"; current_token.line = line_counter; token_list.createnode(current_token);}
+			
+			else if (reserved_word_checker(current_token, "putString")){current_token.type = "T_PUTSTRING"; current_token.line = line_counter; token_list.createnode(current_token);}
+			else if (reserved_word_checker(current_token, "putChar")){current_token.type = "T_PUTCHAR"; current_token.line = line_counter; token_list.createnode(current_token);}
+			else if (reserved_word_checker(current_token, "putInteger")){current_token.type = "T_PUTINTEGER"; current_token.line = line_counter; token_list.createnode(current_token);}
+			else if (reserved_word_checker(current_token, "putBool")){current_token.type = "T_PUTBOOL"; current_token.line = line_counter; token_list.createnode(current_token);}
+			else if (reserved_word_checker(current_token, "putFloat")){current_token.type = "T_PUTFLOAT"; current_token.line = line_counter; token_list.createnode(current_token);}
+			*/else {
 				current_token.type = "T_IDENTIFIER";
 				current_token.line = line_counter;
 				token_list.createnode(current_token);

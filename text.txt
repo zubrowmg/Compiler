@@ -5,14 +5,16 @@
 
 PROGRAM grant IS
 	//global char jake; // [5:7]
-	//global char ryan;
+	//global char ch;
 	//global integer h;
 	//global integer j;
 	global string poop;
 	global string poop2;
 	global integer z[3:12]; 
  	global integer i;
-	global integer ch[0:2];
+	global char ch;
+	global float fl;
+	global bool bl;
 
 	procedure if_proc()
 		//integer declaration[5:7];
@@ -30,19 +32,19 @@ PROGRAM grant IS
 	end procedure;
 
 	begin
-		i := 10; z[4] := 1;
-		//z[3] := 8;		
-		
+		//i := 10;// z[4] := 1;
+		//z[3] := 8;	
+		poop := "lol";
+		putString(poop);
+		getString(poop);
+		putString(poop);
 
-		for(i := 0; i < 10)
-			i := i + 1;
-			z[4] := z[4] * 2;	
-		end for;
+		//for(i := 0; i < 10)
+		//	i := i + 1;
+		//	z[4] := z[4] * 2;	
+		//end for;
 
-for(i := 0; i < 10)
-			i := i + 1;
-			z[4] := z[4] * 2;	
-		end for;
+
 
 		//ch[0] := 1; ch[1] := 2; ch[2] := 3;
 
