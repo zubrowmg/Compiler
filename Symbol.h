@@ -51,7 +51,7 @@ class ProcedureNode
         void modify(std::string ident);
         void modify(std::string ident, std::string num, char c);
 
-        int setMMIndex(std::string ident, int index);
+        int setMMIndex(std::string ident, int index, std::string input_table);
         int getMMIndex(std::string ident);
 };
 
@@ -134,8 +134,8 @@ class Symbol
         bool MC();
         bool MC_AS();
 
-        int setMMIndex(std::string ident, int index);
-        int getMMIndex(std::string ident);
+        int setMMIndex(std::string ident, int index, std::string input_table);
+        int getMMIndex(std::string ident, std::string input_table);
 
         bool errorsEncountered();
 };

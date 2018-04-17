@@ -58,6 +58,13 @@ void list::deleteNode(tokens tok){
 
 }
 
+void list::setTable(std::string input){
+	proc = input;
+}
+
+std::string list::getTable(){
+	return proc;
+}
 
 int list::get_size(){return size;}
 int list::reset_pos(){ pos = head; return 0;}

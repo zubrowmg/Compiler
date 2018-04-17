@@ -8,7 +8,16 @@ global integer arr[1:3];
 
 procedure if_proc()
 		//integer declaration[5:7];
+		global char yy;		
 		integer k;
+		begin
+			
+		
+	end procedure;
+
+procedure ff_proc()
+		//integer declaration[5:7];
+		integer j;
 		begin
 			
 		

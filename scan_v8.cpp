@@ -658,7 +658,8 @@ bool parser(list scan_list){
 	}
 	myfile3.close();
 
- 	sym.printAll();
+ 	//sym.printAll();
+ 	gen.printSym();
 /*----------------------------------------------------  
 	Checks to see if the Parser passed or failed
 ----------------------------------------------------*/

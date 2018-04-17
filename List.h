@@ -15,7 +15,7 @@ class list{
 	private:
     	node *head, *tail, *pos;
     	int size;
-    	std::string code_gen;
+    	std::string code_gen, proc;
     	int if_goto_num;
     	
     public:
@@ -38,6 +38,9 @@ class list{
 
 		void deleteNode(tokens tok);
 		//void setPos();
+
+		void setTable(std::string input);
+		std::string getTable();
 		
 };
 

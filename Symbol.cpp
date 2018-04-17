@@ -31,16 +31,16 @@ Symbol::Symbol()
 
 }
 
-int Symbol::setMMIndex(std::string ident, int index)
-{
-//cout << index << endl;
+int Symbol::setMMIndex(std::string ident, int index, std::string input_table){
+ //cout << index << " " << input_table << endl;
 	int new_index = index;
 	bool done = false;
 	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = global.begin(); itr != global.end(); ++itr){
-//cout << "\t" << ident << itr->first << endl;
+
         
         if (itr->first == ident){
+
         	(itr->second).MM_Index = index;
         	if ((itr->second).is_array == true){
         		new_index = index + (itr->second).array_size ;
@@ -51,9 +51,10 @@ int Symbol::setMMIndex(std::string ident, int index)
         }
     }
     if (!done){
+    	resetPos();
     	for (int i = 0; i < size; i++){
-			if (current_proc == pos->getName()){
-				new_index = pos->setMMIndex(ident, index);
+			if (input_table == pos->getName()){
+				new_index = pos->setMMIndex(ident, index, input_table);
 				break;
 			} else {
 				pos = pos->getNext();
@@ -64,7 +65,7 @@ int Symbol::setMMIndex(std::string ident, int index)
 	return new_index;
 }
 
-int Symbol::getMMIndex(std::string ident)
+int Symbol::getMMIndex(std::string ident, std::string input_table)
 {	
 	int index;
 	bool done = false;
@@ -77,7 +78,7 @@ int Symbol::getMMIndex(std::string ident)
     }
     if (!done){
     	for (int i = 0; i < size; i++){
-			if (current_proc == pos->getName()){
+			if (input_table == pos->getName()){
 				index = pos->getMMIndex(ident);
 				break;
 			} else {
@@ -540,12 +541,13 @@ void Symbol::printGlobal()
 	std::cout << "Global: "<< '\n';
 	for (itr = global.begin(); itr != global.end(); ++itr){
         std::cout  <<  '\t' << itr->first 
-              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' '<< '\t' ;
+              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' '<< '\t' << (itr->second).MM_Index << ' '<< '\t';
       	if ((itr->second).is_array){
-      		cout << "Is Array" << ' ' << '\t' << "[" << (itr->second).array_left << ':' << (itr->second).array_right << "]" << '\t' << (itr->second).array_size << '\t' << (itr->second).MM_Index << endl;
+      		cout << "Is Array" << ' ' << '\t' << "[" << (itr->second).array_left << ':' << (itr->second).array_right << "]" << '\t' << (itr->second).array_size << '\t' << (itr->second).MM_Index;      		
       	} else {
-    		cout << "Not Array" << endl;
+    		cout << "Not Array" ;
     	}
+    	cout << endl;
   	}
 }
 void Symbol::printTable()
@@ -707,11 +709,13 @@ void ProcedureNode::modify(std::string ident, std::string num, char c){
     }
 }
 
-int ProcedureNode::setMMIndex(std::string ident, int index){
+int ProcedureNode::setMMIndex(std::string ident, int index, std::string input_table){
 	int new_index = index;
+
 	std::map <std::string, symbolNode> :: iterator itr;
 	for (itr = table.begin(); itr != table.end(); ++itr){
         if (itr->first == ident){
+	//cout << "\t" << ident << endl;
         	(itr->second).MM_Index = index;
         	if ((itr->second).is_array == true){
         		new_index = index + (itr->second).array_size;
@@ -741,12 +745,13 @@ void ProcedureNode::printTable()
 	std::cout << "Name: " << name << '\n'<< '\n';
 	for (itr = table.begin(); itr != table.end(); ++itr){
         std::cout  <<  '\t' << itr->first 
-              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' '  <<  '\t';
+              <<  '\t' << (itr->second).type <<  '\t' << (itr->second).str_val << ' '  <<  '\t' << (itr->second).MM_Index << ' '<< '\t';
       	if ((itr->second).is_array){
-      		cout << "Is Array" << ' ' << '\t' << "[" << (itr->second).array_left << ':' << (itr->second).array_right << "]" << '\t' << (itr->second).array_size << '\t' << (itr->second).MM_Index << endl;
+      		cout << "Is Array" << ' ' << '\t' << "[" << (itr->second).array_left << ':' << (itr->second).array_right << "]" << '\t' << (itr->second).array_size << '\t' << (itr->second).MM_Index;
       	} else {
-    		cout << "Not Array" << endl;
+    		cout << "Not Array" ;
     	}
+    	cout << endl;
     }
 }
 
