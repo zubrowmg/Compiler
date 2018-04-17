@@ -88,6 +88,8 @@ void Error::error(int line, int type){
 		cout << "getBool only accepts bool indentifiers" << endl;
 	} else if (type == 28){
 		cout << "getString only accepts string indentifiers" << endl;
+	} else if (type == 28){
+		cout << "Too Many */" << endl;
 	}
 
 
@@ -142,7 +144,7 @@ void Error::error(int line, int type, std::string TC_1, std::string TC_2){
 	} else if (type == 11){
 		cout << "String Value Can't Be Compared With A Bool Value - " << "\"" << TC_1 << "\"" << ", " << TC_2 << endl;
 	} else if (type == 12){
-		cout << "Bool Value Can't Be Compared With A Non Bool Indentifier - " <<  TC_1  << ", " << TC_2 << endl;
+		cout << "Bool Value Can't Be Compared With A Full String Indentifier - " <<  TC_1  << ", " << TC_2 << endl;
 	} else if (type == 13){
 		cout << "Bool Value Can't Be Compared With A String Value - " << TC_1 << ", " << "\"" << TC_2 << "\"" << endl;
 	} else if (type == 14){
@@ -158,20 +160,53 @@ void Error::error(int line, int type, std::string TC_1, std::string TC_2){
 	} else if (type == 19){
 		cout << "Char Value Can't Be Compared With A Bool Value - " << "\'" << TC_1 << "\'" << ", " << TC_2 << endl;
 	} else if (type == 20){
-		cout << "Number Value Can't Be Compared With A Non Number Indentifier - " <<  TC_1  << ", " << TC_2 << endl;
+		cout << "Number Value Can't Be Compared With A Full String Indentifier - " <<  TC_1  << ", " << TC_2 << endl;
 	} else if (type == 21){
 		cout << "Number Value Can't Be Compared With A String Value - " << TC_1  << ", " << "\"" << TC_2 << "\"" << endl;
 	} else if (type == 22){
 		cout << "Number Value Can't Be Compared With A Char Value - " << TC_1  << ", " << "\'" << TC_2 << "\'" << endl;
 	} else if (type == 23){
 		cout << "Number Value Can't Be Compared With A Bool Value - " << TC_1  << ", " << TC_2 << endl;
-	} else if (type == 24){
+	}
 
-	} else if (type == 25){
+	else if (type == 24){
+		cout << "Boolean Expressions Need to Have A Destination Type of Int or Bool - " << TC_1  << ", " << TC_2 << endl;
+	}
 
+	 else if (type == 25){
+	 	cout << "Single Entity Indentifiers Can't Be Compared With A Full String Indentifier - " << TC_1  << ", " << TC_2 << endl;
 	} else if (type == 26){
+		cout << "Destination Needs to Be an Indentifier - " << TC_1 << endl;
+	}
 
-	} else if (type == 27){
+
+	else if (type == 27){
+	 	cout << "A Destination of Type String Can't Be Equal A Single Entity Indentifier - " << TC_1  << ", " << TC_2 << endl;
+	} else if (type == 28){
+	 	cout << " A Single Entity Destination Can't Be Equal an Indentifier of Type String - " << TC_1  << ", " << TC_2 << endl;
+	} else if (type == 29){
+		cout << "A Destination of Type String Can't Be Equal to A Single Entity - " << TC_1 << ", "  << TC_2  << endl;
+	} else if (type == 30){
+		cout << "A Destination of Type Char Can't Be Equal to A Full String - " << TC_1 << ", " << "\"" << TC_2 << "\"" << endl;
+	} else if (type == 31){
+		cout << "A Destination of Type Char Can't Be Equal to A Bool - " << TC_1 << ", " << TC_2 << endl;
+	} else if (type == 32){
+		cout << "A Destination of Type Bool Can't Be Equal to A Char - " << TC_1 << ", " << TC_2 << endl;
+	} else if (type == 33){
+
+	} else if (type == 34){
+
+	} else if (type == 35){
+
+	} else if (type == 36){
+
+	} else if (type == 37){
+
+	} else if (type == 38){
+
+	} else if (type == 39){
+
+	} else if (type == 40){
 
 	}
 

@@ -25,7 +25,7 @@ class CodeGen{
     	bool prev_TT_proc, prev_TT_semi, prog_declare, prev_TT_ident2, prev_TT_LPAR;
         bool prev_TT_int, prev_TT_bool, prev_TT_str, prev_TT_char, prev_TT_float;
     	std::vector<list> code_gen_order;
-    	list temp_list;
+    	list temp_list, temp2_list;
     	ofstream myfile; ofstream myfile2;
     	int MM_Index;
 		std::vector<int> MM;    
@@ -72,6 +72,7 @@ class CodeGen{
         
         void generalStatements(list input, tokens tok_input);
         void generalAssignStatement(list temp_list2);
+        void typeCheckAssignment(tokens tok_temp2,tokens tok_temp,bool and_or_not,bool relation);
         
         void generalExpression(list temp_list2);
         int evalExpression(list expression_list);

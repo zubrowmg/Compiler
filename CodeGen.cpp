@@ -102,30 +102,31 @@ void CodeGen::init(tokens tok, Symbol sym){
 
 
 	else if (prog_begin) {
-		temp_list.setCG("prog_begin");
-		temp_list.createnode(tok);
+		temp2_list.setCG("prog_begin");
+		temp2_list.createnode(tok);
 
+ 
 		if (tok.type == "T_SEMICOLON" && !for_encountered){
-			code_gen_order.push_back(temp_list);
-			temp_list = empty;
+			code_gen_order.push_back(temp2_list);
+			temp2_list = empty;
 		} else if (tok.type == "T_THEN" ){			//If statements
-			code_gen_order.push_back(temp_list);
-			temp_list = empty;
+			code_gen_order.push_back(temp2_list);
+			temp2_list = empty;
 		} else if (tok.type == "T_ELSE"){
-			code_gen_order.push_back(temp_list);
-			temp_list = empty;
+			code_gen_order.push_back(temp2_list);
+			temp2_list = empty;
 		} else if (tok.type == "T_IF" && prev_TT_end){
-			code_gen_order.push_back(temp_list);
-			temp_list = empty;
+			code_gen_order.push_back(temp2_list);
+			temp2_list = empty;
 		} else if (tok.type == "T_RPARANTH" && for_encountered){
-			code_gen_order.push_back(temp_list);
-			temp_list = empty;
+			code_gen_order.push_back(temp2_list);
+			temp2_list = empty;
 		} else if (tok.type == "T_FOR" && prev_TT_end){
-			code_gen_order.push_back(temp_list);
-			temp_list = empty;
+			code_gen_order.push_back(temp2_list);
+			temp2_list = empty;
 		} 
 	} else {
-		temp_list = empty;
+		temp2_list = empty;
 	}
 
 	
@@ -234,43 +235,7 @@ void CodeGen::output(list temp_list2){
 
 }
 
-void CodeGen::outputValType(tokens tok_temp){
-	if (tok_temp.type == "T_IDENTIFIER"){	
-		if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_INTEGER"){
-			myfile2 << ".int_val";
-		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_BOOL"){
-			myfile2 << ".bool_val";
-		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_CHAR"){
-			myfile2 << ".char_val";
-		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING"){
-			myfile2 << ".char_val";
-		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_FLOAT"){
-			myfile2 << ".float_val";
-		}	
-	} else if (tok_temp.type == "T_STRINGVAL"){
-		myfile2 << ".char_val";
-	} else if (tok_temp.type == "T_NUMBERVAL"){
-		if (isFloat(tok_temp.stringValue)){
-			myfile2 << ".float_val";
-		} else {
-			myfile2 << ".int_val";
-		}
-	} else if (tok_temp.type == "T_CHARVAL"){
-		myfile2 << ".char_val";
-	} else if (tok_temp.type == "T_TRUE" || tok_temp.type == "T_FALSE"){
-		myfile2 << ".bool_val";
-	}
-	
-}
 
-bool CodeGen::isFloat(char str[256]){
-	for (int i = 0; i < 256; i++){
-		if (str[i] == '.'){
-			return true;
-		}
-	}
-	return false;
-}
 
 void CodeGen::output2(list temp_list2){
 	tokens tok_val_type; int count = 1; tokens tok_temp; 
@@ -323,10 +288,6 @@ void CodeGen::output2(list temp_list2){
 	}
 	temp_list2.reset_pos();
 
- 
- //cout << proc_state << if_state << end_if << end_for << for_state << assign_state << endl;
- //cout << "=====" << endl;	
-
 	if (if_state){
 		inside_if_statment = true;
 		if_count = if_count + 3;
@@ -358,19 +319,17 @@ void CodeGen::output2(list temp_list2){
 	} else if (proc_state) {
 		generalProcStatement(temp_list2);
 	} else if (assign_state){	
+
 		generalAssignStatement(temp_list2);		
 	}
 }
 
 void CodeGen::generalProcStatement(list temp_list2){
 	tokens tok_temp; list new_list;
-	
-	
 
 	temp_list2.reset_pos();
 	tok_temp = temp_list2.get_one();
- 
-	
+ 	
 	if (tok_temp.type != "T_IDENTIFIER" ){
 		//tok_temp = temp_list2.get_one();
 		for (int j = 0; j < temp_list2.get_size() ; j++){
@@ -379,6 +338,8 @@ void CodeGen::generalProcStatement(list temp_list2){
 				new_list.createnode(tok_temp);
 			//}
 		}
+	} else {
+		new_list = temp_list2;
 	}
 
 	new_list.reset_pos();
@@ -678,9 +639,7 @@ void CodeGen::generalFor(list temp_list2){
 	goto_index_for = 1;
 	myfile2 << "\n" << "FOR" << goto_index_for + seq_for + for_count << ":" << "\n" << "\t"; 
 
-	//assign_statement_list.display();
-	//cout << 666 << endl;
-	//expression_list.display();
+	
 }
 
 void CodeGen::generalForEnd(){
@@ -693,6 +652,8 @@ void CodeGen::generalForEnd(){
 
 void CodeGen::generalAssignStatement(list temp_list2){
 	list expression_list, destination_list; tokens tok_temp; bool assign_passed = false;
+
+
 
 	temp_list2.reset_pos();
 	for (int j = 0; j < temp_list2.get_size(); j++){
@@ -713,10 +674,12 @@ void CodeGen::generalAssignStatement(list temp_list2){
 	evalDestination(destination_list, expression_list);
 }
 
+
+
 void CodeGen::evalDestination(list destination_list, list expression_list){
 	list new_list; bool last_T_LBRACKET = false; tokens tok_temp2, tok_val_type, tok_temp; bool and_or_not = false; bool relation = false;
 
- //destination_list.display();
+
 
 	// Trim the list from [] for single array access
 	destination_list.reset_pos();
@@ -741,9 +704,33 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 		}
 	}
 
-
+ // Type Check
 	new_list.reset_pos();
 	tok_temp2 = new_list.get_one();
+	expression_list.reset_pos();
+	for (int j = 0; j < expression_list.get_size(); j++){
+		tok_temp = expression_list.get_one();
+ 		if (tok_temp.type == "T_NOT" || tok_temp.type == "T_OR" || tok_temp.type == "T_AND"){
+ 			 and_or_not = true;
+ 		} else if (isRelation(tok_temp)){
+ 			relation = true;
+ 		} else if (tok_temp.type == "T_NUMBERVAL" || tok_temp.type == "T_STRINGVAL" || tok_temp.type == "T_CHARVAL" 
+ 												  || tok_temp.type == "T_IDENTIFIER" || tok_temp.type == "T_FALSE"
+ 												  || tok_temp.type == "T_TRUE"){
+ 			tok_val_type = tok_temp;
+ 		}
+	}
+	expression_list.reset_pos();
+	for (int j = 0; j < expression_list.get_size(); j++){
+		tok_temp = expression_list.get_one();
+		if (tok_temp.type == "T_IDENTIFIER"){
+			typeCheckAssignment(tok_temp2, tok_temp, and_or_not, relation);
+		
+		}
+	}
+ // Type Check
+
+	
 	if ((sym_table.returnValType(tok_temp2.stringValue)).is_array && !tok_temp2.single_array_access){
 		expression_list.reset_pos();
 		for (int j = 0; j < expression_list.get_size(); j++){
@@ -761,6 +748,7 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 
 		expression_list.reset_pos();
 		tok_temp = expression_list.get_one();
+
 		if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_STRING"){
 			myfile2 << "\n"; 
 			for (int r = 0; r < 50; r++){
@@ -770,7 +758,6 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 				outputValType(tok_temp2);
 				myfile2 << "=";
 
-
 				if (and_or_not){
 					myfile2 << "R2[" << r << "].bool_val";
 				} else if (relation){
@@ -779,24 +766,41 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 					myfile2 << "R[" << r << "]";
 					outputValType(tok_val_type);
 				}
-
 				
 				myfile2 << ";" << "\n";
 			}
 		} else {
 			if ((sym_table.returnValType(tok_temp2.stringValue)).array_size == (sym_table.returnValType(tok_temp.stringValue)).array_size){
+				for (int r = 0; r < (sym_table.returnValType(tok_temp2.stringValue)).array_size; r++){
+					myfile2 << "\t" << "MM[";
+					myfile2 << r + sym_table.getMMIndex(tok_temp2.stringValue);
+					myfile2 << "]";
+					outputValType(tok_temp2);
+					myfile2 << "=";
 
+
+					if (and_or_not){
+						myfile2 << "R2[" << r << "].bool_val";
+					} else if (relation){
+						myfile2 << "R[" << r << "].bool_val";
+					} else {
+						myfile2 << "R[" << r << "]";
+						outputValType(tok_val_type);
+					}
+					myfile2 << ";" << "\n";
+				}
 			} else {
 				//error_handler.error(tok_temp2.line, 22);
 			}
 		}
 	} else {
+		int rand;
 		myfile2 << "MM[";
-		myfile2 << sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left ;
+		rand = sym_table.getMMIndex(tok_temp2.stringValue) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left ;
+		myfile2 << rand;
 		myfile2 << "]";
 		outputValType(tok_temp2);
 		myfile2 << "=";
-
 		expression_list.reset_pos();
 		for (int j = 0; j < expression_list.get_size(); j++){
 			tok_temp = expression_list.get_one();
@@ -816,7 +820,7 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 			myfile2 << "R[0].bool_val";
 		} else {
 			myfile2 << "R[0]";
-			outputValType(tok_val_type);
+			outputValType(tok_temp2);
 		}
 
 		
@@ -1039,11 +1043,8 @@ int CodeGen::evalExpression(list expression_list){
 			if (j == expression_list.get_size() - 1){
 				relation_list.createnode(tok_temp2);	
 			}
- //relation_list.display();
- //cout << "----" << endl;
- //cout << index << endl;
+
 			index = evalRelation(relation_list, index);
- //cout << index << endl;
 			relation_list = empty;
 
 			if (num_of_relations > 1){
@@ -1325,8 +1326,7 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 	int index_return = 0;
 	relation_list.reset_pos();
 
- //relation_list.display();
- //cout << "====" << endl;
+ 
 
 	for (int j = 0; j < relation_list.get_size(); j++){
 		tok_temp2 = relation_list.get_one();
@@ -1453,7 +1453,7 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 				j = j - 2;
 			}
 			index = index + 1;
-	//cout << index << endl;
+	
 			if (index > 49 ){
 				index = 0;
 			}
@@ -1494,11 +1494,104 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 	return index_return;
 }
 
+void CodeGen::typeCheckAssignment(tokens tok_dest,tokens tok_exp,bool and_or_not,bool relation){
+
+	if (tok_dest.type == "T_IDENTIFIER"){
+		if (and_or_not || relation){
+			if ((sym_table.returnValType(tok_dest.stringValue)).str_val == "V_BOOL" || (sym_table.returnValType(tok_dest.stringValue)).str_val == "V_INTEGER"){
+				// No error
+			} else {
+				error_handler.error(tok_dest.line, 24, tok_dest.stringValue, tok_exp.stringValue);
+			}
+		} else {
+			if (tok_dest.type == "T_IDENTIFIER"){
+				if (tok_exp.type == "T_IDENTIFIER"){
+					if ((sym_table.returnValType(tok_dest.stringValue)).str_val != (sym_table.returnValType(tok_exp.stringValue)).str_val){
+						if ((sym_table.returnValType(tok_dest.stringValue)).str_val == "V_STRING"){
+							if ((sym_table.returnValType(tok_exp.stringValue)).str_val == "V_STRING"){
+								// Good
+							} else if (!tok_dest.single_array_access){
+								error_handler.error(tok_dest.line, 27, tok_dest.stringValue, tok_exp.stringValue);
+							}
+						} else {
+							if ((sym_table.returnValType(tok_exp.stringValue)).str_val == "V_STRING"){
+								if (!tok_dest.single_array_access){
+								error_handler.error(tok_dest.line, 28, tok_dest.stringValue, tok_exp.stringValue);
+								}
+							}  
+						}
+					}
+
+					if ((sym_table.returnValType(tok_dest.stringValue)).is_array && (sym_table.returnValType(tok_exp.stringValue)).is_array){
+						if (tok_dest.single_array_access && tok_exp.single_array_access){
+							// No error
+						} else if (!tok_dest.single_array_access && !tok_exp.single_array_access){
+							if ((sym_table.returnValType(tok_dest.stringValue)).array_size != (sym_table.returnValType(tok_exp.stringValue)).array_size){
+								error_handler.error(tok_dest.line, 1, tok_dest.stringValue, tok_exp.stringValue);
+							}
+						} else if ((!tok_dest.single_array_access && tok_exp.single_array_access) 
+										|| (tok_dest.single_array_access && !tok_exp.single_array_access)){
+							error_handler.error(tok_dest.line, 3, tok_dest.stringValue, tok_exp.stringValue);
+						}
+					} else if ((sym_table.returnValType(tok_dest.stringValue)).is_array && !(sym_table.returnValType(tok_exp.stringValue)).is_array){
+						if (!tok_dest.single_array_access){
+							error_handler.error(tok_dest.line, 2, tok_dest.stringValue, tok_exp.stringValue);
+						}
+					} else if (!(sym_table.returnValType(tok_dest.stringValue)).is_array && (sym_table.returnValType(tok_exp.stringValue)).is_array){
+						if (!tok_exp.single_array_access){
+							error_handler.error(tok_dest.line, 4, tok_dest.stringValue, tok_exp.stringValue);
+						}
+					}
+				} else if (tok_exp.type == "T_STRINGVAL"){
+					if ((sym_table.returnValType(tok_dest.stringValue)).str_val != "V_STRING"){
+						error_handler.error(tok_dest.line, 29, tok_dest.stringValue, tok_exp.stringValue);
+					}
+				} else if (tok_exp.type == "T_CHARVAL"){
+					if ((sym_table.returnValType(tok_dest.stringValue)).str_val == "V_STRING" && !tok_dest.single_array_access){
+						error_handler.error(tok_dest.line, 30, tok_dest.stringValue, tok_exp.stringValue);
+					} else if ((sym_table.returnValType(tok_dest.stringValue)).str_val == "V_BOOL" ){
+						error_handler.error(tok_dest.line, 31, tok_dest.stringValue, tok_exp.stringValue);
+					}
+				} else if (tok_exp.type == "T_NUMBERVAL"){
+					if ((sym_table.returnValType(tok_dest.stringValue)).str_val != "V_FLOAT" || (sym_table.returnValType(tok_dest.stringValue)).str_val != "V_INTEGER"){
+						// Error ident is not a number
+					}
+				} else if (tok_exp.type == "T_TRUE" || tok_exp.type == "T_FALSE"){
+					if ((sym_table.returnValType(tok_dest.stringValue)).str_val != "V_BOOL"){
+						if ((sym_table.returnValType(tok_dest.stringValue)).str_val == "V_CHAR" ){
+							error_handler.error(tok_dest.line, 32, tok_dest.stringValue, tok_exp.stringValue);
+						} else if ((sym_table.returnValType(tok_dest.stringValue)).str_val == "V_STRING" ){
+							error_handler.error(tok_dest.line, 32, tok_dest.stringValue, tok_exp.stringValue);
+						}
+					}
+				}
+			}  
+		}		
+	} else {
+		error_handler.error(tok_dest.line, 26, tok_dest.stringValue, tok_exp.stringValue);
+	}
+}
+
 void CodeGen::typeCheckRelation(){
 	if (TC_1.type == "T_IDENTIFIER"){
 		if (TC_2.type == "T_IDENTIFIER"){
 			if ((sym_table.returnValType(TC_1.stringValue)).str_val != (sym_table.returnValType(TC_2.stringValue)).str_val){
-				error_handler.error(TC_1.line, 0, TC_1.stringValue, TC_2.stringValue);
+				if ((sym_table.returnValType(TC_1.stringValue)).str_val == "V_STRING"){
+					if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_STRING"){
+						// Good
+					} else if (!TC_1.single_array_access){
+						error_handler.error(TC_1.line, 25, TC_1.stringValue, TC_2.stringValue);
+					}
+				} else {
+					if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_STRING"){
+						if (!TC_1.single_array_access){
+						error_handler.error(TC_1.line, 25, TC_1.stringValue, TC_2.stringValue);
+						}
+					}  
+				}
+
+				// No error, because you can add any type to any type
+				//error_handler.error(TC_1.line, 0, TC_1.stringValue, TC_2.stringValue);
 			}
 
 			if ((sym_table.returnValType(TC_1.stringValue)).is_array && (sym_table.returnValType(TC_2.stringValue)).is_array){
@@ -1527,7 +1620,8 @@ void CodeGen::typeCheckRelation(){
 			}
 		} else if (TC_2.type == "T_CHARVAL"){
 			if ((sym_table.returnValType(TC_1.stringValue)).str_val != "V_CHAR"){
-				error_handler.error(TC_1.line, 7, TC_1.stringValue, TC_2.stringValue);
+				// No error type can go to any type
+				//error_handler.error(TC_1.line, 7, TC_1.stringValue, TC_2.stringValue);
 			}
 		} else if (TC_2.type == "T_NUMBERVAL"){
 			if ((sym_table.returnValType(TC_1.stringValue)).str_val != "V_FLOAT" || (sym_table.returnValType(TC_1.stringValue)).str_val != "V_INTEGER"){
@@ -1540,10 +1634,12 @@ void CodeGen::typeCheckRelation(){
 		}
 	} else if (TC_1.type == "T_STRINGVAL"){
 		if (TC_2.type == "T_IDENTIFIER"){
-			if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_BOOL" || (sym_table.returnValType(TC_2.stringValue)).str_val == "V_FLOAT"
-																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_INTEGER"
-																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_CHAR"){
-				error_handler.error(TC_1.line, 6, TC_1.stringValue, TC_2.stringValue);
+			if (!TC_2.single_array_access){
+				if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_BOOL" || (sym_table.returnValType(TC_2.stringValue)).str_val == "V_FLOAT"
+																					|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_INTEGER"
+																					|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_CHAR"){
+					error_handler.error(TC_1.line, 6, TC_1.stringValue, TC_2.stringValue);
+				}
 			}
 		} else if (TC_2.type == "T_STRINGVAL"){
 			// No error
@@ -1558,7 +1654,7 @@ void CodeGen::typeCheckRelation(){
 		if (TC_2.type == "T_IDENTIFIER"){
 			if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_BOOL" || (sym_table.returnValType(TC_2.stringValue)).str_val == "V_FLOAT"
 																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_INTEGER"){
-				error_handler.error(TC_1.line, 8, TC_1.stringValue, TC_2.stringValue);
+				//error_handler.error(TC_1.line, 8, TC_1.stringValue, TC_2.stringValue);
 			} else if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_STRING" && !TC_2.single_array_access){
 				error_handler.error(TC_1.line, 16, TC_1.stringValue, TC_2.stringValue);
 			}
@@ -1567,38 +1663,46 @@ void CodeGen::typeCheckRelation(){
 		} else if (TC_2.type == "T_CHARVAL"){
 			// No error
 		} else if (TC_2.type == "T_NUMBERVAL"){
-			error_handler.error(TC_1.line, 18, TC_1.stringValue, TC_2.stringValue);
+			//error_handler.error(TC_1.line, 18, TC_1.stringValue, TC_2.stringValue);
 		} else if (TC_2.type == "T_TRUE" || TC_2.type == "T_FALSE"){			
-			error_handler.error(TC_1.line, 19, TC_1.stringValue, TC_2.stringValue);		
+			//error_handler.error(TC_1.line, 19, TC_1.stringValue, TC_2.stringValue);		
 		}
 	} else if (TC_1.type == "T_NUMBERVAL"){
 		if (TC_2.type == "T_IDENTIFIER"){
-			if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_STRING" || (sym_table.returnValType(TC_2.stringValue)).str_val == "V_BOOL"
-																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_CHAR"){
-				error_handler.error(TC_1.line, 20, TC_1.stringValue, TC_2.stringValue);
+			if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_STRING" ) {
+				if (!TC_2.single_array_access){
+					error_handler.error(TC_1.line, 20, TC_1.stringValue, TC_2.stringValue);
+				}
+			} else if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_BOOL"
+						|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_CHAR"){
+				// No Error
 			}
 		} else if (TC_2.type == "T_STRINGVAL"){
 			error_handler.error(TC_1.line, 21, TC_1.stringValue, TC_2.stringValue);
 		} else if (TC_2.type == "T_CHARVAL"){
-			error_handler.error(TC_1.line, 22, TC_1.stringValue, TC_2.stringValue);
+			//error_handler.error(TC_1.line, 22, TC_1.stringValue, TC_2.stringValue);
 		} else if (TC_2.type == "T_NUMBERVAL"){
 			// No error
 		} else if (TC_2.type == "T_TRUE" || TC_2.type == "T_FALSE"){			
-			error_handler.error(TC_1.line, 23, TC_1.stringValue, TC_2.stringValue);		
+			//error_handler.error(TC_1.line, 23, TC_1.stringValue, TC_2.stringValue);		
 		}
 	} else if (TC_1.type == "T_TRUE" || TC_1.type == "T_FALSE"){
 		if (TC_2.type == "T_IDENTIFIER"){
-			if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_STRING" || (sym_table.returnValType(TC_2.stringValue)).str_val == "V_FLOAT"
-																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_INTEGER"
-																				|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_CHAR"){
-				error_handler.error(TC_1.line, 12, TC_1.stringValue, TC_2.stringValue);
+			if ((sym_table.returnValType(TC_2.stringValue)).str_val == "V_STRING" ){
+				if (!TC_2.single_array_access){
+					error_handler.error(TC_1.line, 12, TC_1.stringValue, TC_2.stringValue);
+				}
+			} else if((sym_table.returnValType(TC_2.stringValue)).str_val == "V_FLOAT"
+													|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_INTEGER"
+													|| (sym_table.returnValType(TC_2.stringValue)).str_val == "V_CHAR"){
+				
 			}
 		} else if (TC_2.type == "T_STRINGVAL"){
 			error_handler.error(TC_1.line, 13, TC_1.stringValue, TC_2.stringValue);
 		} else if (TC_2.type == "T_CHARVAL"){
-			error_handler.error(TC_1.line, 14, TC_1.stringValue, TC_2.stringValue);
+			//error_handler.error(TC_1.line, 14, TC_1.stringValue, TC_2.stringValue);
 		} else if (TC_2.type == "T_NUMBERVAL"){
-			error_handler.error(TC_1.line, 15, TC_1.stringValue, TC_2.stringValue);
+			//error_handler.error(TC_1.line, 15, TC_1.stringValue, TC_2.stringValue);
 		} else if (TC_2.type == "T_TRUE" || TC_2.type == "T_FALSE"){			
 			// No error			
 		}
@@ -1670,7 +1774,7 @@ list CodeGen::arrayOutput(list temp_list2, tokens tok_temp, int reg_index){
 		tok_temp2 = temp_list2.get_one();
 		myfile2 << "]";
 	} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING" && temp_list2.look_back().type == "T_SEMICOLON") {
- //cout << "HI";			
+ 			
 	} else if ((sym_table.returnValType(tok_temp.stringValue)).is_array) {
 		myfile2 << "MM[";
 		myfile2 << sym_table.getMMIndex(tok_temp.stringValue) + current_array_index;
@@ -1912,7 +2016,7 @@ void CodeGen::display(){
 }
 
 void CodeGen::set_flags(tokens tok){
-	//cout << tok.type << endl;
+	
 
 	if (tok.type == "T_PROGRAM" && prev_TT_end && prog_begin ) { proc_begin = false; prog_end = true; }
 	if (tok.type == "T_BEGIN" && prog_start && !proc_begin && !proc_start) { prog_start = false; prog_begin = true; prog_declare = false;}
@@ -1972,4 +2076,42 @@ bool CodeGen::errorsEncountered(){
 	} else {
 		return false;
 	}
+}
+
+void CodeGen::outputValType(tokens tok_temp){
+	if (tok_temp.type == "T_IDENTIFIER"){	
+		if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_INTEGER"){
+			myfile2 << ".int_val";
+		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_BOOL"){
+			myfile2 << ".bool_val";
+		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_CHAR"){
+			myfile2 << ".char_val";
+		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_STRING"){
+			myfile2 << ".char_val";
+		} else if ((sym_table.returnValType(tok_temp.stringValue)).str_val == "V_FLOAT"){
+			myfile2 << ".float_val";
+		}	
+	} else if (tok_temp.type == "T_STRINGVAL"){
+		myfile2 << ".char_val";
+	} else if (tok_temp.type == "T_NUMBERVAL"){
+		if (isFloat(tok_temp.stringValue)){
+			myfile2 << ".float_val";
+		} else {
+			myfile2 << ".int_val";
+		}
+	} else if (tok_temp.type == "T_CHARVAL"){
+		myfile2 << ".char_val";
+	} else if (tok_temp.type == "T_TRUE" || tok_temp.type == "T_FALSE"){
+		myfile2 << ".bool_val";
+	}
+	
+}
+
+bool CodeGen::isFloat(char str[256]){
+	for (int i = 0; i < 256; i++){
+		if (str[i] == '.'){
+			return true;
+		}
+	}
+	return false;
 }

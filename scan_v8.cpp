@@ -456,8 +456,21 @@ list scan(char *argv[]){
 					grab_prev_c = true;
 				}
 			}
-			else if (c == '*'){ temp.type = "T_MULT"; temp.stringValue[0] = '*'; temp.line = line_counter; token_list.createnode(temp);}
-			else if (c == '/'){ 
+			else if (c == '*'){ 
+				
+				inFile.get(c); c = tolower(c);
+				if (c == '/'){
+	//cout << num_of_comments << endl;
+					if (num_of_comments > 0){
+						error_handler.error(line_counter, 29);
+					} else {
+						num_of_comments--;
+					}
+				} else {
+					temp.type = "T_MULT"; temp.stringValue[0] = '*'; temp.line = line_counter; token_list.createnode(temp);
+					grab_prev_c = true;
+				}
+			} else if (c == '/'){ 
 				inFile.get(c); c = tolower(c);
 				if (c == '/'){
 					inFile.get(c);
@@ -474,11 +487,11 @@ list scan(char *argv[]){
 						if (c == '*'){
 							inFile.get(c);
 							if (c == '/'){
-								if (num_of_comments > 0){
+								//if (num_of_comments > 0){
 									num_of_comments--;
-								} else if (num_of_comments == 0){
+								//} else if (num_of_comments == 0){
 									nest_comment = false;
-								}
+								//}
 							}
 						} else if (inFile.eof()){
 							nest_comment = false;
@@ -559,6 +572,7 @@ bool parser(list scan_list){
 		temp = scan_list.get_one();
 
 	//-------- Parse Tree --------//
+ //cout << temp.type << endl;
 		tree.setNewNode(temp.type, temp.stringValue);
 		tree.createnode_2(temp.type);
 		tree.clearNewNode();
@@ -626,7 +640,7 @@ bool parser(list scan_list){
 	
 //-------- Tree Snapshot --------//
 		if (!(tree.getLegit()) && error_count < 10){
-	cout << temp.type << endl; 
+	//cout << temp.type << endl; 
 			error_handler.error(temp.line, 2, temp.stringValue);	
 			tree = snapshot;
 			snapshot_restored = true;		

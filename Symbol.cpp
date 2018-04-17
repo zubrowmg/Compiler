@@ -26,6 +26,8 @@ Symbol::Symbol()
 	prev_TT_SEMICOLON = false; prev2_TT_LB = false;
 	last_ident = "NULL";
 
+	proc_encountered = false;
+
 
 }
 
@@ -351,7 +353,6 @@ symbolNode Symbol::returnValType(std::string ident){
     }
 
     if (!type_found){
-//    	cout << "returnType function failed" << endl;
     }
 
 	return sym;
@@ -359,8 +360,6 @@ symbolNode Symbol::returnValType(std::string ident){
 
 void Symbol::init(std::string token, std::string value, symbolNode sym)
 {	
-	//if (prev2_TT_LB ){ cout << token << endl;}
-//cout << value << endl;
 	if (prev_TT_SEMICOLON && token == "T_NUMBERVAL"){ 
 		modify(last_ident, value, 'R'); 
 	}
@@ -376,7 +375,6 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 	if ((prev2_TT_int || prev2_TT_flt || prev2_TT_str || prev2_TT_bool || prev2_TT_char) && prev_TT_IDENT && token == "T_LBRACKET"){ 						// NNNNNNN
 		modify(last_ident); prev_TT_LB = true; //cout << "HI";
 	} else {prev_TT_LB = false; }
-//last_ident = "NULL";
 
 	if (token == "T_IDENTIFIER"){
 		last_ident = value;
@@ -403,10 +401,17 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 		} else if (prev_TT_proc){
 			newProc(value);
 		} else if (prev_TT_int || prev_TT_flt || prev_TT_str || prev_TT_bool || prev_TT_char){
-			if (prev_TT_str){
-				sym.is_array = true; sym.array_left = 0; sym.array_right = 49; sym.array_size = 50;
+			if (proc_encountered){
+				if (prev_TT_str){
+					sym.is_array = true; sym.array_left = 0; sym.array_right = 49; sym.array_size = 50;
+				}
+				insertValue(value, sym);
+			} else {
+				if (prev_TT_str){
+					sym.is_array = true; sym.array_left = 0; sym.array_right = 49; sym.array_size = 50;
+				}
+				insertGlobal(value, sym);
 			}
-			insertValue(value, sym);
 		} else if (prev_TT_prog){
 
 		} else {
@@ -439,7 +444,7 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 
 	if (token == "T_GLOBAL"){prev_TT_glob = true;} else {prev_TT_glob = false;}
 	if (token == "T_PROGRAM"){prev_TT_prog = true;} else {prev_TT_prog = false;}
-	if (token == "T_PROCEDURE"){prev_TT_proc = true;} else {prev_TT_proc = false;}
+	if (token == "T_PROCEDURE"){prev_TT_proc = true; proc_encountered = true;} else {prev_TT_proc = false;}
 	if (token == "T_END"){prev_TT_end = true;} else {prev_TT_end = false;}	
 
 	//cout << "END" << endl;

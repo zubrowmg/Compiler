@@ -17,34 +17,33 @@ int main(){
 FILE *outfile; outfile = fopen("output.txt","w");
 FILE *infile; infile = fopen("input.txt","r");
 
+R[0].char_val='a';
+	MM[0].char_val=R[0].char_val;
+
+R[0].char_val=MM[0].char_val;
+	MM[1].bool_val=R[0].bool_val;
+
+R[0].char_val=MM[0].char_val;
+	MM[3].int_val=R[0].int_val;
+
 R[0].int_val=1;
-	MM[121].int_val=R[0].int_val;
+	
+if (R[0].int_val) goto IF3;
+if (!R[0].int_val) goto IF4;
 
-R[0].int_val=0;
-	MM[190].int_val=R[0].int_val;
+IF3:
+R[0].char_val=MM[0].char_val;
+	MM[4].int_val=R[0].int_val;
 
+IF4: 1;
+IF5: 1;
+R[0].bool_val=MM[1].bool_val;
+	MM[0].char_val=R[0].char_val;
 
-FOR3:
-	R[0].int_val=MM[190].int_val;
-	R[1].int_val=10;
-	R[0].bool_val=R[0].int_val<R[1].int_val;
+R[0].int_val=24;
+	MM[0].char_val=R[0].char_val;
 
-if (R[0].bool_val) goto FOR4;
-if (!R[0].bool_val) goto FOR5;
-
-FOR4:
-	R[0].int_val=MM[190].int_val;
-	R[0].int_val=R[0].int_val+1;
-	MM[190].int_val=R[0].int_val;
-
-R[0].int_val=MM[121].int_val;
-	R[0].int_val=R[0].int_val+2;
-	MM[121].int_val=R[0].int_val;
-
-	goto FOR3;
-FOR5: 1;
-
-fprintf(outfile, "%d",MM[121].int_val);
+fprintf(outfile, "%d",MM[4].int_val);
 
 fclose(outfile);
 fclose(infile);

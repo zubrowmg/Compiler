@@ -88,6 +88,8 @@ class Symbol
         Error sym_error_handler;
         int left_bound;
 
+        // Better Declarations
+        bool proc_encountered;
         
         
 
