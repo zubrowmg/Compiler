@@ -260,11 +260,10 @@ list scan(char *argv[]){
 					current_token.stringValue[i] = c;
 				} else {
 					ident_checker = false;
-					if (c == '\n' || c == '\t' || c == ' ' || c == '['|| c == ']' || c == '(' || c == ')' || c == ';' || c == '.'){
+					if (c == '\n' || c == '\t' || c == ' ' || c == '['|| c == ']' || c == '(' || c == ')' || c == ';' || c == '.' || c == ','){
 						
 					} else {
 						error_handler.error(line_counter, 5);
-						//cout << c << endl;
 					}
 				}
 				i++;
@@ -559,7 +558,13 @@ bool parser(list scan_list){
 	bool snapshot_restored = false; CodeGen gen;
 	list code_gen_list;
 
-	
+	scan_list.reset_pos();
+	for (int i = 0; i < scan_list.get_size(); i++){
+		temp = scan_list.get_one();
+		gen.procInit(temp);
+	}
+
+	gen.displayInitProc();
 	//code_gen_list = gen.preInit(scan_list);
 
 	//code_gen_list.reset_pos();
@@ -648,6 +653,8 @@ bool parser(list scan_list){
 		} 
 	}	
 	//}
+
+	//tree.printTree();
 
 	ofstream myfile3;
 	myfile3.open ("Error_Free.txt");

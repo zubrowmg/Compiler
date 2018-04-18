@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <string.h>
+#include <stack>
+#include <vector>
 
 #include "CodeGen.h"
 #include "Symbol.h"
@@ -16,6 +18,7 @@ CodeGen::CodeGen(){
 	myfile2.open ("CodeGenReg.c");
 
 	prog_start = false; prog_begin = false; prog_end = false; proc_start = false; proc_begin = false; 
+	proc_pass_through = false;
 
 	prev_TT_prog = false; prev_TT_proc = false;	prev_TT_ident = false; prev_TT_ident2 = false;
 	prev_TT_is = false;	prev_TT_begin = false; prev_TT_end = false;	prev_TT_semi = false; prev_TT_LPAR = false;
@@ -35,6 +38,8 @@ CodeGen::CodeGen(){
 
 	for_encountered = false; normal_for_count = 0; normal_end_for_count = 0; seq_for = 0; goto_index_for = 0;
 	for_count = 0;
+
+	nested_proc = 0; init_prev_tok_proc = false;
 }
 
 list CodeGen::preInit(list code_gen_list){
@@ -98,10 +103,12 @@ void CodeGen::init(tokens tok, Symbol sym){
 			code_gen_order.push_back(temp_list);
 			temp_list = empty;
 		}
+	} else if (proc_pass_through){
+		//cout << "\t" << tok.type << endl;
 	} else if (proc_start){
 	
 		temp3_list.setCG("proc_start");
-		temp3_list.setTable(current_proc);
+		temp3_list.setTable(current_proc.top());
 		temp3_list.createnode(tok);
 
 		
@@ -111,6 +118,30 @@ void CodeGen::init(tokens tok, Symbol sym){
 		}
 	} else if (proc_begin){
 
+		temp4_list.setCG("proc_begin");
+		temp4_list.setTable(current_proc.top());
+		temp4_list.createnode(tok);
+
+ 
+		if (tok.type == "T_SEMICOLON" && !for_encountered){
+			code_gen_order.push_back(temp4_list);
+			temp4_list = empty;
+		} else if (tok.type == "T_THEN" ){			//If statements
+			code_gen_order.push_back(temp4_list);
+			temp4_list = empty;
+		} else if (tok.type == "T_ELSE"){
+			code_gen_order.push_back(temp4_list);
+			temp4_list = empty;
+		} else if (tok.type == "T_IF" && prev_TT_end){
+			code_gen_order.push_back(temp4_list);
+			temp4_list = empty;
+		} else if (tok.type == "T_RPARANTH" && for_encountered){
+			code_gen_order.push_back(temp4_list);
+			temp4_list = empty;
+		} else if (tok.type == "T_FOR" && prev_TT_end){
+			code_gen_order.push_back(temp4_list);
+			temp4_list = empty;
+		} 
 	}
 
 
@@ -165,9 +196,7 @@ void CodeGen::printCode(){
 		code_gen_order[i].reset_pos();
 		if (code_gen_order[i].getCG() == "prog_declare"){ 			
 			output(code_gen_order[i]);
-		} else if (code_gen_order[i].getCG() == "proc_start"){
-			procStart(code_gen_order[i]);	
-		}				
+		} 			
 	}
 
 
@@ -187,10 +216,24 @@ void CodeGen::printCode(){
 	myfile2 << "union val R[10000];" << "\n";
 	myfile2 << "union val R2[10000];" << "\n";
 	
-	myfile2 << "\n" << "int main(){" << "\n";
+	myfile2 << "\n" << "int main(){" << "\n" ;
 		
 	myfile2 << "FILE *outfile;" << " outfile = fopen(\"output.txt\",\"w\");" << "\n";
 	myfile2 << "FILE *infile;" << " infile = fopen(\"input.txt\",\"r\");" << "\n" << "\n";
+
+	myfile2 << "goto main_prog;" << "\n" << "\n";
+
+	for (int i = 0; i < code_gen_order.size(); i++){
+		code_gen_order[i].reset_pos();
+		if (code_gen_order[i].getCG() == "proc_start"){
+			procStart(code_gen_order[i]);	
+		} else if (code_gen_order[i].getCG() == "proc_begin"){
+			procBegin(code_gen_order[i]);	
+		} 				
+	}
+
+	myfile2 << "\n" << "\n";
+	myfile2 << "main_prog: 1;" << "\n" << "\n";
 
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
@@ -211,8 +254,31 @@ void CodeGen::printCode(){
 }
 
 
- void CodeGen::procStart(list temp_list2){
+void CodeGen::procBegin(list temp_list2){
+	output2(temp_list2);
+	myfile2 << "\n" << "\n"; 
+}
+
+void CodeGen::procStartInit(list temp_list2){
+	//temp_list2.display();
+	//cout << "---" << endl;
+}
+
+void CodeGen::procStart(list temp_list2){
  	tokens tok_temp; int proc_MM_Index;
+	bool exists = false;
+	
+	// See if the procedure has been printed
+	for (int j = 0; j < list_of_proc.size(); j++){
+		if (temp_list2.getTable() == list_of_proc[j]){
+			exists = true;
+		}
+	}
+	if (!exists){
+		list_of_proc.push_back(temp_list2.getTable());
+		procStartInit(temp_list2);
+		myfile2 << temp_list2.getTable() << ": 1;" << "\n" << "\n";
+	}
 
  //	proc_MM_Index = MM_Index;
  // cout << "\t" << MM_Index << endl;
@@ -278,7 +344,6 @@ void CodeGen::output2(list temp_list2){
 	for_state = false; if_state = false; assign_state = false, ret_state = false; proc_state = false;
 	end_if = false; if_else_state = false;
 	
- //temp_list2.display();
  
 
 	//-------- Check to See Statement type --------//;
@@ -391,6 +456,64 @@ void CodeGen::generalProcStatement(list temp_list2){
 		evalProcStatement(new_list);
 	}
 
+}
+
+void CodeGen::procInit(tokens tok_input){
+	proc_init_node insert;
+	if (tok_input.type == "T_IDENTIFIER" && init_prev_tok_proc){
+		for (int e = 0; e < 256; e++){
+			//if (tok_input.stringValue[e] != ' '){
+				insert.proc_name[e] = tok_input.stringValue[e];
+			//}
+		} 
+
+		insert.num_of_encounters = 0; 
+		init_proc.push_back(insert);
+	} else if (tok_input.type == "T_IDENTIFIER"){
+		for (int g = 0; g < init_proc.size(); g++){
+			if (strcmp(tok_input.stringValue, init_proc[g].proc_name) == 0){
+				init_proc[g].num_of_encounters = init_proc[g].num_of_encounters + 1;
+			}
+		}
+	}
+	if (tok_input.type == "T_PROCEDURE"){init_prev_tok_proc = true;}else{init_prev_tok_proc = false;}
+}
+
+/*int CodeGen::getProcAmount(char name[256]){
+	int num_of_enc = 0;
+	for (int g = 0; g < init_proc.size(); g++){
+		if (strcmp(tok_input.stringValue, init_proc[g].proc_name) == 0){
+			num_of_enc = init_proc[g].num_of_encounters;
+			break;
+		}
+	}
+	return num_of_enc;
+}*/
+
+void CodeGen::setCurrentProcAmount(char name[256]){
+	for (int g = 0; g < init_proc.size(); g++){
+		if (strcmp(name, init_proc[g].proc_name) == 0){
+			init_proc[g].num_of_times_printed = init_proc[g].num_of_times_printed + 1;
+			break;
+		}
+	}
+}
+
+proc_init_node CodeGen::getproc_init_node(char name[256]){
+	proc_init_node nodey;
+	for (int g = 0; g < init_proc.size(); g++){
+		if (strcmp(name, init_proc[g].proc_name) == 0){
+			nodey = init_proc[g];
+			break;
+		}
+	}
+	return nodey;
+}
+
+void CodeGen::displayInitProc(){
+	for (int g = 0; g < init_proc.size(); g++){
+		cout <<	init_proc[g].proc_name << " " << init_proc[g].num_of_encounters << endl; 
+	}
 }
 
 void CodeGen::generalIO(list temp_list2){
@@ -616,8 +739,20 @@ void CodeGen::generalIO(list temp_list2){
 
 }
 
-void CodeGen::evalProcStatement(list temp_list2){
 
+
+void CodeGen::evalProcStatement(list temp_list2){
+	tokens tok_temp;
+	temp_list2.reset_pos();
+	for (int h = 0; h < temp_list2.get_size(); h++){
+		tok_temp = temp_list2.get_one();
+		if (tok_temp.type == "T_IDENTIFIER"){
+			myfile2 << "goto " << tok_temp.stringValue << ";" << "\n" ;
+			myfile2 << "return_" << tok_temp.stringValue << getproc_init_node(tok_temp.stringValue).num_of_times_printed << ": 1;" << "\n" << "\n";
+			setCurrentProcAmount(tok_temp.stringValue);
+			break;
+		}
+	}
 }
 
 
@@ -2053,13 +2188,29 @@ void CodeGen::set_flags(tokens tok){
 	if (tok.type == "T_BEGIN" && prog_start && !proc_begin && !proc_start) { prog_start = false; prog_begin = true; prog_declare = false;}
 
 	if (tok.type == "T_END" ) { prev_TT_end = true; } else { prev_TT_end = false; }
-	if (tok.type == "T_END" && proc_begin ) { proc_begin = false; prog_declare = true; }
+	if (tok.type == "T_END" && proc_begin ) { 
+		if (nested_proc > 0){
+			//Nested Proc
+			proc_begin = false; proc_start = true;
+			current_proc.pop();
+			nested_proc = nested_proc - 1;
+		} else {
+			//Normal flow
+			proc_begin = false; prog_declare = true; 
+		}
+	}
 	if (tok.type == "T_BEGIN" && proc_start) { proc_begin = true; proc_start = false;}
 
-	if (tok.type == "T_RPARANTH" && prev_TT_LPAR) { prev_TT_LPAR = false; proc_start = true;  }
-	if (tok.type == "T_LPARANTH" && prev_TT_ident2) { prev_TT_LPAR = true; } 
-	if (tok.type == "T_IDENTIFIER" && prev_TT_proc) { prev_TT_ident2 = true; current_proc = tok.stringValue;} else { prev_TT_ident2 = false; }
-	if (tok.type == "T_PROCEDURE"){ prev_TT_proc = true; prog_declare = false; } else { prev_TT_proc = false; }
+	if (tok.type == "T_PROCEDURE" && proc_start){ nested_proc = nested_proc + 1;}
+
+	if (tok.type == "T_RPARANTH" && prev_TT_LPAR) { prev_TT_LPAR = false; proc_start = true; proc_pass_through = false;  }
+	if (tok.type == "T_LPARANTH" && prev_TT_ident2) { prev_TT_LPAR = true; proc_pass_through = true;} 
+	if (tok.type == "T_IDENTIFIER" && prev_TT_proc) { prev_TT_ident2 = true; current_proc.push(tok.stringValue);} else { prev_TT_ident2 = false; }
+	if (tok.type == "T_PROCEDURE"){ 
+		prev_TT_proc = true; prog_declare = false; 
+	} else { 
+		prev_TT_proc = false;
+	}
 
 	if (tok.type == "T_IS" && prev_TT_ident){ prog_start = true; prog_declare = true;}
 	if (tok.type == "T_IDENTIFIER" && prev_TT_prog){ prev_TT_ident = true; } else { prev_TT_ident = false; }

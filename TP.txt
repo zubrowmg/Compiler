@@ -11,7 +11,7 @@ procedure if_proc()
 		global char yy;		
 		integer k;
 		begin
-			
+		 	x := 'A';
 		
 	end procedure;
 
@@ -24,6 +24,11 @@ procedure ff_proc()
 	end procedure;
 
 begin
+
+if_proc();
+
+if_proc();
+if_proc();
 
 x := 'A';
 

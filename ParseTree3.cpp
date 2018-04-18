@@ -372,7 +372,7 @@ prog_body_flag = true;
 		} else {
 			backUp();
 		}
-	} else if (pos->getToken() == "<paramenter_list'>"){ pos->setOption((pos->getOption()) + 1);			
+	} else if (pos->getToken() == "<paramenter_list'>"){ pos->setOption((pos->getOption()) + 1);
 		if (pos->getOption() == 1){								
 			temp_node->setToken("<T_COMMA>"); newTempNode();
 			temp_node->setToken("<paramenter>"); newTempNode();	
@@ -381,7 +381,7 @@ prog_body_flag = true;
 
 			pos = pos->getLeft();
 			createnode_3();
-		}else if (pos->getOption() == 2){										
+		} else if (pos->getOption() == 2){										
 			temp_node->setToken("<NULL>"); newTempNode();
 		
 			pos = pos->getLeft();
@@ -393,7 +393,8 @@ prog_body_flag = true;
 /*--------------------------------------------------  
 	<paramenter>
 --------------------------------------------------*/
-	else if (pos->getToken() == "<paramenter>"){ pos->setOption((pos->getOption()) + 1);		
+	else if (pos->getToken() == "<paramenter>"){ pos->setOption((pos->getOption()) + 1);
+
 		if (pos->getOption() == 1){						
 			temp_node->setToken("<variable_declaration>"); newTempNode();				
 			temp_node->setToken("<paramenter1>"); newTempNode();
@@ -419,7 +420,12 @@ prog_body_flag = true;
 
 			pos = pos->getLeft();
 			createnode_3();
-		}else {
+		} else if (pos->getOption() == 2){										
+			temp_node->setToken("<NULL>"); newTempNode();
+		
+			pos = pos->getLeft();
+			createnode_3();
+		} else {
 			backUp();
 		}
 	}

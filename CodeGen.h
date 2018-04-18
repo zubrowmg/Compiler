@@ -4,6 +4,8 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <stack>
+#include <vector>
 
 #include "Symbol.h"
 #include "ParseTree.h"
@@ -17,15 +19,27 @@ struct expNode
 	int new_position;
 };
 
+struct proc_init_node
+{
+    char proc_name[256];
+    int num_of_encounters;
+    int num_of_times_printed;
+    int RP_Index;
+    proc_init_node(){
+        num_of_times_printed = 0;
+        RP_Index = 0;
+    }
+};
+
 class CodeGen{
 	private:
         Error error_handler;
-    	bool prog_start, prog_begin, prog_end, proc_start, proc_begin, proc_end;
+    	bool prog_start, prog_begin, prog_end, proc_start, proc_begin, proc_end, proc_pass_through;
     	bool prev_TT_prog, prev_TT_ident, prev_TT_is, prev_TT_begin, prev_TT_end;
     	bool prev_TT_proc, prev_TT_semi, prog_declare, prev_TT_ident2, prev_TT_LPAR;
         bool prev_TT_int, prev_TT_bool, prev_TT_str, prev_TT_char, prev_TT_float;
     	std::vector<list> code_gen_order;
-    	list temp_list, temp2_list, temp3_list;
+    	list temp_list, temp2_list, temp3_list, temp4_list;
     	ofstream myfile; ofstream myfile2;
     	int MM_Index;
 		std::vector<int> MM;    
@@ -50,7 +64,12 @@ class CodeGen{
         tokens TC_1, TC_2;
 
         // Procedures
-        string current_proc;
+        stack <string> current_proc; std::vector<std::string> list_of_proc;
+        int nested_proc;
+
+        // Procedure Init
+        std::vector <proc_init_node> init_proc;
+        bool init_prev_tok_proc;
 
     public:
     	CodeGen();
@@ -102,6 +121,13 @@ class CodeGen{
         bool errorsEncountered();
 
         void procStart(list temp_list2);
+        void procBegin(list temp_list2);
+        void procStartInit(list temp_list2);
+        void procInit(tokens tok_temp3);
+        void displayInitProc();
+        proc_init_node getproc_init_node(char name[256]);
+        void setCurrentProcAmount(char name[256]);
+
         void printSym();
 };
 

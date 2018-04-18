@@ -17,6 +17,30 @@ int main(){
 FILE *outfile; outfile = fopen("output.txt","w");
 FILE *infile; infile = fopen("input.txt","r");
 
+goto main_prog;
+
+if_proc: 1;
+
+R[0].char_val='a';
+	MM[0].char_val=R[0].char_val;
+
+
+
+ff_proc: 1;
+
+
+
+main_prog: 1;
+
+goto if_proc;
+return_if_proc0: 1;
+
+goto if_proc;
+return_if_proc1: 1;
+
+goto if_proc;
+return_if_proc2: 1;
+
 R[0].char_val='a';
 	MM[0].char_val=R[0].char_val;
 
