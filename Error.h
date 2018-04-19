@@ -12,6 +12,7 @@ class Error{
     	void error(int line, int type, std::string var);
     	void error(int line, int type, std::string TC_1, std::string TC_2);	
     	int getTotalErrors();
+    	void incrementError();
 };
 
 #endif

@@ -39,7 +39,8 @@ CodeGen::CodeGen(){
 	for_encountered = false; normal_for_count = 0; normal_end_for_count = 0; seq_for = 0; goto_index_for = 0;
 	for_count = 0;
 
-	nested_proc = 0; init_prev_tok_proc = false;
+	nested_proc = 0; init_prev_tok_proc = false; RP_index_count = 0; pop_stack = false;
+	current_proc.push("START");
 }
 
 list CodeGen::preInit(list code_gen_list){
@@ -94,7 +95,18 @@ void CodeGen::init(tokens tok, Symbol sym){
 	list empty; 
 	sym_table = sym;
 	//-------- Initialized Program Space Variables --------//
-	if (prog_declare){
+  cout << tok.stringValue << " " << current_proc.top() << endl;
+	if (proc_end){
+
+		temp5_list.setCG("proc_end");
+		temp5_list.setTable(current_proc.top());
+		temp5_list.createnode(tok);
+ //cout << tok.type << endl;
+ 		if (tok.type == "T_SEMICOLON" && !for_encountered){
+			code_gen_order.push_back(temp5_list);
+			temp5_list = empty;
+		}
+	} else if (prog_declare){
 		temp_list.setCG("prog_declare");
 		temp_list.createnode(tok);
 
@@ -121,7 +133,6 @@ void CodeGen::init(tokens tok, Symbol sym){
 		temp4_list.setCG("proc_begin");
 		temp4_list.setTable(current_proc.top());
 		temp4_list.createnode(tok);
-
  
 		if (tok.type == "T_SEMICOLON" && !for_encountered){
 			code_gen_order.push_back(temp4_list);
@@ -142,7 +153,7 @@ void CodeGen::init(tokens tok, Symbol sym){
 			code_gen_order.push_back(temp4_list);
 			temp4_list = empty;
 		} 
-	}
+	} 
 
 
 	else if (prog_begin) {
@@ -181,6 +192,8 @@ void CodeGen::init(tokens tok, Symbol sym){
 		for_encountered = false;
 	}
 
+ //cout << tok.stringValue << " " << proc_start << proc_begin << proc_end << prog_declare << prog_begin << endl;
+
 	if (prog_end && tok.type == "T_ENDFILE"){
 		printCode();
 	}
@@ -215,6 +228,8 @@ void CodeGen::printCode(){
 	myfile2 << "union val MM[10000];" << "\n";
 	myfile2 << "union val R[10000];" << "\n";
 	myfile2 << "union val R2[10000];" << "\n";
+	myfile2 << "int R3[10000];" << "\n";
+	myfile2 << "int RP[10000];" << "\n";
 	
 	myfile2 << "\n" << "int main(){" << "\n" ;
 		
@@ -229,7 +244,9 @@ void CodeGen::printCode(){
 			procStart(code_gen_order[i]);	
 		} else if (code_gen_order[i].getCG() == "proc_begin"){
 			procBegin(code_gen_order[i]);	
-		} 				
+		} else if (code_gen_order[i].getCG() == "proc_end"){
+			procEnd(code_gen_order[i]);
+		}				
 	}
 
 	myfile2 << "\n" << "\n";
@@ -242,6 +259,8 @@ void CodeGen::printCode(){
 		}		
 	}
 
+
+
 	myfile2 << "\n" << "fclose(outfile);" << "\n";
 	myfile2 << "fclose(infile);" << "\n";
 
@@ -253,11 +272,47 @@ void CodeGen::printCode(){
   	myfile2.close();
 }
 
+void CodeGen::procEnd(list temp_list2){
+	tokens tokk; char comp[256];
+
+ cout << 6 << endl;
+
+	temp_list2.reset_pos();
+	tokk = temp_list2.get_one();
+ cout << temp_list2.getTable() << endl;
+
+	for (int b = 0; b < (temp_list2.getTable()).length(); b++){
+		comp[b] = (temp_list2.getTable())[b];
+	}
+
+	myfile2 << "\n" << "RP[" << (getproc_init_node(comp)).RP_Index << "]=RP[" << (getproc_init_node(comp)).RP_Index << "]+1;" << "\n";
+
+	for (int u = 0; u < (getproc_init_node(comp)).num_of_encounters; u++){
+		myfile2 << "R3[0]=RP[" << (getproc_init_node(comp)).RP_Index << "]==" << u + 1 << ";" << "\n";
+		myfile2 << "if (R3[0]) goto return_" << comp << u << ";" << "\n";
+	}
+	myfile2  << "\n";
+}
 
 void CodeGen::procBegin(list temp_list2){
+	char comp[256];
+
+	for (int b = 0; b < (temp_list2.getTable()).length(); b++){
+		comp[b] = (temp_list2.getTable())[b];
+	}
+
+	if (getproc_init_node(comp).num_of_times_main_printed == 0){
+		setMainPrints(comp);
+		myfile2 << comp << "_main: 1;" << "\n";	
+	}
+	
 	output2(temp_list2);
 	myfile2 << "\n" << "\n"; 
+
+ 
 }
+
+
 
 void CodeGen::procStartInit(list temp_list2){
 	//temp_list2.display();
@@ -277,11 +332,11 @@ void CodeGen::procStart(list temp_list2){
 	if (!exists){
 		list_of_proc.push_back(temp_list2.getTable());
 		procStartInit(temp_list2);
-		myfile2 << temp_list2.getTable() << ": 1;" << "\n" << "\n";
+		myfile2 << temp_list2.getTable() << ": 1;" << "\n"; 
+		myfile2 << "goto " << temp_list2.getTable() << "_main;" << "\n" << "\n";
 	}
 
- //	proc_MM_Index = MM_Index;
- // cout << "\t" << MM_Index << endl;
+ 
 	for (int j = 0; j < temp_list2.get_size(); j++){
 		tok_temp = temp_list2.get_one(); 
 		if (tok_temp.type == "T_IDENTIFIER"){
@@ -291,8 +346,7 @@ void CodeGen::procStart(list temp_list2){
 		} 
 	}
 
- //	MM_Index = proc_MM_Index;
- //cout << "\t" << MM_Index << endl;
+ 
  }
 
 void CodeGen::output(list temp_list2){
@@ -466,7 +520,8 @@ void CodeGen::procInit(tokens tok_input){
 				insert.proc_name[e] = tok_input.stringValue[e];
 			//}
 		} 
-
+		insert.RP_Index = RP_index_count;
+		RP_index_count = RP_index_count + 1;
 		insert.num_of_encounters = 0; 
 		init_proc.push_back(insert);
 	} else if (tok_input.type == "T_IDENTIFIER"){
@@ -494,6 +549,15 @@ void CodeGen::setCurrentProcAmount(char name[256]){
 	for (int g = 0; g < init_proc.size(); g++){
 		if (strcmp(name, init_proc[g].proc_name) == 0){
 			init_proc[g].num_of_times_printed = init_proc[g].num_of_times_printed + 1;
+			break;
+		}
+	}
+}
+
+void CodeGen::setMainPrints(char name[256]){
+	for (int g = 0; g < init_proc.size(); g++){
+		if (strcmp(name, init_proc[g].proc_name) == 0){
+			init_proc[g].num_of_times_main_printed = init_proc[g].num_of_times_main_printed + 1;
 			break;
 		}
 	}
@@ -2183,25 +2247,33 @@ void CodeGen::display(){
 
 void CodeGen::set_flags(tokens tok){
 	
+	if (prev_TT_proc && pop_stack){ current_proc.pop(); pop_stack = false;}
 
 	if (tok.type == "T_PROGRAM" && prev_TT_end && prog_begin ) { proc_begin = false; prog_end = true; }
 	if (tok.type == "T_BEGIN" && prog_start && !proc_begin && !proc_start) { prog_start = false; prog_begin = true; prog_declare = false;}
 
-	if (tok.type == "T_END" ) { prev_TT_end = true; } else { prev_TT_end = false; }
-	if (tok.type == "T_END" && proc_begin ) { 
+	if (tok.type == "T_PROCEDURE" && prev_TT_end){proc_end = true;} else {proc_end = false;}
+	
+	if (tok.type == "T_END"  && proc_begin ) { 
+		
 		if (nested_proc > 0){
 			//Nested Proc
 			proc_begin = false; proc_start = true;
-			current_proc.pop();
+			pop_stack = true;
 			nested_proc = nested_proc - 1;
 		} else {
 			//Normal flow
 			proc_begin = false; prog_declare = true; 
 		}
 	}
+
+	if (tok.type == "T_PROCEDURE" && prev_TT_end){proc_end = true;} else {proc_end = false;}
+
+	if (tok.type == "T_END" ) { prev_TT_end = true; } else { prev_TT_end = false; }
+
 	if (tok.type == "T_BEGIN" && proc_start) { proc_begin = true; proc_start = false;}
 
-	if (tok.type == "T_PROCEDURE" && proc_start){ nested_proc = nested_proc + 1;}
+	if (tok.type == "T_IDENTIFIER" && prev_TT_proc && proc_start){ nested_proc = nested_proc + 1;}
 
 	if (tok.type == "T_RPARANTH" && prev_TT_LPAR) { prev_TT_LPAR = false; proc_start = true; proc_pass_through = false;  }
 	if (tok.type == "T_LPARANTH" && prev_TT_ident2) { prev_TT_LPAR = true; proc_pass_through = true;} 

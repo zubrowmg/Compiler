@@ -23,10 +23,10 @@ struct proc_init_node
 {
     char proc_name[256];
     int num_of_encounters;
-    int num_of_times_printed;
+    int num_of_times_printed, num_of_times_main_printed;
     int RP_Index;
     proc_init_node(){
-        num_of_times_printed = 0;
+        num_of_times_printed = 0; num_of_times_main_printed = 0;
         RP_Index = 0;
     }
 };
@@ -39,7 +39,7 @@ class CodeGen{
     	bool prev_TT_proc, prev_TT_semi, prog_declare, prev_TT_ident2, prev_TT_LPAR;
         bool prev_TT_int, prev_TT_bool, prev_TT_str, prev_TT_char, prev_TT_float;
     	std::vector<list> code_gen_order;
-    	list temp_list, temp2_list, temp3_list, temp4_list;
+    	list temp_list, temp2_list, temp3_list, temp4_list, temp5_list;
     	ofstream myfile; ofstream myfile2;
     	int MM_Index;
 		std::vector<int> MM;    
@@ -69,7 +69,8 @@ class CodeGen{
 
         // Procedure Init
         std::vector <proc_init_node> init_proc;
-        bool init_prev_tok_proc;
+        bool init_prev_tok_proc; int RP_index_count;
+        bool pop_stack;
 
     public:
     	CodeGen();
@@ -122,11 +123,13 @@ class CodeGen{
 
         void procStart(list temp_list2);
         void procBegin(list temp_list2);
+        void procEnd(list temp_list2);
         void procStartInit(list temp_list2);
         void procInit(tokens tok_temp3);
         void displayInitProc();
         proc_init_node getproc_init_node(char name[256]);
         void setCurrentProcAmount(char name[256]);
+        void setMainPrints(char name[256]);
 
         void printSym();
 };

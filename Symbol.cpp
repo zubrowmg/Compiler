@@ -590,6 +590,9 @@ bool Symbol::newCheck(std::string input, symbolNode sym)
 		for (int i = 0; i < size; i++){
 			if (current_proc == pos->getName()){
 				checker = pos->newCheck(input);
+				if (checker){
+					sym_error_handler.incrementError();
+				}
 				break;
 			} else {
 				pos = pos->getNext();
@@ -761,6 +764,7 @@ bool ProcedureNode::newCheck(std::string input){
 	for (itr = table.begin(); itr != table.end(); ++itr){
         if (itr->first == input){
         	error(input);
+
         	checker = false;
         }
     }

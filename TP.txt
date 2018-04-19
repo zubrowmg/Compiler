@@ -10,8 +10,18 @@ procedure if_proc()
 		//integer declaration[5:7];
 		global char yy;		
 		integer k;
+
+		procedure sf_proc()
+		//integer declaration[5:7];
+		integer tt;
 		begin
-		 	x := 'A';
+			
+		putChar('1');
+	end procedure;
+
+		begin
+			sf_proc();
+		 	putChar('2');
 		
 	end procedure;
 
@@ -20,28 +30,15 @@ procedure ff_proc()
 		integer j;
 		begin
 			
-		
+		putChar('3');
 	end procedure;
 
 begin
 
 if_proc();
 
-if_proc();
-if_proc();
+ff_proc();
 
-x := 'A';
 
-res := x;  // Cannot assign char to bool
-arr[1] := x; // Valid
-
-if (1) then // Valid
-    arr[2] := x;
-end if;
-
-x := res;  // Cannot assign bool to char
-x := 24;  // Valid
-
-putinteger(arr[2]);
 
 end program.

@@ -564,7 +564,7 @@ bool parser(list scan_list){
 		gen.procInit(temp);
 	}
 
-	gen.displayInitProc();
+ //gen.displayInitProc();
 	//code_gen_list = gen.preInit(scan_list);
 
 	//code_gen_list.reset_pos();

@@ -11,6 +11,10 @@ Error::Error(){
 	total_errors = 0;
 }
 
+void Error::incrementError(){
+	total_errors = total_errors + 1;
+}
+
 int Error::getTotalErrors(){
 	return total_errors;
 }
