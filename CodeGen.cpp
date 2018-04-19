@@ -95,7 +95,7 @@ void CodeGen::init(tokens tok, Symbol sym){
 	list empty; 
 	sym_table = sym;
 	//-------- Initialized Program Space Variables --------//
-  cout << tok.stringValue << " " << current_proc.top() << endl;
+  //cout << tok.stringValue << " " << current_proc.top() << endl;
 	if (proc_end){
 
 		temp5_list.setCG("proc_end");

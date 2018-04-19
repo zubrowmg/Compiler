@@ -590,7 +590,7 @@ bool Symbol::newCheck(std::string input, symbolNode sym)
 		for (int i = 0; i < size; i++){
 			if (current_proc == pos->getName()){
 				checker = pos->newCheck(input);
-				if (checker){
+				if (!checker){
 					sym_error_handler.incrementError();
 				}
 				break;
