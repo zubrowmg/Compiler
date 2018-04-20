@@ -24,6 +24,7 @@ struct argument
     string val_type;
     string in_out_inout;
     int size;
+    tokens arg_tok;
 };
 
 struct proc_init_node

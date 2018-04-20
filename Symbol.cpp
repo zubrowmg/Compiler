@@ -76,8 +76,10 @@ int Symbol::getMMIndex(std::string ident, std::string input_table)
         	done = true; 
         }
     }
+
     if (!done){
     	for (int i = 0; i < size; i++){
+	//cout << input_table << endl;
 			if (input_table == pos->getName()){
 				index = pos->getMMIndex(ident);
 				break;
@@ -86,6 +88,7 @@ int Symbol::getMMIndex(std::string ident, std::string input_table)
 			}
 		}
     }
+
 	return index;
 }
 

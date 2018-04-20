@@ -3,7 +3,7 @@ program AssignFloatToInt is
 global char x;
 global bool res;
 char chh;
-global integer arr[1:3];
+global integer arr;
 
 
 procedure if_proc(integer a1 in, char a2 in)
@@ -30,12 +30,16 @@ procedure ff_proc(integer a5 in, char a6 in)
 		integer j;
 		begin
 			
+		j := 1;
 		putChar('3');
 	end procedure;
 
 begin
 
 if_proc();
+
+
+arr := 1;
 
 ff_proc(arr,x);
 

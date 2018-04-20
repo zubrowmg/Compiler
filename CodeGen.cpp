@@ -285,8 +285,37 @@ void CodeGen::printCode(){
 
 void CodeGen::procPassThrough(list temp_list2){
 	argument new_arg; tokens tokk;
-	for (int s = 0; s < temp_list2.get_size(); s++){
-		tokk = temp_list2.get_one();
+	list new_list; bool last_T_LBRACKET = false; tokens tok_temp2, tok_temp;
+ 	
+ 	new_list.setTable(temp_list2.getTable());
+
+	// Trim the list from [] for single array access
+	temp_list2.reset_pos();
+	for (int j = 0; j < temp_list2.get_size(); j++){
+		tok_temp2 = temp_list2.get_one();
+		if (temp_list2.look_ahead_no_wrap().type == "T_LBRACKET") {
+			tok_temp2.single_array_access = true;
+			tok_temp2.index = atoi((temp_list2.look_ahead_two_no_wrap()).stringValue);
+			new_list.createnode(tok_temp2);
+		} else if (last_T_LBRACKET){
+			//Do nothing, we don't want the number in the []
+		} else if (tok_temp2.type == "T_RBRACKET" || tok_temp2.type == "T_LBRACKET"){
+			//Do nothing
+		} else {
+			new_list.createnode(tok_temp2);
+		}
+
+		if (tok_temp2.type == "T_LBRACKET" ){
+			last_T_LBRACKET = true;
+		} else {
+			last_T_LBRACKET = false;
+		}
+	}
+
+
+	new_list.reset_pos();
+	for (int s = 0; s < new_list.get_size(); s++){
+		tokk = new_list.get_one();
 		if (tokk.type == "T_INTEGER"){
 			new_arg.val_type = "V_INTEGER";
 		} else if (tokk.type == "T_STRING"){
@@ -298,7 +327,9 @@ void CodeGen::procPassThrough(list temp_list2){
 		} else if (tokk.type == "T_BOOL"){
 			new_arg.val_type = "V_BOOL";
 		} else if (tokk.type == "T_IDENTIFIER"){ 
+			MM_Index = sym_table.setMMIndex(tokk.stringValue, MM_Index, new_list.getTable());
 			new_arg.size = (sym_table.returnValType(tokk.stringValue)).array_size;
+			new_arg.arg_tok = tokk;
 		} else if (tokk.type == "T_IN" || tokk.type == "T_OUT" || tokk.type == "T_INOUT") {
 			if (tokk.type == "T_IN"){
 				new_arg.in_out_inout = "IN";
@@ -308,7 +339,7 @@ void CodeGen::procPassThrough(list temp_list2){
 				new_arg.in_out_inout = "INOUT";
 			}	
 			for (int v = 0; v < init_proc.size(); v++){
-				if ( (temp_list2.getTable() == (init_proc[v]).proc_name) ){
+				if ( (new_list.getTable() == (init_proc[v]).proc_name) ){
 					
 					((init_proc[v]).args).push_back(new_arg);
 				}
@@ -853,7 +884,16 @@ void CodeGen::generalIO(list temp_list2){
 
 void CodeGen::evalProcStatement(list temp_list2){
 	tokens tok_temp; int counter = 0; int arg_count = 0;
-	char proc_name_temp[256];
+	char proc_name_temp[256]; tokens assign_tok, semi_tok;
+
+	semi_tok.type = "T_SEMICOLON";
+	semi_tok.stringValue[0] = ';';
+
+	assign_tok.type = "T_ASSIGN";
+	assign_tok.stringValue[0] = ':'; assign_tok.stringValue[1] = '=';
+
+
+	list argument_list; list empty;
 
 	temp_list2.reset_pos();
 	for (int h = 0; h < temp_list2.get_size(); h++){
@@ -868,7 +908,6 @@ void CodeGen::evalProcStatement(list temp_list2){
 			for (int g = 0; g < init_proc.size(); g++){
 				if (strcmp(init_proc[g].proc_name, proc_name_temp) == 0 ){
 
-  //cout << tok_temp.stringValue << " " << ((init_proc[g]).args).size() << endl;
 					// Procdure Type Checking
 					if (((init_proc[g]).args).size() == 0){
 						// Error number of arguments missmatch
@@ -885,10 +924,22 @@ void CodeGen::evalProcStatement(list temp_list2){
 							error_handler.error(tok_temp.line, 1, arg_count, proc_name_temp);
 						}
 					}
+
+					argument_list.setTable(proc_name_temp);
+					argument_list.createnode(((init_proc[g]).args[arg_count]).arg_tok);
+					argument_list.createnode(assign_tok);
+					argument_list.createnode(tok_temp);
+					argument_list.createnode(semi_tok);
+					generalAssignStatement(argument_list);
+					argument_list = empty;
 				}
 			}
 			arg_count = arg_count + 1;
 		}
+
+		//if (arg_count == ((init_proc[g]).args).size()){
+			// Error too few arguments
+		//}
 	}
 
 	temp_list2.reset_pos();
@@ -969,17 +1020,18 @@ void CodeGen::generalForEnd(){
 }
 
 void CodeGen::generalAssignStatement(list temp_list2){
-	list expression_list, destination_list; tokens tok_temp; bool assign_passed = false;
-
+	list expression_list, destination_list; tokens tok_temp; bool assign_passed = false; int count = 0;
 
 
 	temp_list2.reset_pos();
-	for (int j = 0; j < temp_list2.get_size(); j++){
+	destination_list.setTable(temp_list2.getTable());
+	expression_list.setTable(temp_list2.getTable());
+	for (int j = 0; j < temp_list2.get_size() - count; j++){
 		tok_temp = temp_list2.get_one();
 
 		if (assign_passed){
 			expression_list.createnode(tok_temp);
-		} else if (tok_temp.type != "T_ASSIGN"){
+		} else if (tok_temp.type == "T_IDENTIFIER"){
 			destination_list.createnode(tok_temp);
 		}
 
@@ -988,8 +1040,11 @@ void CodeGen::generalAssignStatement(list temp_list2){
 		}
 	} 
 
+
+
 	generalExpression(expression_list);
 	evalDestination(destination_list, expression_list);
+
 }
 
 
@@ -1001,6 +1056,7 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 
 	// Trim the list from [] for single array access
 	destination_list.reset_pos();
+	new_list.setTable(destination_list.getTable());
 	for (int j = 0; j < destination_list.get_size(); j++){
 		tok_temp2 = destination_list.get_one();
 		if (destination_list.look_ahead_no_wrap().type == "T_LBRACKET") {
@@ -1048,7 +1104,6 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 	}
  // Type Check
 
-	
 	if ((sym_table.returnValType(tok_temp2.stringValue)).is_array && !tok_temp2.single_array_access){
 		expression_list.reset_pos();
 		for (int j = 0; j < expression_list.get_size(); j++){
@@ -1112,8 +1167,12 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 			}
 		}
 	} else {
+
 		int rand;
 		myfile2 << "MM[";
+
+ // cout << new_list.getTable() << endl;
+
 		rand = sym_table.getMMIndex(tok_temp2.stringValue, new_list.getTable()) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left ;
 		myfile2 << rand;
 		myfile2 << "]";

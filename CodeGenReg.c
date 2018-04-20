@@ -54,6 +54,11 @@ ff_proc: 1;
 goto ff_proc_main;
 
 ff_proc_main: 1;
+R[0].int_val=1;
+	MM[13].int_val=R[0].int_val;
+
+
+
 putc('3', outfile);
 
 
@@ -68,6 +73,15 @@ main_prog: 1;
 
 goto if_proc;
 return_if_proc0: 1;
+
+R[0].int_val=1;
+	MM[9].int_val=R[0].int_val;
+
+R[0].int_val=MM[9].int_val;
+	MM[4].int_val=R[0].int_val;
+
+R[0].char_val=MM[6].char_val;
+	MM[5].char_val=R[0].char_val;
 
 goto ff_proc;
 return_ff_proc0: 1;

@@ -1,6 +1,8 @@
 #ifndef ParseNode_H
 #define ParseNode_H
 
+#include <stdio.h>
+#include <string.h>
 
 struct tokens{
 	std::string type;
@@ -18,6 +20,7 @@ struct tokens{
     int if_goto_label_num;
 
     tokens(){
+        memset(stringValue, 0, sizeof(stringValue));
         index = 0;
         single_array_access = false;
         if_goto_label_num = -1;
