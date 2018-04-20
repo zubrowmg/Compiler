@@ -116,6 +116,14 @@ void Error::error(int line, int type, std::string var){
 ------------------------------------------------------*/
 	else if (type == 2){
 		cout << "Incorrect Symantix -  " << var << endl;
+	} 
+/*------------------------------------------------------
+	Procedure Type Checking
+------------------------------------------------------*/
+	else if (type == 3){
+		cout << "Procedure Call Has Arguments When There Should Be None - " << var << endl;
+	} else if (type == 4){
+		cout << "Procedure Call Has Too Many Arguments - " << var << endl;
 	}
 }
 
@@ -214,4 +222,15 @@ void Error::error(int line, int type, std::string TC_1, std::string TC_2){
 
 	}
 
+}
+
+void Error::error(int line, int type, int arg_num, std::string var){
+	total_errors = total_errors + 1;
+	cout << "[" << line << "]" << "\t" << "Error:  ";
+
+	if (type == 0){
+		cout << "Procedure Call Argument " << arg_num << " Type Mismatch - " << var << endl;
+	} else if (type == 1){
+		cout << "Procedure Call Argument " << arg_num << " Array Size Mismatch - " << var << endl;
+	}
 }

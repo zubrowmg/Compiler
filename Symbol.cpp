@@ -374,7 +374,7 @@ void Symbol::init(std::string token, std::string value, symbolNode sym)
 	} else {prev2_TT_LB = false;}
 
 	if ((prev2_TT_int || prev2_TT_flt || prev2_TT_str || prev2_TT_bool || prev2_TT_char) && prev_TT_IDENT && token == "T_LBRACKET"){ 						// NNNNNNN
-		modify(last_ident); prev_TT_LB = true; //cout << "HI";
+		modify(last_ident); prev_TT_LB = true; 
 	} else {prev_TT_LB = false; }
 
 	if (token == "T_IDENTIFIER"){

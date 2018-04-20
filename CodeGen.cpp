@@ -116,7 +116,16 @@ void CodeGen::init(tokens tok, Symbol sym){
 			temp_list = empty;
 		}
 	} else if (proc_pass_through){
-		//cout << "\t" << tok.type << endl;
+		temp6_list.setCG("proc_pass_through");
+		temp6_list.setTable(current_proc.top());
+		temp6_list.createnode(tok);
+		if (tok.type == "T_SEMICOLON"){
+			code_gen_order.push_back(temp6_list);
+			temp6_list = empty;
+		} else if (tok.type == "T_RPARANTH"){
+			code_gen_order.push_back(temp6_list);
+			temp6_list = empty;
+		}
 	} else if (proc_start){
 	
 		temp3_list.setCG("proc_start");
@@ -192,7 +201,6 @@ void CodeGen::init(tokens tok, Symbol sym){
 		for_encountered = false;
 	}
 
- //cout << tok.stringValue << " " << proc_start << proc_begin << proc_end << prog_declare << prog_begin << endl;
 
 	if (prog_end && tok.type == "T_ENDFILE"){
 		printCode();
@@ -203,7 +211,10 @@ void CodeGen::init(tokens tok, Symbol sym){
 void CodeGen::printCode(){
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
-		SinArAChecker(code_gen_order[i]);		
+		SinArAChecker(code_gen_order[i]);	
+		if (code_gen_order[i].getCG() == "proc_pass_through"){ 			
+			procPassThrough(code_gen_order[i]);
+		} 	
 	}
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
@@ -272,15 +283,46 @@ void CodeGen::printCode(){
   	myfile2.close();
 }
 
+void CodeGen::procPassThrough(list temp_list2){
+	argument new_arg; tokens tokk;
+	for (int s = 0; s < temp_list2.get_size(); s++){
+		tokk = temp_list2.get_one();
+		if (tokk.type == "T_INTEGER"){
+			new_arg.val_type = "V_INTEGER";
+		} else if (tokk.type == "T_STRING"){
+			new_arg.val_type = "V_STRING";
+		} else if (tokk.type == "T_FLOAT"){
+			new_arg.val_type = "V_FLOAT";
+		} else if (tokk.type == "T_CHAR"){
+			new_arg.val_type = "V_CHAR";
+		} else if (tokk.type == "T_BOOL"){
+			new_arg.val_type = "V_BOOL";
+		} else if (tokk.type == "T_IDENTIFIER"){ 
+			new_arg.size = (sym_table.returnValType(tokk.stringValue)).array_size;
+		} else if (tokk.type == "T_IN" || tokk.type == "T_OUT" || tokk.type == "T_INOUT") {
+			if (tokk.type == "T_IN"){
+				new_arg.in_out_inout = "IN";
+			} else if (tokk.type == "T_OUT") {
+				new_arg.in_out_inout = "OUT";
+			} else if (tokk.type == "T_INOUT") {
+				new_arg.in_out_inout = "INOUT";
+			}	
+			for (int v = 0; v < init_proc.size(); v++){
+				if ( (temp_list2.getTable() == (init_proc[v]).proc_name) ){
+					
+					((init_proc[v]).args).push_back(new_arg);
+				}
+			}
+		}
+	}
+}
+ 
+
 void CodeGen::procEnd(list temp_list2){
 	tokens tokk; char comp[256];
 
- cout << 6 << endl;
-
 	temp_list2.reset_pos();
 	tokk = temp_list2.get_one();
- cout << temp_list2.getTable() << endl;
-
 	for (int b = 0; b < (temp_list2.getTable()).length(); b++){
 		comp[b] = (temp_list2.getTable())[b];
 	}
@@ -577,6 +619,10 @@ proc_init_node CodeGen::getproc_init_node(char name[256]){
 void CodeGen::displayInitProc(){
 	for (int g = 0; g < init_proc.size(); g++){
 		cout <<	init_proc[g].proc_name << " " << init_proc[g].num_of_encounters << endl; 
+ cout << ((init_proc[g]).args).size() << endl;
+		for (int v = 0; v < ((init_proc[g]).args).size(); v++){
+			cout << "\t" << (init_proc[g]).args[v].val_type << " " << (init_proc[g]).args[v].in_out_inout << " " << (init_proc[g]).args[v].size << endl;
+		}
 	}
 }
 
@@ -806,7 +852,45 @@ void CodeGen::generalIO(list temp_list2){
 
 
 void CodeGen::evalProcStatement(list temp_list2){
-	tokens tok_temp;
+	tokens tok_temp; int counter = 0; int arg_count = 0;
+	char proc_name_temp[256];
+
+	temp_list2.reset_pos();
+	for (int h = 0; h < temp_list2.get_size(); h++){
+		tok_temp = temp_list2.get_one();
+		if (tok_temp.type == "T_IDENTIFIER" && counter == 0){
+			counter = counter + 1;
+			for (int y = 0; y < strLength(tok_temp.stringValue); y++){
+				proc_name_temp[y] = tok_temp.stringValue[y];	
+			}		
+		} else if (tok_temp.type == "T_IDENTIFIER"){
+
+			for (int g = 0; g < init_proc.size(); g++){
+				if (strcmp(init_proc[g].proc_name, proc_name_temp) == 0 ){
+
+  //cout << tok_temp.stringValue << " " << ((init_proc[g]).args).size() << endl;
+					// Procdure Type Checking
+					if (((init_proc[g]).args).size() == 0){
+						// Error number of arguments missmatch
+						error_handler.error(tok_temp.line, 3, proc_name_temp);
+					} else if(arg_count >= ((init_proc[g]).args).size()){
+						// Error number of arguments missmatch
+						error_handler.error(tok_temp.line, 4, proc_name_temp);
+					} else {
+						if (((init_proc[g]).args[arg_count]).val_type != (sym_table.returnValType(tok_temp.stringValue)).str_val ){
+							// Error types don't match
+							error_handler.error(tok_temp.line, 0, arg_count, proc_name_temp);
+						} else if (((init_proc[g]).args[arg_count]).size != (sym_table.returnValType(tok_temp.stringValue)).array_size){
+							// Error Array Size Mismatch
+							error_handler.error(tok_temp.line, 1, arg_count, proc_name_temp);
+						}
+					}
+				}
+			}
+			arg_count = arg_count + 1;
+		}
+	}
+
 	temp_list2.reset_pos();
 	for (int h = 0; h < temp_list2.get_size(); h++){
 		tok_temp = temp_list2.get_one();
