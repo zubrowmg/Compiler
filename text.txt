@@ -6,7 +6,7 @@
 PROGRAM grant IS
 	//global char jake; // [5:7]
 	//global char ch;
-	global integer h[8:17];
+	global integer h;
 	global integer j[0:9];
 	global string poop;
 	global string poop2;
@@ -16,23 +16,35 @@ PROGRAM grant IS
 	global float fl;
 	global bool bl;
 
-	procedure if_proc()
+	procedure if_proc(integer cv in)
 		//integer declaration[5:7];
 		//integer k;
 		begin
-			//zach := declaration[6] + k;
-			//zach [5] := declaration + k;
+			putInteger(cv);
+			putChar(' ');
+
+		 	cv := cv - 10;
 		
+			//putInteger(cv);
+			putChar(' ');
 	end procedure;
 
 	procedure for_proc()
                 //integer j;
 		begin
-			//i := i + i;			
+						
 	end procedure;
 
 	begin
-		h := j;
+		h := 10;
+		h := h * 10;
+		putInteger(h);
+		putChar(' ');
+
+		if_proc(h);
+
+		putInteger(h);
+		putChar(' ');	
 		
 		//for(i := 0; i < 10)
 		//	i := i + 1;

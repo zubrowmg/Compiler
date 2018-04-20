@@ -317,6 +317,7 @@ void CodeGen::procPassThrough(list temp_list2){
 	for (int s = 0; s < new_list.get_size(); s++){
 		tokk = new_list.get_one();
 		if (tokk.type == "T_INTEGER"){
+
 			new_arg.val_type = "V_INTEGER";
 		} else if (tokk.type == "T_STRING"){
 			new_arg.val_type = "V_STRING";
@@ -327,6 +328,7 @@ void CodeGen::procPassThrough(list temp_list2){
 		} else if (tokk.type == "T_BOOL"){
 			new_arg.val_type = "V_BOOL";
 		} else if (tokk.type == "T_IDENTIFIER"){ 
+			//sym_table.updateStrVal(tokk.stringValue, "V_INTEGER");
 			MM_Index = sym_table.setMMIndex(tokk.stringValue, MM_Index, new_list.getTable());
 			new_arg.size = (sym_table.returnValType(tokk.stringValue)).array_size;
 			new_arg.arg_tok = tokk;
@@ -697,6 +699,8 @@ void CodeGen::generalIO(list temp_list2){
 				}
 			}			
 		} else if (tok_temp2.type == "T_IDENTIFIER"){
+
+	cout << tok_temp2.stringValue << " " << (sym_table.returnValType(tok_temp2.stringValue)).str_val << endl;
 			if ((sym_table.returnValType(tok_temp2.stringValue)).str_val == "V_INTEGER"){
 				myfile2 << "fprintf(outfile, \"%" << "d\"," << "MM[";
 				myfile2 << sym_table.getMMIndex(tok_temp2.stringValue, new_list.getTable()) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left;	
@@ -894,7 +898,7 @@ void CodeGen::evalProcStatement(list temp_list2){
 
 
 	list argument_list; list empty;
-
+ 
 	temp_list2.reset_pos();
 	for (int h = 0; h < temp_list2.get_size(); h++){
 		tok_temp = temp_list2.get_one();
@@ -1171,14 +1175,19 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 		int rand;
 		myfile2 << "MM[";
 
- // cout << new_list.getTable() << endl;
-
+  //cout << tok_temp2.stringValue << " " << new_list.getTable() << endl;
+ //cout << sym_table.getMMIndex(tok_temp2.stringValue, new_list.getTable()) << endl;
 		rand = sym_table.getMMIndex(tok_temp2.stringValue, new_list.getTable()) + tok_temp2.index - (sym_table.returnValType(tok_temp2.stringValue)).array_left ;
+		
 		myfile2 << rand;
 		myfile2 << "]";
 		outputValType(tok_temp2);
 		myfile2 << "=";
 		expression_list.reset_pos();
+
+
+
+
 		for (int j = 0; j < expression_list.get_size(); j++){
 			tok_temp = expression_list.get_one();
 	 		if (tok_temp.type == "T_NOT" || tok_temp.type == "T_OR" || tok_temp.type == "T_AND"){

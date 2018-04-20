@@ -640,8 +640,7 @@ bool parser(list scan_list){
 		if (last_T_ident){ last2_T_ident = true; } else {	last2_T_ident = false; }		
 		if (temp.type == "T_IDENTIFIER"){ last_T_ident = true; } else {	last_T_ident = false; }
 
-		//-------- Code Gen --------//
-		gen.init(temp, sym);
+		
 	
 //-------- Tree Snapshot --------//
 		if (!(tree.getLegit()) && error_count < 10){
@@ -652,6 +651,14 @@ bool parser(list scan_list){
 			error_count++;
 		} 
 	}	
+
+
+	scan_list.reset_pos();
+	for (int i = 0; i < scan_list.get_size(); i++){
+		temp = scan_list.get_one();
+		//-------- Code Gen --------//
+		gen.init(temp, sym);
+	}
 	//}
 
 	//tree.printTree();

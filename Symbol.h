@@ -53,6 +53,8 @@ class ProcedureNode
 
         int setMMIndex(std::string ident, int index, std::string input_table);
         int getMMIndex(std::string ident);
+
+        void updateStrVal(std::string ident, std::string val);
 };
 
 #endif
@@ -138,6 +140,8 @@ class Symbol
         int getMMIndex(std::string ident, std::string input_table);
 
         bool errorsEncountered();
+
+        void updateStrVal(std::string ident, std::string val);
 };
 
 #endif

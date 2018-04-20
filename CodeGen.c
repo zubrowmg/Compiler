@@ -1,5 +1,10 @@
-char;
-bool;
-char;
 int;
+int[09];
+string;
+string;
+int[372];
+int;
+char;
+float;
+bool;
 }

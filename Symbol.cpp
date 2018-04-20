@@ -77,9 +77,9 @@ int Symbol::getMMIndex(std::string ident, std::string input_table)
         }
     }
 
+    resetPos();
     if (!done){
     	for (int i = 0; i < size; i++){
-	//cout << input_table << endl;
 			if (input_table == pos->getName()){
 				index = pos->getMMIndex(ident);
 				break;
@@ -88,7 +88,6 @@ int Symbol::getMMIndex(std::string ident, std::string input_table)
 			}
 		}
     }
-
 	return index;
 }
 
@@ -360,6 +359,27 @@ symbolNode Symbol::returnValType(std::string ident){
     }
 
 	return sym;
+}
+
+void Symbol::updateStrVal(std::string ident, std::string val){
+	bool done = false;
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = global.begin(); itr != global.end(); ++itr){
+        if (itr->first == ident){
+        	(itr->second).str_val = val;
+        	done = true; 
+        }
+    }
+    if (!done){
+    	for (int i = 0; i < size; i++){
+			if (current_proc == pos->getName()){
+				pos->updateStrVal(ident, val);;
+				break;
+			} else {
+				pos = pos->getNext();
+			}
+		}
+    }
 }
 
 void Symbol::init(std::string token, std::string value, symbolNode sym)
@@ -697,6 +717,15 @@ void ProcedureNode::modify(std::string ident){
 	for (itr = table.begin(); itr != table.end(); ++itr){
         if (itr->first == ident){
         	(itr->second).is_array = true; 
+        }
+    }
+}
+
+void ProcedureNode::updateStrVal(std::string ident, std::string val){
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = table.begin(); itr != table.end(); ++itr){
+        if (itr->first == ident){
+        	(itr->second).str_val = val; 
         }
     }
 }
