@@ -21,16 +21,23 @@ FILE *infile; infile = fopen("input.txt","r");
 
 goto main_prog;
 
+if_proc: 1;
+goto if_proc_main;
+
 if_proc_main: 1;
+fprintf(outfile, "%d",MM[0].int_val);
 
 
 putc(' ', outfile);
 
 
-R[0]=MM[1474597352];
+R[0].int_val=MM[0].int_val;
 	R[0].int_val=R[0].int_val-10;
-	MM[0]=R[0];
+	MM[0].int_val=R[0].int_val;
 
+
+
+fprintf(outfile, "%d",MM[0].int_val);
 
 
 putc(' ', outfile);
@@ -40,6 +47,12 @@ putc(' ', outfile);
 RP[0]=RP[0]+1;
 R3[0]=RP[0]==1;
 if (R3[0]) goto return_if_proc0;
+
+for_proc: 1;
+goto for_proc_main;
+
+for_proc_main: 1;
+
 
 
 RP[1]=RP[1]+1;
@@ -58,7 +71,7 @@ R[0].int_val=MM[1].int_val;
 fprintf(outfile, "%d",MM[1].int_val);
 putc(' ', outfile);
 R[0].int_val=MM[1].int_val;
-	MM[0]=R[0];
+	MM[0].int_val=R[0].int_val;
 
 goto if_proc;
 return_if_proc0: 1;

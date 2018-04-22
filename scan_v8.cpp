@@ -594,7 +594,7 @@ bool parser(list scan_list){
 		sym.init(temp.type,temp.stringValue, symbol_temp);
 
 	
-
+		gen.init(temp, sym);
 	//-------- Type Checking --------//		
 	//if(!last_T_LBRACK){
 
@@ -652,12 +652,13 @@ bool parser(list scan_list){
 		} 
 	}	
 
+ //sym.printAll();
 
 	scan_list.reset_pos();
 	for (int i = 0; i < scan_list.get_size(); i++){
 		temp = scan_list.get_one();
 		//-------- Code Gen --------//
-		gen.init(temp, sym);
+		
 	}
 	//}
 

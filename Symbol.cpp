@@ -342,6 +342,43 @@ symbolNode Symbol::returnValType(std::string ident){
     	for (int i = 0; i < size; i++){ //
     		
 			if (current_proc == pos->getName()){ 	//LLLLL
+	//cout << ident << " " << current_proc << endl;
+				sym = pos->returnValType(ident);		
+				if (sym.type != "NULL"){
+					type_found = true;
+				}
+
+				break;
+			} else { 
+
+				pos = pos->getNext();
+			}
+		} 
+    }
+
+    if (!type_found){
+    }
+
+	return sym;
+}
+
+symbolNode Symbol::returnValType2(std::string ident, std::string input_proc){			
+	symbolNode sym; bool type_found = false;
+
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = global.begin(); itr != global.end(); ++itr){
+        if (itr->first == ident){
+        	sym = (itr->second);
+        	type_found = true;
+        }
+    }
+
+    if (!type_found){ 
+    	resetPos();	
+    	for (int i = 0; i < size; i++){ //
+    		
+			if (input_proc == pos->getName()){ 	//LLLLL
+	//cout << ident << " " << input_proc << endl;
 				sym = pos->returnValType(ident);		
 				if (sym.type != "NULL"){
 					type_found = true;

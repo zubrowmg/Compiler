@@ -121,6 +121,7 @@ class Symbol
         
         bool find();
         symbolNode returnValType(std::string ident);
+        symbolNode returnValType2(std::string ident, std::string input_proc);
         void clearTC();
         bool insertTC(std::string ident, std::string TT);
 

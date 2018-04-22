@@ -91,7 +91,7 @@ class CodeGen{
     	void output(list input); 
     	void output2(list input);
 
-    	void outputValType(tokens tok_temp);
+    	void outputValType(tokens tok_temp, std::string input_list);
     	list arrayOutput(list input_list, tokens tok_temp, int reg_index);
     	list outputMain(list temp_list2, tokens tok_temp, tokens tok_val_type, int reg_index, int str_array_index, bool go_back);
         list outputMainNew(list temp_list2, tokens tok_temp, int count, int index);

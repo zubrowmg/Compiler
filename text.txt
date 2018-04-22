@@ -25,7 +25,7 @@ PROGRAM grant IS
 
 		 	cv := cv - 10;
 		
-			//putInteger(cv);
+			putInteger(cv);
 			putChar(' ');
 	end procedure;
 
