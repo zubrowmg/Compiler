@@ -141,7 +141,7 @@ void CodeGen::init(tokens tok, Symbol sym){
 		temp4_list.setCG("proc_begin");
 		temp4_list.setTable(current_proc.top());
 		temp4_list.createnode(tok);
- 
+ cout << tok.stringValue << endl;
 		if (tok.type == "T_SEMICOLON" && !for_encountered){
 			code_gen_order.push_back(temp4_list);
 			temp4_list = empty;
@@ -480,7 +480,7 @@ void CodeGen::output2(list temp_list2){
 	for_state = false; if_state = false; assign_state = false, ret_state = false; proc_state = false;
 	end_if = false; if_else_state = false;
 	
- 
+
 
 	//-------- Check to See Statement type --------//;
 	temp_list2.reset_pos();
@@ -498,6 +498,7 @@ void CodeGen::output2(list temp_list2){
 			for_state = true;
 			break;
 		} else if (tok_temp.type == "T_IF" && last_tok_end){
+
 			end_if = true;
 			break;
 		} else if (tok_temp.type == "T_IF"){
@@ -1245,7 +1246,7 @@ void CodeGen::generalIfElse(list temp_list2){
 void CodeGen::generalIf(list temp_list2){
 	tokens tok_temp; list temp_list3;
 
-
+	temp_list3.setTable(temp_list2.getTable());
 	// Get the Lparanthesis tok
 	for (int j = 0; j < temp_list2.get_size(); j++){
 		tok_temp = temp_list2.get_one();
@@ -1263,6 +1264,8 @@ void CodeGen::generalIf(list temp_list2){
 		}
 	}
 
+ //cout << "---" << temp_list3.getTable() << endl;
+ //temp_list3.display();
 	generalExpression(temp_list3);
 	goto_index = 0;
 	myfile2 << "\n" << "if (";
@@ -1284,7 +1287,7 @@ void CodeGen::generalIf(list temp_list2){
 }
 
 void CodeGen::generalIfEnd(){
-	
+ cout << goto_index << endl;
 	if (goto_index == 1 ){
 		myfile2 << "IF" << goto_index + if_count + seq_if << ": 1;" << "\n";
 		goto_index = 2;
@@ -1780,7 +1783,6 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 					outputValType(tok_temp2, relation_list.getTable());
 					myfile2 << "=";
 					myfile2 << "MM[";
- cout << tok_temp2.stringValue << " " << relation_list.getTable() << endl;
 					myfile2 << sym_table.getMMIndex(tok_temp2.stringValue, relation_list.getTable());
 					myfile2 << "]";
 					outputValType(tok_temp2, relation_list.getTable());
@@ -2420,8 +2422,8 @@ void CodeGen::set_flags(tokens tok){
 
 	if (tok.type == "T_PROCEDURE" && prev_TT_end){proc_end = true;} else {proc_end = false;}
 	
-	if (tok.type == "T_END"  && proc_begin ) { 
-		
+	if (tok.type == "T_PROCEDURE" && prev_TT_end  && proc_begin ) { 
+ cout << "\t"<< prev_TT_proc << endl;
 		if (nested_proc > 0){
 			//Nested Proc
 			proc_begin = false; proc_start = true;
@@ -2445,7 +2447,8 @@ void CodeGen::set_flags(tokens tok){
 	if (tok.type == "T_LPARANTH" && prev_TT_ident2) { prev_TT_LPAR = true; proc_pass_through = true;} 
 	if (tok.type == "T_IDENTIFIER" && prev_TT_proc) { prev_TT_ident2 = true; current_proc.push(tok.stringValue);} else { prev_TT_ident2 = false; }
 	if (tok.type == "T_PROCEDURE"){ 
-		prev_TT_proc = true; prog_declare = false; 
+		prev_TT_proc = true; 
+		prog_declare = false; 
 	} else { 
 		prev_TT_proc = false;
 	}

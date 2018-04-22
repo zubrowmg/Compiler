@@ -1,48 +1,14 @@
-program AssignFloatToInt is
-
-global char x;
-global bool res;
-char chh;
-global integer arr;
-
-
-procedure if_proc(integer a1 in, char a2 in)
-		//integer declaration[5:7];
-		global char yy;		
-		integer k;
-
-		procedure sf_proc(integer a3 in , char a4 in)
-		//integer declaration[5:7];
-		integer tt;
-		begin
-			
-		putChar('1');
-	end procedure;
-
-		begin
-			sf_proc();
-		 	putChar('2');
-		
-	end procedure;
-
-procedure ff_proc(integer a5 in, char a6 in)
-		//integer declaration[5:7];
-		integer j;
-		begin
-			
-		j := 1;
-		putChar('3');
-	end procedure;
-
+program test_program is
+    procedure print_string(integer level in)
+        string s;
+    begin
+        putString("Enter a string:");
+        getString(s);
+        if (level < 3) then
+            print_string(level + 1);
+        end if;
+        putString(s);
+    end procedure;
 begin
-
-if_proc();
-
-
-arr := 1;
-
-ff_proc(arr,x);
-
-
-
+    print_string(0);
 end program.
