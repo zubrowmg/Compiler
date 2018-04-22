@@ -38,6 +38,8 @@ putc('t', outfile);
 putc('r', outfile);
 putc('i', outfile);
 putc('n', outfile);
+putc('g', outfile);
+putc(':', outfile);
 
 
 fscanf(infile, "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",&MM[1].char_val,&MM[2].char_val,&MM[3].char_val,&MM[4].char_val,&MM[5].char_val,&MM[6].char_val,&MM[7].char_val,&MM[8].char_val,&MM[9].char_val,&MM[10].char_val,&MM[11].char_val,&MM[12].char_val,&MM[13].char_val,&MM[14].char_val,&MM[15].char_val,&MM[16].char_val,&MM[17].char_val,&MM[18].char_val,&MM[19].char_val,&MM[20].char_val,&MM[21].char_val,&MM[22].char_val,&MM[23].char_val,&MM[24].char_val,&MM[25].char_val,&MM[26].char_val,&MM[27].char_val,&MM[28].char_val,&MM[29].char_val,&MM[30].char_val,&MM[31].char_val,&MM[32].char_val,&MM[33].char_val,&MM[34].char_val,&MM[35].char_val,&MM[36].char_val,&MM[37].char_val,&MM[38].char_val,&MM[39].char_val,&MM[40].char_val,&MM[41].char_val,&MM[42].char_val,&MM[43].char_val,&MM[44].char_val,&MM[45].char_val,&MM[46].char_val,&MM[47].char_val,&MM[48].char_val,&MM[49].char_val,&MM[50].char_val);
@@ -54,6 +56,7 @@ IF3:
 
 
 R[0].int_val=MM[0].int_val;
+	R[0].int_val=R[0].int_val+1;
 	MM[0].int_val=R[0].int_val;
 
 goto print_string;
@@ -129,6 +132,9 @@ if (R3[0]) goto return_print_string1;
 
 
 main_prog: 1;
+
+R[0].int_val=0;
+	MM[0].int_val=R[0].int_val;
 
 goto print_string;
 return_print_string1: 1;

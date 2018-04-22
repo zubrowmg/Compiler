@@ -14,7 +14,7 @@ if (open(my $fh, '<:encoding(UTF-8)', $filename)) {
 }
 
 if ($compile_c eq 1){
-	system("gcc CodeGenReg.c -std=c99");
+	#system("gcc CodeGenReg.c -std=c99");
 	#system("./a.out");
 } else{
 	print "* Could Not Compile C Code Due To Errors *\n";		

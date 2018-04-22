@@ -232,5 +232,7 @@ void Error::error(int line, int type, int arg_num, std::string var){
 		cout << "Procedure Call Argument " << arg_num << " Type Mismatch - " << var << endl;
 	} else if (type == 1){
 		cout << "Procedure Call Argument " << arg_num << " Array Size Mismatch - " << var << endl;
+	} else if (type == 2){
+		cout << "Procedure Call Is Missing Arguments - " << var << endl;
 	}
 }

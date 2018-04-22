@@ -140,6 +140,7 @@ class CodeGen{
         void setCurrentProcAmount(char name[256]);
         void setMainPrints(char name[256]);
         void procPassThrough(list temp_list2);
+        void evalArgument(list temp_list2, int arg_count);
 
         void printSym();
 };

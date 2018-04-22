@@ -141,7 +141,7 @@ void CodeGen::init(tokens tok, Symbol sym){
 		temp4_list.setCG("proc_begin");
 		temp4_list.setTable(current_proc.top());
 		temp4_list.createnode(tok);
- cout << tok.stringValue << endl;
+ //cout << tok.stringValue << endl;
 		if (tok.type == "T_SEMICOLON" && !for_encountered){
 			code_gen_order.push_back(temp4_list);
 			temp4_list = empty;
@@ -562,37 +562,49 @@ void CodeGen::output2(list temp_list2){
 }
 
 void CodeGen::generalProcStatement(list temp_list2){
-	tokens tok_temp; list new_list;
+	tokens tok_temp; list new_list, filter_list; int count = 0;
 
+	filter_list.setTable(temp_list2.getTable());
 	temp_list2.reset_pos();
-	tok_temp = temp_list2.get_one();
- 	
-	if (tok_temp.type != "T_IDENTIFIER" ){
-		//tok_temp = temp_list2.get_one();
-		for (int j = 0; j < temp_list2.get_size() ; j++){
-			tok_temp = temp_list2.get_one();
-			//if (j > 0){
-				new_list.createnode(tok_temp);
-			//}
+	for (int v = 0; v < temp_list2.get_size(); v++){
+		tok_temp = temp_list2.get_one();
+		if (count == 0 && tok_temp.type == "T_SEMICOLON"){
+
+		} else {
+			filter_list.createnode(tok_temp);
 		}
-	} else {
-		new_list = temp_list2;
 	}
 
-	new_list.reset_pos();
-	tok_temp = new_list.get_one();
-	if ( strcmp(tok_temp.stringValue, "putinteger") == 0 || strcmp(tok_temp.stringValue, "putbool") == 0
-			|| strcmp(tok_temp.stringValue, "putfloat") == 0 || strcmp(tok_temp.stringValue, "putstring") == 0
-			|| strcmp(tok_temp.stringValue, "putchar") == 0 || strcmp(tok_temp.stringValue, "getinteger") == 0
-			|| strcmp(tok_temp.stringValue, "getbool") == 0 || strcmp(tok_temp.stringValue, "getfloat") == 0
-			|| strcmp(tok_temp.stringValue, "getstring") == 0 || strcmp(tok_temp.stringValue, "getchar") == 0) {
- 
-		generalIO(new_list);
+	if (filter_list.get_size() != 0){
+		filter_list.reset_pos();
+		tok_temp = filter_list.get_one();
+	 	
+		if (tok_temp.type != "T_IDENTIFIER" ){
+			//tok_temp = temp_list2.get_one();
+			for (int j = 0; j < filter_list.get_size() ; j++){
+				tok_temp = filter_list.get_one();
+				//if (j > 0){
+					new_list.createnode(tok_temp);
+				//}
+			}
+		} else {
+			new_list = filter_list;
+		}
 
-	} else {
-		evalProcStatement(new_list);
+		new_list.reset_pos();
+		tok_temp = new_list.get_one();
+		if ( strcmp(tok_temp.stringValue, "putinteger") == 0 || strcmp(tok_temp.stringValue, "putbool") == 0
+				|| strcmp(tok_temp.stringValue, "putfloat") == 0 || strcmp(tok_temp.stringValue, "putstring") == 0
+				|| strcmp(tok_temp.stringValue, "putchar") == 0 || strcmp(tok_temp.stringValue, "getinteger") == 0
+				|| strcmp(tok_temp.stringValue, "getbool") == 0 || strcmp(tok_temp.stringValue, "getfloat") == 0
+				|| strcmp(tok_temp.stringValue, "getstring") == 0 || strcmp(tok_temp.stringValue, "getchar") == 0) {
+	 
+			generalIO(new_list);
+
+		} else {
+			evalProcStatement(new_list);
+		}
 	}
-
 }
 
 void CodeGen::procInit(tokens tok_input){
@@ -790,6 +802,7 @@ void CodeGen::generalIO(list temp_list2){//jjjj
 	} else if (strcmp(tok_temp.stringValue, "putstring") == 0){
 		tok_temp2 = new_list.look_ahead_two_no_wrap();
 		if (tok_temp2.type == "T_STRINGVAL"){
+ //cout << tok_temp2.stringValue << endl;
 			for (int k = 0; k < strLength(tok_temp2.stringValue); k++){
 				myfile2 << "putc(" << "\'" << (tok_temp2.stringValue)[k] << "\'" <<  ", outfile);" << "\n";	
 			}			
@@ -898,26 +911,45 @@ void CodeGen::generalIO(list temp_list2){//jjjj
 
 void CodeGen::evalProcStatement(list temp_list2){
 	tokens tok_temp; int counter = 0; int arg_count = 0;
-	char proc_name_temp[256]; tokens assign_tok, semi_tok;
+	char proc_name_temp[256]; 
 
-	semi_tok.type = "T_SEMICOLON";
-	semi_tok.stringValue[0] = ';';
 
-	assign_tok.type = "T_ASSIGN";
-	assign_tok.stringValue[0] = ':'; assign_tok.stringValue[1] = '=';
+
+	
 
 
 	list argument_list; list empty;
- 
+  cout << "----" << endl;
+  temp_list2.display();
+  cout << "----" << endl;
 	temp_list2.reset_pos();
 	for (int h = 0; h < temp_list2.get_size(); h++){
 		tok_temp = temp_list2.get_one();
+
+		// Get the procedure name
 		if (tok_temp.type == "T_IDENTIFIER" && counter == 0){
 			counter = counter + 1;
 			for (int y = 0; y < strLength(tok_temp.stringValue); y++){
 				proc_name_temp[y] = tok_temp.stringValue[y];	
 			}		
-		} else if (tok_temp.type == "T_IDENTIFIER"){
+		} else {
+			argument_list.setTable(proc_name_temp);
+			if (tok_temp.type == "T_LPARANTH"){		
+				//argument_list.createnode(((init_proc[g]).args[arg_count]).arg_tok);
+				//argument_list.createnode(assign_tok);
+			} else if (tok_temp.type == "T_COMMA"){
+				evalArgument(argument_list, arg_count);
+				argument_list = empty;
+				arg_count = arg_count + 1;
+			} else if (tok_temp.type == "T_RPARANTH"){
+				evalArgument(argument_list, arg_count);
+				argument_list = empty;
+				arg_count = arg_count + 1;
+			} else {
+				argument_list.createnode(tok_temp);
+			}
+		}
+		/*else if (tok_temp.type == "T_IDENTIFIER"){
 
 			for (int g = 0; g < init_proc.size(); g++){
 				if (strcmp(init_proc[g].proc_name, proc_name_temp) == 0 ){
@@ -948,12 +980,21 @@ void CodeGen::evalProcStatement(list temp_list2){
 					argument_list = empty;
 				}
 			}
-			arg_count = arg_count + 1;
-		}
+			
+		}*/
 
 		//if (arg_count == ((init_proc[g]).args).size()){
 			// Error too few arguments
 		//}
+	}
+	for (int g = 0; g < init_proc.size(); g++){
+		if (strcmp(init_proc[g].proc_name, proc_name_temp) == 0 ){
+			if (arg_count < ((init_proc[g]).args).size()){
+ //cout << arg_count << " " << ((init_proc[g]).args).size() << endl;
+				// Too few arguments
+				error_handler.error(tok_temp.line, 2, arg_count, proc_name_temp);
+			}
+		}
 	}
 
 	temp_list2.reset_pos();
@@ -968,6 +1009,84 @@ void CodeGen::evalProcStatement(list temp_list2){
 	}
 }
 
+void CodeGen::evalArgument(list temp_list2, int arg_count){
+	tokens assign_tok, semi_tok, tok_temp; bool arg_error = false;
+	list assign_statement_list;
+	char comp[256];
+
+	assign_statement_list.setTable(temp_list2.getTable());
+	temp_list2.reset_pos();
+
+
+	for (int g = 0; g < (assign_statement_list.getTable()).length(); g++){
+		comp[g] = (assign_statement_list.getTable())[g];
+	}
+
+	semi_tok.type = "T_SEMICOLON";
+	semi_tok.stringValue[0] = ';';
+
+	assign_tok.type = "T_ASSIGN";
+	assign_tok.stringValue[0] = ':'; assign_tok.stringValue[1] = '=';
+ //cout << 88 << endl;
+
+	for (int g = 0; g < init_proc.size(); g++){
+		if (strcmp(init_proc[g].proc_name, comp) == 0 ){ 
+			if (((init_proc[g]).args).size() == 0){
+
+			} else {
+				assign_statement_list.createnode(((init_proc[g]).args[arg_count]).arg_tok);
+ //cout << sym_table.returnValType2((((init_proc[g]).args[arg_count]).arg_tok).stringValue, assign_statement_list.getTable()).str_val << endl;
+			}
+		}
+	} 
+
+	assign_statement_list.createnode(assign_tok);
+
+	temp_list2.reset_pos();
+	for (int d = 0; d < temp_list2.get_size(); d++){
+		tok_temp = temp_list2.get_one();
+		assign_statement_list.createnode(tok_temp);
+		
+		for (int g = 0; g < init_proc.size(); g++){
+			if (strcmp(init_proc[g].proc_name, comp) == 0 ){ 
+ 
+				if (((init_proc[g]).args).size() == 0){
+					// Error number of arguments missmatch
+					error_handler.error(tok_temp.line, 3, comp);
+					arg_error = true;
+				} else if(arg_count >= ((init_proc[g]).args).size()){
+					// Error number of arguments missmatch
+					error_handler.error(tok_temp.line, 4, comp);
+					arg_error = true;
+				} else {
+					if (((init_proc[g]).args[arg_count]).val_type != (sym_table.returnValType2(tok_temp.stringValue, comp)).str_val ){
+						// Error types don't match
+//
+// TYPE CHECK BETTER HERE
+//
+
+	//cout << tok_temp.stringValue << " " << ((init_proc[g]).args[arg_count]).val_type << " " << (sym_table.returnValType2(tok_temp.stringValue, comp)).str_val << endl;
+						//error_handler.error(tok_temp.line, 0, arg_count, comp);
+						//arg_error = true;
+					} else if (((init_proc[g]).args[arg_count]).size != (sym_table.returnValType2(tok_temp.stringValue, comp)).array_size){
+						// Error Array Size Mismatch
+						error_handler.error(tok_temp.line, 1, arg_count, comp);
+						arg_error = true;
+					}
+				}
+			}
+		}
+	}
+
+
+	assign_statement_list.createnode(semi_tok);
+
+	if (!arg_error){
+		generalAssignStatement(assign_statement_list);
+	}
+	//cout << "---" << endl;
+	//assign_statement_list.display();
+}
 
 
 void CodeGen::generalFor(list temp_list2){
@@ -1287,7 +1406,7 @@ void CodeGen::generalIf(list temp_list2){
 }
 
 void CodeGen::generalIfEnd(){
- cout << goto_index << endl;
+ //cout << goto_index << endl;
 	if (goto_index == 1 ){
 		myfile2 << "IF" << goto_index + if_count + seq_if << ": 1;" << "\n";
 		goto_index = 2;
@@ -2398,7 +2517,7 @@ bool CodeGen::checkOp(tokens tok_temp){
 int CodeGen::strLength(char str[256]){
 	int length = 0;
 	for (int i = 0; i < 256; i++){ 
-		if (str[i] == '\0' || str[i] == ' '){			
+		if (str[i] == '\0' /*|| str[i] == ' '*/){			
 		} else {
 			length++;
 		}
@@ -2423,7 +2542,7 @@ void CodeGen::set_flags(tokens tok){
 	if (tok.type == "T_PROCEDURE" && prev_TT_end){proc_end = true;} else {proc_end = false;}
 	
 	if (tok.type == "T_PROCEDURE" && prev_TT_end  && proc_begin ) { 
- cout << "\t"<< prev_TT_proc << endl;
+ //cout << "\t"<< prev_TT_proc << endl;
 		if (nested_proc > 0){
 			//Nested Proc
 			proc_begin = false; proc_start = true;
