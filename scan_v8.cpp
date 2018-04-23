@@ -562,8 +562,10 @@ bool parser(list scan_list){
 	for (int i = 0; i < scan_list.get_size(); i++){
 		temp = scan_list.get_one();
 		gen.procInit(temp);
-	}
 
+ //cout << temp.stringValue << endl;	
+	}
+//cout << 777 << endl;
  //gen.displayInitProc();
 	//code_gen_list = gen.preInit(scan_list);
 

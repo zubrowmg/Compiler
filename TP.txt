@@ -1,14 +1,31 @@
-program test_program is
-    procedure print_string(integer level in)
-        string s;
-    begin
-        putString("Enter a string:");
-        getString(s);
-        if (level < 3) then
-            print_string(level + 1);
-        end if;
-        putString(s);
-    end procedure;
+program VectorOps is
+
+integer indx;
+integer size;
+char x;
+float vect1[-5:5];
+float vect2[-5:5];
+float vect3[-2:8];
+float vect4[0:10];
+float vect5[10:20];
+
 begin
-    print_string(0);
+
+size := 0;
+for(indx := -5; indx < 4)
+	size := size + 1;
+	indx := indx + 1;
+end for;
+
+
+
+
+
+putChar('e');
+for(indx := 10; indx < 20)
+	putFloat(vect5[indx]);
+	indx := indx + 1;
+end for;
+
 end program.
+

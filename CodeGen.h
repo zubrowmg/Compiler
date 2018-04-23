@@ -48,7 +48,7 @@ class CodeGen{
     	bool prev_TT_proc, prev_TT_semi, prog_declare, prev_TT_ident2, prev_TT_LPAR;
         bool prev_TT_int, prev_TT_bool, prev_TT_str, prev_TT_char, prev_TT_float;
     	std::vector<list> code_gen_order;
-    	list temp_list, temp2_list, temp3_list, temp4_list, temp5_list, temp6_list;
+    	list temp_list, temp2_list, temp3_list, temp4_list, temp5_list, temp6_list, temp7_list;
     	ofstream myfile; ofstream myfile2;
     	int MM_Index;
 		std::vector<int> MM;    
@@ -141,6 +141,7 @@ class CodeGen{
         void setMainPrints(char name[256]);
         void procPassThrough(list temp_list2);
         void evalArgument(list temp_list2, int arg_count);
+        void evalArgumentOut(list temp_list2, int arg_count, char comp[256]);
 
         void printSym();
 };

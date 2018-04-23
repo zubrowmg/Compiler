@@ -234,5 +234,9 @@ void Error::error(int line, int type, int arg_num, std::string var){
 		cout << "Procedure Call Argument " << arg_num << " Array Size Mismatch - " << var << endl;
 	} else if (type == 2){
 		cout << "Procedure Call Is Missing Arguments - " << var << endl;
+	} else if (type == 3){
+		cout << "Procedure Call Argument " << arg_num << " Should Be a Single Indentifier, Declared as OUT - " << var << endl;
+	} else if (type == 4){
+		cout << "Procedure Call Argument " << arg_num << " Should Be a Single Indentifier, Declared as INOUT - " << var << endl;
 	}
 }

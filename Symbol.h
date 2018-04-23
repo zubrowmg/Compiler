@@ -50,6 +50,7 @@ class ProcedureNode
         symbolNode returnValType(std::string ident);
         void modify(std::string ident);
         void modify(std::string ident, std::string num, char c);
+        void modifyNeg(std::string ident, std::string num, char c);
 
         int setMMIndex(std::string ident, int index, std::string input_table);
         int getMMIndex(std::string ident);
@@ -84,7 +85,7 @@ class Symbol
         bool prev2_TT_int;
         bool prev2_TT_flt, prev2_TT_str, prev2_TT_bool, prev2_TT_char;
 
-        bool prev_TT_SEMICOLON, prev_TT_LB, prev_TT_IDENT, prev2_TT_LB;  
+        bool prev_TT_SEMICOLON, prev_TT_LB, prev_TT_IDENT, prev2_TT_LB, prev_TT_MIN, prev3_TT_LB, prev2_TT_SEMICOLON;  
         std::vector<TCNode> type_check; std::vector<TCNode> type_check_AS;
         std::string last_ident;
         Error sym_error_handler;
@@ -127,6 +128,7 @@ class Symbol
 
         void modify(std::string ident);
         void modify(std::string ident, std::string num, char c);
+        void modifyNeg(std::string ident, std::string num, char c);
 
         void clearTC_AS();
         bool insertTC_AS(std::string ident, std::string TT);

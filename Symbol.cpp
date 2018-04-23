@@ -26,7 +26,7 @@ Symbol::Symbol()
 	prev_TT_SEMICOLON = false; prev2_TT_LB = false;
 	last_ident = "NULL";
 
-	proc_encountered = false;
+	proc_encountered = false; prev_TT_MIN = false; prev3_TT_LB = false; prev2_TT_SEMICOLON = false;
 
 
 }
@@ -96,13 +96,9 @@ void Symbol::clearTC_AS(){ type_check_AS.clear();}
 bool Symbol::insertTC_AS(std::string ident, std::string TT){
 	bool type_match = true; symbolNode sym; symbolNode temp; TCNode T_C; T_C.ident = ident; 
 	std::string type;
-//cout << ident << endl;
 	sym = returnValType(ident);
-//cout << ident << endl;
 	T_C.type = sym.str_val;
 
-//cout<<endl;
-//cout << type << endl;	
 	//if (type != "T_ADD" || type != "T_MINUS" || type != "T_AND" || type != "T_OR" || type != "T_NOT" || type != "T_LESSTHAN" || type != "T_LESSTHANEQUAL" || type != "T_GREATERTHAN" || type != "T_GREATERTHANEQUAL" || type != "T_EQUALTO" || type != "T_NOTEQUALTO" || type != "T_ASSIGN" || type != "T_MULT" || type != "T_DIVIDE" ){
 	if (TT == "T_NUMBERVAL"){  T_C.type = "V_INTEGER"; }
 	else if (TT == "T_STRINGVAL"){  T_C.type = "V_STRING"; }
@@ -323,6 +319,34 @@ void Symbol::modify(std::string ident, std::string num, char c){
     }
 }
 
+void Symbol::modifyNeg(std::string ident, std::string num, char c){ 
+	bool done = false; int num1;
+	std::map <std::string, symbolNode> :: iterator itr;
+	for (itr = global.begin(); itr != global.end(); ++itr){
+        if (itr->first == ident){
+        	if (c == 'L'){ 
+        		num1 = 0 - stoi(num);
+        		(itr->second).array_left = num1;
+        	} else if (c == 'R'){
+        		num1 = 0 - stoi(num);
+        		(itr->second).array_right = num1;
+        		(itr->second).array_size = abs((itr->second).array_left - (itr->second).array_right) + 1; 	
+        	}
+        	done = true; 
+        }
+    }
+    if (!done){
+    	for (int i = 0; i < size; i++){
+			if (current_proc == pos->getName()){
+				pos->modify(ident, num, c);
+				break;
+			} else {
+				pos = pos->getNext();
+			}
+		}
+    }
+}
+
 void Symbol::resetPos(){ pos = head; }
 
 // Finds the type of the input identifier
@@ -421,17 +445,42 @@ void Symbol::updateStrVal(std::string ident, std::string val){
 
 void Symbol::init(std::string token, std::string value, symbolNode sym)
 {	
-	if (prev_TT_SEMICOLON && token == "T_NUMBERVAL"){ 
+
+	if (prev_TT_SEMICOLON && token == "T_NUMBERVAL"){
 		modify(last_ident, value, 'R'); 
 	}
+	if (prev2_TT_SEMICOLON && token == "T_NUMBERVAL"){ 
+		modifyNeg(last_ident, value, 'R'); 
+	}
 
-	if (prev2_TT_LB && token == "T_COLON"){ 
+
+	if (prev_TT_SEMICOLON && token == "T_MINUS"){ 
+		//prev_TT_MIN_2 = true;
+		prev2_TT_SEMICOLON = true;
+	} else {
+		//prev_TT_MIN_2 = false;
+		prev2_TT_SEMICOLON = false;
+	}
+
+	if ((prev2_TT_LB || prev3_TT_LB) && token == "T_COLON"){ 
 		prev_TT_SEMICOLON = true;
 	} else {prev_TT_SEMICOLON = false;} 
 
-	if (prev_TT_LB && token == "T_NUMBERVAL"){ 
+	if ((prev_TT_LB && token == "T_NUMBERVAL")){ 
 		modify(last_ident, value, 'L'); prev2_TT_LB = true; 	 		
 	} else {prev2_TT_LB = false;}
+
+	if ( prev_TT_MIN && token == "T_NUMBERVAL"){
+		modifyNeg(last_ident, value, 'L');
+		prev3_TT_LB = true;
+	} else {
+		prev3_TT_LB = false;
+	}
+
+	if (prev_TT_LB && token == "T_MINUS"){ 
+		prev_TT_MIN = true;	 
+		//prev2_TT_LB = true;		
+	} else {prev_TT_MIN = false; /*prev2_TT_LB = false;*/}
 
 	if ((prev2_TT_int || prev2_TT_flt || prev2_TT_str || prev2_TT_bool || prev2_TT_char) && prev_TT_IDENT && token == "T_LBRACKET"){ 						// NNNNNNN
 		modify(last_ident); prev_TT_LB = true; 
@@ -775,6 +824,22 @@ void ProcedureNode::modify(std::string ident, std::string num, char c){
         		(itr->second).array_left = stoi(num);
         	} else if (c == 'R'){
         		(itr->second).array_right = stoi(num);
+        		(itr->second).array_size = abs((itr->second).array_left - (itr->second).array_right) + 1;
+        	}
+        }
+    }
+}
+
+void ProcedureNode::modifyNeg(std::string ident, std::string num, char c){
+	std::map <std::string, symbolNode> :: iterator itr; int num1;
+	for (itr = table.begin(); itr != table.end(); ++itr){
+        if (itr->first == ident){
+        	if (c == 'L'){
+        		num1 = 0 - stoi(num);
+        		(itr->second).array_left = num1;
+        	} else if (c == 'R'){
+        		num1 = 0 - stoi(num);
+        		(itr->second).array_right = num1;
         		(itr->second).array_size = abs((itr->second).array_left - (itr->second).array_right) + 1;
         	}
         }
