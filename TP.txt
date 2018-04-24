@@ -1,31 +1,21 @@
-program VectorOps is
+program Maths is
 
-integer indx;
-integer size;
-char x;
-float vect1[-5:5];
-float vect2[-5:5];
-float vect3[-2:8];
-float vect4[0:10];
-float vect5[10:20];
+integer value;
+
+procedure Fib(integer val in, integer ret out)
+	integer tmp1;
+    integer tmp2;
+	begin
+	if (false) then
+		return;
+	end if;
+	putChar('Z');
+end procedure;
 
 begin
 
-size := 0;
-for(indx := -5; indx < 4)
-	size := size + 1;
-	indx := indx + 1;
-end for;
+value = 6;
 
-
-
-
-
-putChar('e');
-for(indx := 10; indx < 20)
-	putFloat(vect5[indx]);
-	indx := indx + 1;
-end for;
+value = 7 + 7;
 
 end program.
-

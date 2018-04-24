@@ -1,9 +1,2 @@
 int;
-int;
-char;
-float[55];
-float[55];
-float[28];
-float[010];
-float[1020];
 }

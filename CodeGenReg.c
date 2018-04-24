@@ -21,58 +21,44 @@ FILE *infile; infile = fopen("input.txt","r");
 
 goto main_prog;
 
+fib: 1;
+goto fib_main;
+
+fib_main: 1;
+R[0].bool_val=false;
+	
+if (R[0].bool_val) goto IF3;
+if (!R[0].bool_val) goto IF4;
+
+IF3:
+
+
+
+RP[0]=RP[0]+1;
+
+
+
+IF4: 1;
+IF5: 1;
+
+
+
+
+putc('z', outfile);
+
+
+
+RP[0]=RP[0]+1;
+
 
 
 main_prog: 1;
 
-R[0].int_val=0;
-	MM[1].int_val=R[0].int_val;
+goto value;
+return_value0: 1;
 
-R[0]=-5;
-	MM[0].int_val=R[0].int_val;
-
-
-FOR3:
-	R[0].int_val=MM[0].int_val;
-	R[1].int_val=4;
-	R[0].bool_val=R[0].int_val<R[1].int_val;
-
-if (R[0].bool_val) goto FOR4;
-if (!R[0].bool_val) goto FOR5;
-
-FOR4:
-	R[0].int_val=MM[1].int_val;
-	R[0].int_val=R[0].int_val+1;
-	MM[1].int_val=R[0].int_val;
-
-R[0].int_val=MM[0].int_val;
-	R[0].int_val=R[0].int_val+1;
-	MM[0].int_val=R[0].int_val;
-
-	goto FOR3;
-FOR5: 1;
-
-putc('e', outfile);
-R[0].int_val=10;
-	MM[0].int_val=R[0].int_val;
-
-
-FOR6:
-	R[0].int_val=MM[0].int_val;
-	R[1].int_val=20;
-	R[0].bool_val=R[0].int_val<R[1].int_val;
-
-if (R[0].bool_val) goto FOR7;
-if (!R[0].bool_val) goto FOR8;
-
-FOR7:
-	fprintf(outfile, "%f",MM[37].float_val);
-R[0].int_val=MM[0].int_val;
-	R[0].int_val=R[0].int_val+1;
-	MM[0].int_val=R[0].int_val;
-
-	goto FOR6;
-FOR8: 1;
+goto value;
+return_value0: 1;
 
 
 fclose(outfile);

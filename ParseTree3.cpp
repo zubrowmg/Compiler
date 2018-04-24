@@ -614,6 +614,13 @@ prog_body_flag = true;
 
 			pos = pos->getLeft();
 			createnode_3();		
+		} else if (pos->getOption() == 2){	//222222
+			temp_node->setToken("<T_MINUS>"); newTempNode();
+
+			temp_node->setToken("<number>"); newTempNode();
+
+			pos = pos->getLeft();
+			createnode_3();		
 		} else {
 			backUp();
 		}
@@ -624,6 +631,13 @@ prog_body_flag = true;
 	else if (pos->getToken() == "<upper_bound>"){ pos->setOption((pos->getOption()) + 1);	
 
 		if (pos->getOption() == 1){												
+			temp_node->setToken("<number>"); newTempNode();
+
+			pos = pos->getLeft();
+			createnode_3();		
+		} else if (pos->getOption() == 2){	//222222
+			temp_node->setToken("<T_MINUS>"); newTempNode();
+
 			temp_node->setToken("<number>"); newTempNode();
 
 			pos = pos->getLeft();
@@ -1327,6 +1341,8 @@ prog_body_flag = true;
 		} else if (pos->getOption() == 6){							
 			temp_node->setToken("<T_LPARANTH>"); newTempNode();
 
+			temp_node->setToken("<factor4>"); newTempNode();
+
 			pos = pos->getLeft();
 			createnode_3();					
 		} else {	
@@ -1440,7 +1456,7 @@ name3_flag = true;
 			pos = pos->getLeft();
 			createnode_3();
 		} else {
-			is_legit = false;
+			//is_legit = false;
 			backUp();
 		}
 	} 

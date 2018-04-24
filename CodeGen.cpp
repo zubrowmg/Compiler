@@ -358,6 +358,23 @@ void CodeGen::procPassThrough(list temp_list2){
 	}
 }
  
+void CodeGen::returnProc(list temp_list2){
+	tokens tokk; char comp[256]; proc_init_node pi_node;
+
+	temp_list2.reset_pos();
+	tokk = temp_list2.get_one();
+	for (int b = 0; b < (temp_list2.getTable()).length(); b++){
+		comp[b] = (temp_list2.getTable())[b];
+	}
+
+	myfile2 << "\n" << "RP[" << (getproc_init_node(comp)).RP_Index << "]=RP[" << (getproc_init_node(comp)).RP_Index << "]+1;" << "\n";
+
+	for (int u = 0; u < (getproc_init_node(comp)).num_of_encounters; u++){
+		myfile2 << "R3[0]=RP[" << (getproc_init_node(comp)).RP_Index << "]==" << u + 1 << ";" << "\n";
+		myfile2 << "if (R3[0]) goto return_" << comp << u << ";" << "\n";
+	}
+	myfile2  << "\n";
+}
 
 void CodeGen::procEnd(list temp_list2){
 	tokens tokk; char comp[256]; proc_init_node pi_node;
@@ -564,7 +581,7 @@ void CodeGen::output2(list temp_list2){
 			seq_for = seq_for + 3;
 		}
 	} else if (ret_state){
-
+		returnProc(temp_list2);
 	} else if (proc_state) {
 		generalProcStatement(temp_list2);
 	} else if (assign_state){	
@@ -641,16 +658,6 @@ void CodeGen::procInit(tokens tok_input){
 	if (tok_input.type == "T_PROCEDURE"){init_prev_tok_proc = true;}else{init_prev_tok_proc = false;}
 }
 
-/*int CodeGen::getProcAmount(char name[256]){
-	int num_of_enc = 0;
-	for (int g = 0; g < init_proc.size(); g++){
-		if (strcmp(tok_input.stringValue, init_proc[g].proc_name) == 0){
-			num_of_enc = init_proc[g].num_of_encounters;
-			break;
-		}
-	}
-	return num_of_enc;
-}*/
 
 void CodeGen::setCurrentProcAmount(char name[256]){
 	for (int g = 0; g < init_proc.size(); g++){
@@ -1549,7 +1556,9 @@ void CodeGen::generalExpression(list temp_list2){
 			//Do nothing, we don't want the number in the []
 		} else if (tok_temp2.type == "T_RBRACKET" || tok_temp2.type == "T_LBRACKET"){
 			//Do nothing
-		} else {
+		} else if (tok_temp2.type == "T_LPARANTH" || tok_temp2.type == "T_RPARANTH"){
+
+	   	} else {
 			new_list.createnode(tok_temp2);
 		}
 
@@ -2020,7 +2029,11 @@ int CodeGen::evalRelation(list relation_list, int prority_index){
 				second_reg_index = first_reg_index;
 				first_reg_index = index + prority_index;
 				myfile2 << "R[" << index + prority_index << "]";
-				outputValType(tok_temp2, relation_list.getTable());
+				if (tok_temp2.type == "T_MINUS"){
+					outputValType(relation_list.look_ahead(), relation_list.getTable());
+				} else {
+					outputValType(tok_temp2, relation_list.getTable());
+				}
 				myfile2 << "=";
 			}
 

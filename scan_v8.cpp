@@ -18,7 +18,8 @@ using namespace std;
 
 Error error_handler;
 Symbol sym;
-
+list backup_list_1, backup_list_2;
+ParseTree backup_1, backup_2;
 /*---------------------------------------------  
 	Recieve an input token and clear all values 
 ---------------------------------------------*/
@@ -553,7 +554,8 @@ bool parameter_check(int argc, char *argv[]){
 }
 
 bool parser(list scan_list){
-	ParseTree tree; ParseTree snapshot; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true; bool type_match2 = true;
+	bool use_backup_1 = true; int line_error = 0;
+	ParseTree tree; ParseTree snapshot, empty_tree; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true; bool type_match2 = true;
 	bool last_T_ident = false; bool expression = false; bool last_T_LBRACK = false, assignment = false, last2_T_ident = false;
 	bool snapshot_restored = false; CodeGen gen;
 	list code_gen_list;
@@ -561,9 +563,7 @@ bool parser(list scan_list){
 	scan_list.reset_pos();
 	for (int i = 0; i < scan_list.get_size(); i++){
 		temp = scan_list.get_one();
-		gen.procInit(temp);
-
- //cout << temp.stringValue << endl;	
+		gen.procInit(temp);	
 	}
 //cout << 777 << endl;
  //gen.displayInitProc();
@@ -585,9 +585,9 @@ bool parser(list scan_list){
 		tree.clearNewNode();
 		tree.setSym(sym);
 
-		if (!tree.getProgBodyFlag()){
-			snapshot = tree;
-		}
+		//if (!tree.getProgBodyFlag()){
+			//snapshot = tree;
+		//}
 
 	//-------- Symbol Table --------//
 		symbol_temp.type = temp.type; 
@@ -643,15 +643,30 @@ bool parser(list scan_list){
 		if (temp.type == "T_IDENTIFIER"){ last_T_ident = true; } else {	last_T_ident = false; }
 
 		
-	
+	//cout << 55 << endl;
 //-------- Tree Snapshot --------//
-		if (!(tree.getLegit()) && error_count < 10){
-	//cout << temp.type << endl; 
-			error_handler.error(temp.line, 2, temp.stringValue);	
-			tree = snapshot;
+		if (!(tree.getLegit()) && error_count < 10 ){
+ cout << error_count << " " << temp.stringValue << " " << temp.line << endl;
+			if (line_error != temp.line){
+				error_handler.error(temp.line, 2, temp.stringValue);
+				
+			}
+			line_error = temp.line;
+
+			
+			//tree = empty_tree;
+			tree = backup_2;
+
+			cout << "2---" << endl;
+			tree.printTree();
+
 			snapshot_restored = true;		
-			error_count++;
+			error_count = error_count + 1;
 		} 
+		if (error_count > 0){
+cout << "1---" << endl;
+			tree.printTree();
+		}
 	}	
 
  //sym.printAll();
@@ -696,10 +711,30 @@ bool parser(list scan_list){
 
 }	
 
+void createTreeBackup(){
+	tokens Tprog, Tident, Tis, Tbegin, tokk;
+
+	Tprog.type = "T_PROGRAM"; Tident.type = "T_IDENTIFIER"; Tis.type = "T_IS"; Tbegin.type = "T_BEGIN";
+	//Tprog.stringValue = "program"; Tident.stringValue = "random"; Tis.stringValue = "is"; Tbegin.stringValue = "begin";
+
+	backup_list_1.createnode(Tprog); backup_list_1.createnode(Tident); backup_list_1.createnode(Tis);
+
+	backup_list_1.reset_pos();
+	for (int d = 0; d < backup_list_1.get_size(); d++){
+		tokk = backup_list_1.get_one();
+		backup_1.setNewNode(tokk.type, tokk.stringValue);	backup_1.createnode_2(tokk.type); backup_1.clearNewNode();
+		backup_2.setNewNode(tokk.type, tokk.stringValue);	backup_2.createnode_2(tokk.type); backup_2.clearNewNode();
+	}
+	backup_2.setNewNode(Tbegin.type, Tbegin.stringValue);	backup_2.createnode_2(Tbegin.type); backup_2.clearNewNode();
+
+	//cout << backup_.getLegit() << endl;
+}
 
 int main(int argc, char *argv[]){	
 	bool correct_input = false; list scan_list;
 	correct_input = parameter_check(argc, argv);
+
+	createTreeBackup();
 
 	if (correct_input) {
 		scan_list = scan(argv);

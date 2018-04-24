@@ -142,6 +142,7 @@ class CodeGen{
         void procPassThrough(list temp_list2);
         void evalArgument(list temp_list2, int arg_count);
         void evalArgumentOut(list temp_list2, int arg_count, char comp[256]);
+        void returnProc(list temp_list2);
 
         void printSym();
 };
