@@ -708,7 +708,7 @@ bool parser(list scan_list){
 	//tree.printTree();
 
 	ofstream myfile3;
-	myfile3.open ("Error_Free.txt");
+	myfile3.open ("C++_files/Error_Free.txt");
 	if (gen.errorsEncountered() || sym.errorsEncountered() || error_handler.getTotalErrors() > 0){
 		myfile3 << "No";
 	} else {

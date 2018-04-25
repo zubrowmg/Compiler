@@ -21,45 +21,18 @@ FILE *infile; infile = fopen("input.txt","r");
 
 goto main_prog;
 
-fib: 1;
-goto fib_main;
-
-fib_main: 1;
-R[0].bool_val=false;
-	
-if (R[0].bool_val) goto IF3;
-if (!R[0].bool_val) goto IF4;
-
-IF3:
-
-
-
-RP[0]=RP[0]+1;
-
-
-
-IF4: 1;
-IF5: 1;
-
-
-
-
-putc('z', outfile);
-
-
-
-RP[0]=RP[0]+1;
-
 
 
 main_prog: 1;
 
-goto value;
-return_value0: 1;
+R[0].int_val=10;
+	MM[0].int_val=R[0].int_val;
 
-goto value;
-return_value0: 1;
+R[0].int_val=MM[0].int_val;
+	R[0].int_val=R[0].int_val*10;
+	MM[0].int_val=R[0].int_val;
 
+fprintf(outfile, "%d",MM[0].int_val);
 
 fclose(outfile);
 fclose(infile);

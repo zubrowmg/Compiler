@@ -14,8 +14,8 @@
 using namespace std;
 
 CodeGen::CodeGen(){	
-	myfile.open ("CodeGen.c");
-	myfile2.open ("CodeGenReg.c");
+	myfile.open ("CodeGen_files/CodeGen.c");
+	myfile2.open ("CodeGen_files/CodeGenReg.c");
 
 	prog_start = false; prog_begin = false; prog_end = false; proc_start = false; proc_begin = false; 
 	proc_pass_through = false;
@@ -207,7 +207,7 @@ void CodeGen::init(tokens tok, Symbol sym){
 
 
 	if (prog_end && tok.type == "T_ENDFILE"){
-		//printCode();
+		printCode();
 	}
 	set_flags(tok);
 }
