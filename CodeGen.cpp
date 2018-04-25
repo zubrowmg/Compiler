@@ -95,13 +95,11 @@ void CodeGen::init(tokens tok, Symbol sym){
 	list empty; 
 	sym_table = sym;
 	//-------- Initialized Program Space Variables --------//
-  //cout << tok.stringValue << " " << current_proc.top() << endl;
 	if (proc_end){
 
 		temp5_list.setCG("proc_end");
 		temp5_list.setTable(current_proc.top());
 		temp5_list.createnode(tok);
- //cout << tok.type << endl;
  		if (tok.type == "T_SEMICOLON" && !for_encountered){
 			code_gen_order.push_back(temp5_list);
 			temp5_list = empty;
@@ -149,7 +147,6 @@ void CodeGen::init(tokens tok, Symbol sym){
 		temp4_list.setCG("proc_begin");
 		temp4_list.setTable(current_proc.top());
 		temp4_list.createnode(tok);
- //cout << tok.stringValue << endl;
 		if (tok.type == "T_SEMICOLON" && !for_encountered){
 			code_gen_order.push_back(temp4_list);
 			temp4_list = empty;
@@ -210,7 +207,7 @@ void CodeGen::init(tokens tok, Symbol sym){
 
 
 	if (prog_end && tok.type == "T_ENDFILE"){
-		printCode();
+		//printCode();
 	}
 	set_flags(tok);
 }
@@ -273,7 +270,6 @@ void CodeGen::printCode(){
 	for (int i = 0; i < code_gen_order.size(); i++){
 		code_gen_order[i].reset_pos();
 		if (code_gen_order[i].getCG() == "prog_begin"){ 
-
 			output2(code_gen_order[i]);
 		}		
 	}
@@ -416,18 +412,14 @@ void CodeGen::procBegin(list temp_list2){
 	output2(temp_list2);
 	myfile2 << "\n" << "\n"; 
 
- //cout << "----" << endl;
- //cout << "\t" << "procBegin" << endl;
- //temp_list2.display();
- //cout << "----" << endl;
+
  
 }
 
 
 
 void CodeGen::procStartInit(list temp_list2){
-	//temp_list2.display();
-	//cout << "---" << endl;
+	
 }
 
 void CodeGen::procStart(list temp_list2){
@@ -583,6 +575,7 @@ void CodeGen::output2(list temp_list2){
 	} else if (ret_state){
 		returnProc(temp_list2);
 	} else if (proc_state) {
+
 		generalProcStatement(temp_list2);
 	} else if (assign_state){	
 
@@ -607,7 +600,6 @@ void CodeGen::generalProcStatement(list temp_list2){
 	if (filter_list.get_size() != 0){
 		filter_list.reset_pos();
 		tok_temp = filter_list.get_one();
-	 	
 		if (tok_temp.type != "T_IDENTIFIER" ){
 			//tok_temp = temp_list2.get_one();
 			for (int j = 0; j < filter_list.get_size() ; j++){
@@ -627,7 +619,7 @@ void CodeGen::generalProcStatement(list temp_list2){
 				|| strcmp(tok_temp.stringValue, "putchar") == 0 || strcmp(tok_temp.stringValue, "getinteger") == 0
 				|| strcmp(tok_temp.stringValue, "getbool") == 0 || strcmp(tok_temp.stringValue, "getfloat") == 0
 				|| strcmp(tok_temp.stringValue, "getstring") == 0 || strcmp(tok_temp.stringValue, "getchar") == 0) {
-	 
+ 
 			generalIO(new_list);
 
 		} else {
@@ -740,7 +732,6 @@ void CodeGen::generalIO(list temp_list2){//jjjj
 		} else if (tok_temp2.type == "T_IDENTIFIER"){
  //temp_list2.display();
 
- //cout << new_list.getTable() << " " << tok_temp2.stringValue << " " << sym_table.getMMIndex(tok_temp2.stringValue, new_list.getTable()) << endl;
 
 			if ((sym_table.returnValType2(tok_temp2.stringValue, new_list.getTable())).str_val == "V_INTEGER"){
 				myfile2 << "fprintf(outfile, \"%" << "d\"," << "MM[";
@@ -821,7 +812,6 @@ void CodeGen::generalIO(list temp_list2){//jjjj
 	} else if (strcmp(tok_temp.stringValue, "putstring") == 0){
 		tok_temp2 = new_list.look_ahead_two_no_wrap();
 		if (tok_temp2.type == "T_STRINGVAL"){
- //cout << tok_temp2.stringValue << endl;
 			for (int k = 0; k < strLength(tok_temp2.stringValue); k++){
 				myfile2 << "putc(" << "\'" << (tok_temp2.stringValue)[k] << "\'" <<  ", outfile);" << "\n";	
 			}			
@@ -932,21 +922,25 @@ void CodeGen::evalProcStatement(list temp_list2){
 	tokens tok_temp; int counter = 0; int arg_count = 0;
 	char proc_name_temp[256]; 
 
-	
+
 
 	list argument_list; list empty;
   
 	temp_list2.reset_pos();
 	for (int h = 0; h < temp_list2.get_size(); h++){
 		tok_temp = temp_list2.get_one();
-
+ 
 		// Get the procedure name
 		if (tok_temp.type == "T_IDENTIFIER" && counter == 0){
 			counter = counter + 1;
 			for (int y = 0; y < strLength(tok_temp.stringValue); y++){
-				proc_name_temp[y] = tok_temp.stringValue[y];	
-			}		
+
+				proc_name_temp[y] = tok_temp.stringValue[y];
+			}	
+
+	
 		} else {
+
 			argument_list.setTable(proc_name_temp);
 			if (tok_temp.type == "T_LPARANTH"){		
 				//argument_list.createnode(((init_proc[g]).args[arg_count]).arg_tok);
@@ -956,14 +950,12 @@ void CodeGen::evalProcStatement(list temp_list2){
 				argument_list = empty;
 				arg_count = arg_count + 1;
 			} else if (tok_temp.type == "T_RPARANTH"){
-				if (argument_list.get_size() != 0){
+				//if (argument_list.get_size() != 0){
 					evalArgument(argument_list, arg_count);
-				}
+				//}
 				argument_list = empty;
 				arg_count = arg_count + 1;
 			} else {
-				
-
 				argument_list.createnode(tok_temp);
 			}
 		}
@@ -971,11 +963,9 @@ void CodeGen::evalProcStatement(list temp_list2){
 	}
 
 
-
 	for (int g = 0; g < init_proc.size(); g++){
 		if (strcmp(init_proc[g].proc_name, proc_name_temp) == 0 ){
 			if (arg_count < ((init_proc[g]).args).size()){
- //cout << arg_count << " " << ((init_proc[g]).args).size() << endl;
 				// Too few arguments
 				error_handler.error(tok_temp.line, 2, arg_count, proc_name_temp);
 			}
@@ -1045,8 +1035,7 @@ void CodeGen::evalArgumentOut(list temp_list2, int arg_count, char comp[256]){
 	assign_tok.type = "T_ASSIGN";
 	assign_tok.stringValue[0] = ':'; assign_tok.stringValue[1] = '=';
 
- //cout << "---" << endl;
- //temp_list2.display();
+ 
 
  	temp_list2.reset_pos();
 	pi_node = getproc_init_node(comp);
@@ -1055,11 +1044,11 @@ void CodeGen::evalArgumentOut(list temp_list2, int arg_count, char comp[256]){
 	if (temp_list2.get_size() == 0){
 		//error empty argument
 	} else {
- //cout << temp_list2.get_size() << endl;
 		for (int u = 0; u < temp_list2.get_size(); u++){
 			tokk = temp_list2.get_one();
 			if ((pi_node.args[arg_count]).in_out_inout == "OUT"){
 				if (u > 0 || tokk.type != "T_IDENTIFIER"){
+ cout << tokk.stringValue << endl;
 					error_handler.error(tokk.line, 3, arg_count, comp);
 					errors = true;
 				} else if ((pi_node.args[arg_count]).val_type != (sym_table.returnValType2(tokk.stringValue, comp)).str_val){
@@ -1184,6 +1173,9 @@ void CodeGen::evalArgument(list temp_list2, int arg_count){
 void CodeGen::generalFor(list temp_list2){
 	tokens tok_temp; list assign_statement_list, expression_list;
 
+	assign_statement_list.setTable(temp_list2.getTable());
+	expression_list.setTable(temp_list2.getTable());
+
 	temp_list2.reset_pos();
 	for (int h = 0; h < temp_list2.get_size(); h++){
 		tok_temp = temp_list2.get_one();
@@ -1265,7 +1257,6 @@ void CodeGen::generalAssignStatement(list temp_list2){
 			assign_passed = true;
 		}
 	} 
-
 
 
 	generalExpression(expression_list);
@@ -1397,8 +1388,7 @@ void CodeGen::evalDestination(list destination_list, list expression_list){
 		int rand;
 		myfile2 << "MM[";
 
-  //cout << tok_temp2.stringValue << " " << new_list.getTable() << endl;
- //cout << sym_table.getMMIndex(tok_temp2.stringValue, new_list.getTable()) << endl;
+ 
 		rand = sym_table.getMMIndex(tok_temp2.stringValue, new_list.getTable()) + tok_temp2.index - (sym_table.returnValType2(tok_temp2.stringValue, expression_list.getTable())).array_left ;
 		
 		myfile2 << rand;
@@ -1476,8 +1466,7 @@ void CodeGen::generalIf(list temp_list2){
 		}
 	}
 
- //cout << "---" << temp_list3.getTable() << endl;
- //temp_list3.display();
+
 	generalExpression(temp_list3);
 	goto_index = 0;
 	myfile2 << "\n" << "if (";
@@ -1500,7 +1489,7 @@ void CodeGen::generalIf(list temp_list2){
 }
 
 void CodeGen::generalIfEnd(){
- //cout << goto_index << endl;
+
 	if (goto_index == 1 ){
 		myfile2 << "IF" << goto_index + if_count + seq_if << ": 1;" << "\n";
 		goto_index = 2;
@@ -2153,7 +2142,8 @@ void CodeGen::typeCheckAssignment(tokens tok_dest,tokens tok_exp,bool and_or_not
 							}
 						} else if ((!tok_dest.single_array_access && tok_exp.single_array_access) 
 										|| (tok_dest.single_array_access && !tok_exp.single_array_access)){
-							error_handler.error(tok_dest.line, 3, tok_dest.stringValue, tok_exp.stringValue);
+
+							//error_handler.error(tok_dest.line, 3, tok_dest.stringValue, tok_exp.stringValue);
 						}
 					} else if ((sym_table.returnValType(tok_dest.stringValue)).is_array && !(sym_table.returnValType(tok_exp.stringValue)).is_array){
 						if (!tok_dest.single_array_access){
@@ -2643,7 +2633,7 @@ void CodeGen::set_flags(tokens tok){
 	if (tok.type == "T_PROCEDURE" && prev_TT_end){proc_end = true;} else {proc_end = false;}
 	
 	if (tok.type == "T_PROCEDURE" && prev_TT_end  && proc_begin ) { 
- //cout << "\t"<< prev_TT_proc << endl;
+
 		if (nested_proc > 0){
 			//Nested Proc
 			proc_begin = false; proc_start = true;

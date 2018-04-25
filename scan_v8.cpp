@@ -553,6 +553,43 @@ bool parameter_check(int argc, char *argv[]){
 	} 	
 }
 
+ParseTree newBackeup(){
+	ParseTree output;
+	tokens Tprog, Tident, Tis, Tbegin, tokk;
+
+	Tprog.type = "T_PROGRAM"; Tident.type = "T_IDENTIFIER"; Tis.type = "T_IS"; Tbegin.type = "T_BEGIN";
+
+	output.setNewNode(Tprog.type, Tprog.stringValue);	output.createnode_2(Tprog.type); output.clearNewNode();
+ 	output.setNewNode(Tident.type, Tident.stringValue);	output.createnode_2(Tident.type); output.clearNewNode();
+	output.setNewNode(Tis.type, Tis.stringValue);	output.createnode_2(Tis.type); output.clearNewNode();
+	output.setNewNode(Tbegin.type, Tbegin.stringValue);	output.createnode_2(Tbegin.type); output.clearNewNode();
+
+	return output;
+}
+
+void createTreeBackup(){
+	tokens Tprog, Tident, Tis, Tbegin, tokk;
+
+	Tprog.type = "T_PROGRAM"; Tident.type = "T_IDENTIFIER"; Tis.type = "T_IS"; Tbegin.type = "T_BEGIN";
+	//Tprog.stringValue = "program"; Tident.stringValue = "random"; Tis.stringValue = "is"; Tbegin.stringValue = "begin";
+
+	backup_list_1.createnode(Tprog); backup_list_1.createnode(Tident); backup_list_1.createnode(Tis);
+
+	backup_list_1.reset_pos();
+	for (int d = 0; d < backup_list_1.get_size(); d++){
+		tokk = backup_list_1.get_one();
+		//backup_1.setNewNode(tokk.type, tokk.stringValue);	backup_1.createnode_2(tokk.type); backup_1.clearNewNode();
+		backup_2.setNewNode(tokk.type, tokk.stringValue);	backup_2.createnode_2(tokk.type); backup_2.clearNewNode();
+	}
+	//backup_1.setNewNode(Tbegin.type, Tbegin.stringValue);	backup_1.createnode_2(Tbegin.type); backup_1.clearNewNode();
+	backup_2.setNewNode(Tbegin.type, Tbegin.stringValue);	backup_2.createnode_2(Tbegin.type); backup_2.clearNewNode();
+
+	//backup_2.printTree();
+ //cout << "---" << endl;	
+	//backup_2.setNewNode(Tident.type, Tident.stringValue);	backup_2.createnode_2(Tident.type); backup_2.clearNewNode();
+	//backup_2.printTree();
+	//cout << backup_.getLegit() << endl;
+}
 bool parser(list scan_list){
 	bool use_backup_1 = true; int line_error = 0;
 	ParseTree tree; ParseTree snapshot, empty_tree; tokens temp; int error_count = 0; symbolNode symbol_temp; bool type_match = true; bool type_match2 = true;
@@ -565,11 +602,7 @@ bool parser(list scan_list){
 		temp = scan_list.get_one();
 		gen.procInit(temp);	
 	}
-//cout << 777 << endl;
- //gen.displayInitProc();
-	//code_gen_list = gen.preInit(scan_list);
 
-	//code_gen_list.reset_pos();
 
 /*--------------------------------  
 	Symbol Table and Parser 			
@@ -579,7 +612,6 @@ bool parser(list scan_list){
 		temp = scan_list.get_one();
 
 	//-------- Parse Tree --------//
- //cout << temp.type << endl;
 		tree.setNewNode(temp.type, temp.stringValue);
 		tree.createnode_2(temp.type);
 		tree.clearNewNode();
@@ -643,10 +675,8 @@ bool parser(list scan_list){
 		if (temp.type == "T_IDENTIFIER"){ last_T_ident = true; } else {	last_T_ident = false; }
 
 		
-	//cout << 55 << endl;
 //-------- Tree Snapshot --------//
 		if (!(tree.getLegit()) && error_count < 10 ){
- cout << error_count << " " << temp.stringValue << " " << temp.line << endl;
 			if (line_error != temp.line){
 				error_handler.error(temp.line, 2, temp.stringValue);
 				
@@ -654,20 +684,16 @@ bool parser(list scan_list){
 			line_error = temp.line;
 
 			
-			//tree = empty_tree;
-			tree = backup_2;
 
-			cout << "2---" << endl;
-			tree.printTree();
-
+			tree = newBackeup();
+	
 			snapshot_restored = true;		
 			error_count = error_count + 1;
 		} 
-		if (error_count > 0){
-cout << "1---" << endl;
-			tree.printTree();
-		}
+
 	}	
+
+	//tree.printBackupTree();
 
  //sym.printAll();
 
@@ -711,24 +737,7 @@ cout << "1---" << endl;
 
 }	
 
-void createTreeBackup(){
-	tokens Tprog, Tident, Tis, Tbegin, tokk;
 
-	Tprog.type = "T_PROGRAM"; Tident.type = "T_IDENTIFIER"; Tis.type = "T_IS"; Tbegin.type = "T_BEGIN";
-	//Tprog.stringValue = "program"; Tident.stringValue = "random"; Tis.stringValue = "is"; Tbegin.stringValue = "begin";
-
-	backup_list_1.createnode(Tprog); backup_list_1.createnode(Tident); backup_list_1.createnode(Tis);
-
-	backup_list_1.reset_pos();
-	for (int d = 0; d < backup_list_1.get_size(); d++){
-		tokk = backup_list_1.get_one();
-		backup_1.setNewNode(tokk.type, tokk.stringValue);	backup_1.createnode_2(tokk.type); backup_1.clearNewNode();
-		backup_2.setNewNode(tokk.type, tokk.stringValue);	backup_2.createnode_2(tokk.type); backup_2.clearNewNode();
-	}
-	backup_2.setNewNode(Tbegin.type, Tbegin.stringValue);	backup_2.createnode_2(Tbegin.type); backup_2.clearNewNode();
-
-	//cout << backup_.getLegit() << endl;
-}
 
 int main(int argc, char *argv[]){	
 	bool correct_input = false; list scan_list;

@@ -79,6 +79,7 @@ class ParseTree
         ParseNode *null_node;
   		ParseNode *pos;
         ParseNode *treeroot;
+        ParseNode *backup_treeroot;
         bool is_legit;
         bool get_new_pos;
 
@@ -92,17 +93,22 @@ class ParseTree
 
         Symbol sym;
 
+        // Backup
+        tokens Tprog, Tident, Tis, Tbegin, tokk;
+
     public:
     	ParseTree(void);
     	void createnode(std::string input);
     	void createnode_2(std::string input);
     	void createnode_3();
+        void createnode_4(std::string input);
     	
     	void re_findStart();
     	ParseNode *findStart(ParseNode *input);
     	
     	ParseNode *printTree(ParseNode *input);
     	void printTree();
+        void printBackupTree();
 
     	ParseNode *getTreeRoot();
     	ParseNode *getPos();
@@ -128,6 +134,9 @@ class ParseTree
         bool getProgBodyFlag();
 
         void setSym(Symbol input_sym);
+
+        void setBackup(ParseNode *input);
+        void resetLegit();
 
         
 };

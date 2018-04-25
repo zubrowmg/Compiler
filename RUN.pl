@@ -1,5 +1,5 @@
 system("g++", "-std=c++11", "-o", "test", "scan_v8.cpp", "ParseTree3.cpp", "List.cpp", "Symbol.cpp", "Error.cpp", "CodeGen.cpp" );
-system("./test TP.txt");
+system("./test text.txt");
 
 #Checks If there were errors, won't run if there are any
 my $filename = 'Error_Free.txt';

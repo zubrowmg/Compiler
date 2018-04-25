@@ -55,6 +55,7 @@ std::string ParseNode::getIdent(){return ident;}
 ParseTree::ParseTree(void)
 {
 	ParseNode *temp = new ParseNode;
+	ParseNode *temp2 = new ParseNode;
 	temp_node = NULL;
 	treeroot = NULL;
 	pos = NULL;
@@ -62,6 +63,8 @@ ParseTree::ParseTree(void)
 	null_node = NULL;
 	temp->setToken("<program>"); // program
 	treeroot = temp;
+	temp2->setToken("<program>"); // program
+	backup_treeroot = temp2;
 	temp = NULL;
 	is_legit = true;
 	get_new_pos = true;
@@ -74,20 +77,34 @@ ParseTree::ParseTree(void)
 	assignment_count = 0;
 	prog_body_flag = false;
 	name3_flag = false;
+
+
+
+	Tprog.type = "T_PROGRAM"; Tident.type = "T_IDENTIFIER"; Tis.type = "T_IS"; Tbegin.type = "T_BEGIN";
+
+	//setNewNode(Tprog.type, Tprog.stringValue); createnode_4(Tprog.type); clearNewNode();
+	//setNewNode(Tident.type, Tident.stringValue); createnode_4(Tident.type); clearNewNode();
+	//setNewNode(Tis.type, Tis.stringValue); createnode_4(Tis.type); clearNewNode();
+	//setNewNode(Tbegin.type, Tbegin.stringValue); createnode_4(Tbegin.type); clearNewNode();
 }
 
+void ParseTree::resetLegit(){is_legit = true;}
 bool ParseTree::getLegit(){return is_legit;}
 ParseNode *ParseTree::getTreeRoot(){return treeroot;}
 ParseNode *ParseTree::getPos(){return pos;}
+
 void ParseTree::setNewNode(std::string type, std::string ident){ ParseNode *temp = new ParseNode; new_node = temp; new_node->setToken(type, ident);}
 void ParseTree::clearPos(){ParseNode *temp = new ParseNode; pos = temp; get_new_pos = true;}
 void ParseTree::clearNewNode(){ParseNode *temp = new ParseNode; new_node = temp;}
 void ParseTree::clearTempNode(){ParseNode *temp = new ParseNode; temp_node = temp;}
 void ParseTree::printTree(){ printTree(treeroot);}
+void ParseTree::printBackupTree(){ printTree(backup_treeroot);}
 bool ParseTree::getExpressFlag(){ return expression_flag;}
 bool ParseTree::getAssignmentFlag(){ return assignment_flag;}
 bool ParseTree::getProgBodyFlag(){ return prog_body_flag;}
 void ParseTree::setSym(Symbol input_sym){ sym = input_sym; }
+
+void ParseTree::setBackup(ParseNode *nodey){treeroot = nodey;}
 
 ParseNode *ParseTree::printTree(ParseNode *node)
 {
@@ -98,6 +115,8 @@ ParseNode *ParseTree::printTree(ParseNode *node)
 	
 	return node->getRoot();	
 }
+
+
 
 ParseNode *ParseTree::findStart(ParseNode *start)
 {	
@@ -174,8 +193,9 @@ void ParseTree::createnode_3(){
 			pos = pos->getLeft();
 			createnode_3();		
 		} else {
-
+			//treeroot = backup_treeroot;
 			is_legit = false;
+
 			//backUp();
 		}
 	}
@@ -1557,9 +1577,10 @@ name3_flag = true;
 		} else {
 			backUp();
 		}
-	} else if (pos->getToken() == "<T_BEGIN>"){ pos->setOption((pos->getOption()) + 1);	
+	} else if (pos->getToken() == "<T_BEGIN>"){ pos->setOption((pos->getOption()) + 1);
 		if (pos->getOption() == 1){						
-			if (new_node->getToken() == "T_BEGIN"){				
+			if (new_node->getToken() == "T_BEGIN"){	
+
 				newNewNode();
 			} else {createnode_3();}	
 		} else {
@@ -1944,6 +1965,24 @@ void ParseTree::createnode_2(std::string input){
 
 	if (input == "T_ENDFILE"){
 		checkStatus(treeroot);
+
+	}
+	
+	clearPos();
+	return;
+}
+
+void ParseTree::createnode_4(std::string input){
+	ParseNode *temp = new ParseNode;
+
+	temp_node = temp;
+
+	findStart(backup_treeroot);
+	
+	createnode_3();
+
+	if (input == "T_ENDFILE"){
+		checkStatus(backup_treeroot);
 
 	}
 	
